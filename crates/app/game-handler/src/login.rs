@@ -23,6 +23,8 @@
 //! 客户端 proto 注释写得很直白：`sign`「为空，测试登录」。
 
 use async_trait::async_trait;
+
+use crate::handshake::HandshakeStore;
 use ddj_codec::{unpack_login_body, LoginBodyError, SIGN_KEY};
 use ddj_core::{AppError, PlayerId, Result};
 use ddj_pb::gen::engine_message::{LoginReq4, LoginResp4};
@@ -179,6 +181,7 @@ pub async fn resolve(
     now_ms: i64,
     loginvar: i32,
     lookup: Option<&dyn AccountLookup>,
+    handshake: Option<&dyn HandshakeStore>,
 ) -> LoginOutcome {
     let LoginOutcome::NeedCreate { names } = out else {
         return out;
@@ -188,16 +191,23 @@ pub async fn resolve(
     };
     match l.find(open_id, server_id).await {
         None => LoginOutcome::NeedCreate { names },
-        Some(acc) => LoginOutcome::Accepted {
-            player_id: acc.player_id,
-            server_time: now_ms,
-            // 开服时间原版取自 `BaseServer.getOpenServerTime()`，
-            // 骨架阶段还没有这层，先回 0（客户端只用来显示）。
-            open_server_time: 0,
-            create_player_time: acc.create_player_time,
-            banned_time: acc.banned_time,
-            loginvar,
-        },
+        Some(acc) => {
+            // 原版 `channelPlayer.setLoginvar(v29)`：登录成功即把挑战种子留底，
+            // 等客户端通过 cmd 16/17/18 回传密码。
+            if let Some(hs) = handshake {
+                hs.set_challenge(acc.player_id, loginvar);
+            }
+            LoginOutcome::Accepted {
+                player_id: acc.player_id,
+                server_time: now_ms,
+                // 开服时间原版取自 `BaseServer.getOpenServerTime()`，
+                // 骨架阶段还没有这层，先回 0（客户端只用来显示）。
+                open_server_time: 0,
+                create_player_time: acc.create_player_time,
+                banned_time: acc.banned_time,
+                loginvar,
+            }
+        }
     }
 }
 
@@ -212,12 +222,16 @@ pub async fn handle_with(
     lookup: Option<&dyn AccountLookup>,
     now_ms: i64,
     loginvar: i32,
+    handshake: Option<&dyn HandshakeStore>,
 ) -> Result<LoginResp4> {
     let LoginRequest { req } = LoginRequest::decrypt(body)?;
     let open_id = req.open_id.clone().unwrap_or_default();
     let server_id = req.server_id.unwrap_or(st.server_id);
     let base = evaluate(&req, st);
-    let outcome = resolve(base, &open_id, server_id, now_ms, loginvar, lookup).await;
+    let outcome = resolve(
+        base, &open_id, server_id, now_ms, loginvar, lookup, handshake,
+    )
+    .await;
     tracing::info!(
         peer = %ctx.peer_ip,
         open_id = %open_id,
@@ -524,6 +538,7 @@ mod account_tests {
             0,
             608,
             None,
+            None,
         )
         .await;
         assert!(matches!(out, LoginOutcome::NeedCreate { .. }));
@@ -542,6 +557,7 @@ mod account_tests {
             12345,
             608,
             Some(&l),
+            None,
         )
         .await;
         match out {
@@ -578,6 +594,7 @@ mod account_tests {
             0,
             608,
             Some(&l),
+            None,
         )
         .await;
         assert!(matches!(out, LoginOutcome::NeedCreate { .. }));
@@ -597,6 +614,7 @@ mod account_tests {
             0,
             608,
             Some(&l),
+            None,
         )
         .await;
         assert_eq!(out, LoginOutcome::Reject(RetCode::ServerWeihu));

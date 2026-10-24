@@ -44,6 +44,7 @@ pub mod friend;
 pub mod gm;
 pub mod guild;
 pub mod handlers;
+pub mod handshake;
 pub mod item;
 pub mod login;
 pub mod loginvar;

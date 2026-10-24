@@ -22,6 +22,9 @@ use ddj_core::Result;
 use ddj_registry::{ErasedHandler, HandlerCtx, HandlerTable};
 use prost::Message;
 
+use crate::handshake::{
+    self, HandshakeStore, HandshakeVerdict, CMD_GET_ITEM, CMD_GET_MISSION, CMD_GET_PET,
+};
 use crate::login::{self, AccountLookup, ServerState};
 use crate::player::{self, CreateCtx, CreateOutcome, CreatePlayerRepo, NewPlayerRow};
 
@@ -38,6 +41,7 @@ pub const CMD_CREATE_PLAYER: i32 = 6;
 pub struct LoginHandler {
     state: ServerState,
     lookup: Option<Arc<dyn AccountLookup>>,
+    handshake: Option<Arc<dyn HandshakeStore>>,
 }
 
 impl LoginHandler {
@@ -47,6 +51,7 @@ impl LoginHandler {
         Self {
             state,
             lookup: None,
+            handshake: None,
         }
     }
 
@@ -56,7 +61,15 @@ impl LoginHandler {
         Self {
             state,
             lookup: Some(lookup),
+            handshake: None,
         }
+    }
+
+    /// 再挂上握手状态（服务端启动时用这个）。
+    #[must_use]
+    pub fn with_handshake(mut self, hs: Arc<dyn HandshakeStore>) -> Self {
+        self.handshake = Some(hs);
+        self
     }
 }
 
@@ -83,6 +96,7 @@ impl ErasedHandler for LoginHandler {
             self.lookup.as_deref(),
             now,
             loginvar,
+            self.handshake.as_deref(),
         )
         .await?;
         Ok(Some(Bytes::from(resp.encode_to_vec())))
@@ -100,15 +114,28 @@ pub fn register(
     state: ServerState,
     lookup: Option<Arc<dyn AccountLookup>>,
     create: Option<(Arc<dyn CreatePlayerRepo>, Arc<dyn player::FashionLookup>)>,
+    handshake: Option<Arc<dyn HandshakeStore>>,
 ) -> Result<usize> {
     let mut n = 0;
     let server_id = state.server_id;
     let h = match lookup {
-        Some(l) => LoginHandler::with_lookup(state, l),
+        Some(l) => {
+            let h = LoginHandler::with_lookup(state, l);
+            match handshake.clone() {
+                Some(hs) => h.with_handshake(hs),
+                None => h,
+            }
+        }
         None => LoginHandler::new(state),
     };
     table.insert(Box::new(h));
     n += 1;
+    if let Some(hs) = handshake.clone() {
+        for cmd in [CMD_GET_ITEM, CMD_GET_PET, CMD_GET_MISSION] {
+            table.insert(Box::new(HandshakeHandler::new(hs.clone(), cmd)));
+            n += 1;
+        }
+    }
     if let Some((repo, fashion)) = create {
         table.insert(Box::new(CreatePlayerHandler::new(repo, server_id, fashion)));
         n += 1;
@@ -224,6 +251,88 @@ impl ErasedHandler for CreatePlayerHandler {
     }
 }
 
+/// 握手回执：cmd 16 / 17 / 18 三合一。
+///
+/// 三者在原版是三个方法、三份逐指令相同的代码，且都 `return void`
+/// （不发包）。所以一个结构体挂三个消息号即可。
+pub struct HandshakeHandler {
+    store: Arc<dyn HandshakeStore>,
+    cmd: i32,
+}
+
+impl HandshakeHandler {
+    /// 构造。
+    #[must_use]
+    pub fn new(store: Arc<dyn HandshakeStore>, cmd: i32) -> Self {
+        Self { store, cmd }
+    }
+}
+
+#[async_trait]
+impl ErasedHandler for HandshakeHandler {
+    fn cmd_id(&self) -> i32 {
+        self.cmd
+    }
+
+    async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Bytes>> {
+        // 三个 Req 的第一个字段都是 `optional string itemId = 1`，
+        // 用最小的解码器取它，避免为一个字段依赖三种生成类型。
+        let item_id = decode_first_string(body.as_ref())
+            .ok_or_else(|| ddj_core::AppError::BadRequest("握手包缺少 itemId".to_owned()))?;
+        let Some(player) = ctx.player_id else {
+            // 原版靠 `getChannelPlayerByPlayerId(p.getId())` 拿会话，
+            // 没有会话就是 NPE → 外层捕获。这里直接报错。
+            return Err(ddj_core::AppError::Unauthorized);
+        };
+        self.store.set_client_password(player, &item_id);
+        let verdict = handshake::verify(self.store.as_ref(), player);
+        // 原版只打 log.debug("客户端发过来的密码：" + itemId)；
+        // 这里把比对结果也带上，便于定位「算法错一位」这类问题。
+        tracing::debug!(
+            player = player.get(),
+            cmd = self.cmd,
+            password = %item_id,
+            ?verdict,
+            "客户端发过来的密码"
+        );
+        if verdict == HandshakeVerdict::Mismatch {
+            tracing::warn!(
+                player = player.get(),
+                cmd = self.cmd,
+                "握手密码与服务端留底不一致（原版静默，此处仅告警）"
+            );
+        }
+        Ok(None)
+    }
+}
+
+/// 取 protobuf 第一个字段（若为 string）的值。
+fn decode_first_string(buf: &[u8]) -> Option<String> {
+    // tag = (field 1, wire type 2) = 0x0A；长度是 varint。
+    if buf.first() != Some(&0x0A) {
+        return None;
+    }
+    let mut i = 1_usize;
+    let mut len = 0_usize;
+    let mut shift = 0_u32;
+    loop {
+        let b = *buf.get(i)?;
+        i += 1;
+        len |= usize::from(b & 0x7F) << shift;
+        if b & 0x80 == 0 {
+            break;
+        }
+        shift += 7;
+        if shift > 28 {
+            return None;
+        }
+    }
+    let end = i.checked_add(len)?;
+    std::str::from_utf8(buf.get(i..end)?)
+        .ok()
+        .map(str::to_owned)
+}
+
 #[cfg(test)]
 mod tests {
     use std::net::{IpAddr, Ipv4Addr};
@@ -249,7 +358,7 @@ mod tests {
     #[test]
     fn register_counts_login() {
         let mut t = HandlerTable::empty();
-        let n = register(&mut t, ServerState::healthy(1), None, None).expect("注册");
+        let n = register(&mut t, ServerState::healthy(1), None, None, None).expect("注册");
         assert_eq!(n, 1);
         assert!(t.get(CMD_LOGIN).is_some(), "登录应已入表");
         assert!(t.get(11002).is_none(), "未移植的链路不应凭空出现");

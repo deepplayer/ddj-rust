@@ -371,6 +371,8 @@ impl Bootstrap {
         let account_repo = Arc::new(ddj_repo::PgPlayerRepo::new((*db).clone()));
         let lookup: Arc<dyn ddj_game_handler::login::AccountLookup> =
             Arc::new(crate::account::PgAccountLookup::new(account_repo.clone()));
+        let handshake_store: Arc<dyn ddj_game_handler::handshake::HandshakeStore> =
+            Arc::new(ddj_game_handler::handshake::MemoryHandshakeStore::new());
         let registered = ddj_game_handler::handlers::register(
             &mut table,
             ddj_game_handler::login::ServerState::healthy(cfg.service.server_id),
@@ -381,6 +383,7 @@ impl Bootstrap {
                 )),
                 Arc::new(crate::create_player_repo::EmptyFashion),
             )),
+            Some(handshake_store),
         )?;
         tracing::info!(count = registered, "业务处理器已注册");
         let handlers = Arc::new(table);
