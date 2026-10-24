@@ -83,8 +83,14 @@ cargo test -p ddj-item -p ddj-player -p ddj-rank -p ddj-mail -p ddj-guild -p ddj
 ```bash
 createdb -U game platform
 createdb -U game game_7010544
-# 首次启动时 sqlx 自动跑 crates/data/db/migrations
+# 首次启动时 sqlx 自动跑 crates/data/db/migrations：
+#   0001_init.sql            仓储层核心表（player/item/mail/guild）
+#   0002_platform.sql        277 张平台表（从 data/sql/platform.sql 生成）
+#   0003_platform_seed.sql   722 行种子数据 + 自增序列校正
 ```
+
+`0002` / `0003` 由 `tools/mysql2pg.py` 生成，不要手改；细节见
+[docs/PG-MIGRATION.md](docs/PG-MIGRATION.md#6-全量平移277-张表)。
 
 密码不进配置文件，用环境变量注入：
 

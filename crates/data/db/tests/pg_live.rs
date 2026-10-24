@@ -107,3 +107,60 @@ async fn item_upsert_accumulates_and_clamps() {
         .await
         .expect("收尾");
 }
+
+/// 全量平台表平移的回归测试。
+///
+/// `0002_platform.sql` 由 `tools/mysql2pg.py` 从 `data/sql/platform.sql` 生成，
+/// 这里锁住三件事：表数、列数、种子行数。任何一项变了都要先确认是预期改动，
+/// 否则说明转换器或源 DDL 出了问题。
+#[tokio::test]
+async fn platform_schema_is_fully_translated() {
+    let Some(pool) = pool().await else { return };
+
+    ddj_db::migration::run(&pool).await.expect("迁移");
+
+    let tables: i64 = sqlx::query_scalar::<sqlx::Postgres, i64>(
+        "SELECT count(*) FROM information_schema.tables \
+         WHERE table_schema = 'public' AND table_type = 'BASE TABLE' \
+           AND table_name NOT LIKE '\\_%'",
+    )
+    .fetch_one(&pool)
+    .await
+    .expect("查表数");
+    // 277 张平台表 + 仓储层自用的 player/item/mail/guild（`_sqlx_migrations` 不算）
+    assert_eq!(tables, 281, "表数不符：277 平台表 + 4 核心表");
+
+    let columns: i64 = sqlx::query_scalar::<sqlx::Postgres, i64>(
+        "SELECT count(*) FROM information_schema.columns WHERE table_schema = 'public'",
+    )
+    .fetch_one(&pool)
+    .await
+    .expect("查列数");
+    // 与 MySQL 源库逐表逐列比对过，2409 + 四张核心表
+    assert!(columns >= 2409, "列数 {columns} < 2409，平台表列缺失");
+
+    // 种子行数：源 dump 里 37 张表有数据，合计 722 行
+    let rows: i64 = sqlx::query_scalar::<sqlx::Postgres, i64>(
+        "SELECT (SELECT count(*) FROM bf_activity) \
+              + (SELECT count(*) FROM bf_activity_type) \
+              + (SELECT count(*) FROM bf_config)",
+    )
+    .fetch_one(&pool)
+    .await
+    .expect("查种子行数");
+    assert_eq!(rows, 11 + 100 + 79, "种子数据未完整导入");
+
+    // identity 序列必须被种子数据校正过，否则新插入会和种子 id 撞车
+    let next: i64 = sqlx::query_scalar::<sqlx::Postgres, i64>(
+        "INSERT INTO bf_activity (\"actId\", \"typeId\", name, description) \
+         VALUES (1, 1, '__seq_probe__', 'probe') RETURNING \"dbId\"",
+    )
+    .fetch_one(&pool)
+    .await
+    .expect("自增列插入");
+    assert!(next > 43614, "identity 序列没校正，新 id {next} 与种子冲突");
+    sqlx::query("DELETE FROM bf_activity WHERE name = '__seq_probe__'")
+        .execute(&pool)
+        .await
+        .expect("清理探针行");
+}
