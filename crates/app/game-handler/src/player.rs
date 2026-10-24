@@ -781,9 +781,11 @@ pub enum ViewPlan {
         /// 回包里的 `friendScope`。1008 本服恒为 `true`；1020 不使用该字段。
         friend_scope: bool,
     },
-    /// 走跨服分支。`friend_scope` 只对 1008 有意义。
+    /// 走跨服分支。
     Remote {
+        /// 对端 game 服 id（原版 `l2i` 截断后传给 `getGsServerRemoteClient`）。
         target_server: i32,
+        /// 回包里的 `friendScope`。1008 用 `isCrossPlayerId` 覆盖；1020 不使用该字段。
         friend_scope: bool,
     },
     /// 原版抛异常（含 `getPlayerById` 返回 null 触发的 NPE），被 catch 成 `COMMON_SERVER_BUSY`。
