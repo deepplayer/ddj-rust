@@ -666,6 +666,86 @@ pub fn build_level_up_resp(outcome: LevelUpOutcome) -> Option<UpPlayerLvResp1003
     }
 }
 
+// ─────────────────────────── 1100 客户端缓存回写 ───────────────────────────
+//
+// `PlayerMessageHandler.playerSaveNewPlayerDataReq` 全文只有一句：
+//   `player.setNewPlayerData(req.getPlayerCacheTempList())`，`catch(Exception)` 只写日志。
+// **既不回包，也没有任何校验。**
+//
+// `Player.setNewPlayerData(List<PlayerCacheTemp>)`（53 字节）：
+//   `for t in list: playerCacheTemp.put(t.getKey(), t.getValue())` → `save()`
+//
+// 也就是说这是客户端可以任意写服务端 kv 的通道；重复 key 后者覆盖前者，
+// 且空列表也会走一次 `save()`。
+
+use std::collections::BTreeMap;
+
+/// `PlayerMessage.PlayerCacheTemp`。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CacheTemp {
+    /// `key`。
+    pub key: i32,
+    /// `value`。
+    pub value: String,
+}
+
+/// `Player.playerCacheTemp` 的替身。
+#[derive(Debug, Clone, Default)]
+pub struct PlayerCacheStore {
+    map: BTreeMap<i32, String>,
+}
+
+impl PlayerCacheStore {
+    /// 空表。
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// 从已有快照构造。
+    #[must_use]
+    pub fn from_pairs(pairs: impl IntoIterator<Item = (i32, String)>) -> Self {
+        Self {
+            map: pairs.into_iter().collect(),
+        }
+    }
+
+    /// 复刻 `setNewPlayerData`：顺序 `put`，后到的同 key 覆盖先到的。
+    ///
+    /// 返回本次写入了多少条（`list` 的长度），调用方据此决定是否落库。
+    /// 原版**无条件** `save()`，空列表也保存一次。
+    pub fn apply(&mut self, list: &[CacheTemp]) -> usize {
+        for t in list {
+            self.map.insert(t.key, t.value.clone());
+        }
+        list.len()
+    }
+
+    /// 读一条（供测试与调试）。
+    #[must_use]
+    pub fn get(&self, key: i32) -> Option<&str> {
+        self.map.get(&key).map(String::as_str)
+    }
+
+    /// 条目数。
+    #[must_use]
+    pub fn len(&self) -> usize {
+        self.map.len()
+    }
+
+    /// 是否为空。
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.map.is_empty()
+    }
+
+    /// 全量快照（落库用）。
+    #[must_use]
+    pub fn snapshot(&self) -> &BTreeMap<i32, String> {
+        &self.map
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1312,5 +1392,73 @@ mod level_up_tests {
             last_update_time: 0,
         });
         assert_eq!(build_level_up_resp(accept).map(|r| r.ret), Some(0));
+    }
+}
+
+#[cfg(test)]
+mod cache_data_tests {
+    use super::*;
+
+    fn t(key: i32, value: &str) -> CacheTemp {
+        CacheTemp {
+            key,
+            value: value.to_owned(),
+        }
+    }
+
+    #[test]
+    fn overwrites_existing_key() {
+        let mut st = PlayerCacheStore::from_pairs([(1, "old".to_owned())]);
+        st.apply(&[t(1, "new")]);
+        assert_eq!(st.get(1), Some("new"));
+        assert_eq!(st.len(), 1);
+    }
+
+    #[test]
+    fn adds_new_key_without_touching_others() {
+        let mut st = PlayerCacheStore::from_pairs([(1, "a".to_owned()), (2, "b".to_owned())]);
+        st.apply(&[t(3, "c")]);
+        assert_eq!(st.get(1), Some("a"));
+        assert_eq!(st.get(2), Some("b"));
+        assert_eq!(st.get(3), Some("c"));
+        assert_eq!(st.len(), 3);
+    }
+
+    #[test]
+    fn duplicate_keys_in_one_request_last_wins() {
+        let mut st = PlayerCacheStore::new();
+        st.apply(&[t(7, "first"), t(7, "second"), t(7, "third")]);
+        assert_eq!(st.get(7), Some("third"));
+        assert_eq!(st.len(), 1);
+    }
+
+    #[test]
+    fn empty_list_changes_nothing_but_still_saves() {
+        let mut st = PlayerCacheStore::from_pairs([(1, "a".to_owned())]);
+        assert_eq!(st.apply(&[]), 0, "原版空列表也调用一次 save()");
+        assert_eq!(st.len(), 1);
+    }
+
+    #[test]
+    fn returns_written_count() {
+        let mut st = PlayerCacheStore::new();
+        assert_eq!(st.apply(&[t(1, "a"), t(2, "b")]), 2);
+    }
+
+    #[test]
+    fn no_validation_on_key_or_value() {
+        // 原版没有任何校验：负数 key、空 value 都照收。
+        let mut st = PlayerCacheStore::new();
+        st.apply(&[t(-1, ""), t(0, &"x".repeat(4096))]);
+        assert_eq!(st.get(-1), Some(""));
+        assert_eq!(st.get(0).map(str::len), Some(4096));
+    }
+
+    #[test]
+    fn snapshot_is_stable_ordered() {
+        let mut st = PlayerCacheStore::new();
+        st.apply(&[t(9, "i"), t(3, "c"), t(5, "e")]);
+        let keys: Vec<i32> = st.snapshot().keys().copied().collect();
+        assert_eq!(keys, vec![3, 5, 9]);
     }
 }
