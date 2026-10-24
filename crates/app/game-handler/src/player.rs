@@ -56,6 +56,7 @@
 
 use ddj_core::{AppError, Result};
 use ddj_pb::gen::engine_message::{CreatePlayerReq6, CreatePlayerResp6};
+use ddj_pb::gen::player_message::UpdateNameResp1002;
 use ddj_pb::RetCode;
 
 /// 名字长度上限（`ConfigDB.NickNameLength`）。
@@ -430,6 +431,149 @@ pub struct PlayerInfoResp {
     pub power: i64,
 }
 
+// ───────────────────────────── 1002 改名 ─────────────────────────────
+//
+// 对应 Java：`PlayerMessageHandler.updateNameReq(Player, UpdateNameReq_1002)`。
+// 该方法的字节码本身就是全部业务规则（校验 + 收费 + 落库），按顺序逐条复刻。
+
+/// 改名卡资源 id（`new ResourcesJson(55, "1")`）。
+pub const CHANGE_NAME_CARD_RESOURCE: i32 = 55;
+
+/// `TypeModule.TYPE_1004`：改名消耗的资源类型。
+pub const TYPE_1004: i32 = 1004;
+
+/// 改名实际消耗。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RenameCost {
+    /// 免费：首次改名，或旧名字带 `.R` 后缀（合服重名补偿）。
+    Free,
+    /// 扣 55 号资源 1 个（改名卡）。
+    Card55,
+    /// 扣 `ConfigDBCache.ChangeNamePrice`。
+    ChangeNamePrice,
+}
+
+/// 改名判决。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RenameOutcome {
+    /// 未通过，直接回 `UpdateNameResp_1002{ret}`。
+    Reject(RetCode),
+    /// 通过，回 `UpdateNameResp_1002{ret=0}`。
+    Accept(RenameCost),
+}
+
+/// 改名判定所需的全部外部状态。
+///
+/// 每一项都对应字节码里的一个 `getstatic` / `invokevirtual`，
+/// 由调用方（handler）从 `Player`、`ConfigDBCache`、`PlatformServerModule`
+/// 与 `DBPlayerModule` 取值填进来。
+#[derive(Debug, Clone, Copy)]
+pub struct RenameCtx {
+    /// `LogicUtils.getNowTime()`。
+    pub now: i64,
+    /// `p.getTimeOffForbidResetName()`。
+    pub forbid_reset_name_until: i64,
+    /// `PlatformServerModule.chatOnoffZ`：聊天总开关**关闭**时禁止改名。
+    pub chat_off: bool,
+    /// `isVnSdk()`（`SDK_ID == 6`）。
+    pub is_vn_sdk: bool,
+    /// VN 专用正则 `matchName()` 的结果。
+    pub vn_name_matches: bool,
+    /// `ConfigDBCache.nameSpaceOnoffZ`：名字里是否允许空格。
+    pub name_space_on: bool,
+    /// `ConfigDBCache.NickNameLength`（实测 14）。
+    pub nick_name_length: usize,
+    /// `WxMsgSecCheck.checkDirtyWord(p, name, [type_2])`。
+    pub dirty_word: bool,
+    /// `DBPlayerModule.repeated(name)`。
+    pub name_repeated: bool,
+    /// `p.isUpdateName()`：是否已用掉那次免费改名。
+    pub update_name_used: bool,
+    /// `p.getName().contains(".R")`：旧名字是否带合服后缀。
+    pub old_had_dot_r: bool,
+    /// `ResourcesConsumeUtils.checkResources(p, 55 号资源 × 1)`。
+    pub has_card_55: bool,
+    /// `ResourcesConsumeUtils.removeResources(p, ChangeNamePrice, TYPE_1004, [])` 是否够。
+    pub has_change_name_price: bool,
+}
+
+/// 按 `updateNameReq` 的字节码分支序判定改名。
+///
+/// 顺序不可调整：每一条都是原版的短路点，换了顺序就会改变玩家看到的错误码。
+/// 注意第 2 条是「聊天关闭时禁止改名」（`chatOnoffZ` 为真 → `CHAT_NO_OPEN`），
+/// 第 10 条的付费判定只在 `!oldHadDotR && isUpdateName()` 时生效。
+#[must_use]
+pub fn rename_verdict(new_name: &str, old_name: &str, ctx: &RenameCtx) -> RenameOutcome {
+    use RenameOutcome::{Accept, Reject};
+
+    // 1. 改名冷却未结束。
+    if ctx.now < ctx.forbid_reset_name_until {
+        return Reject(RetCode::PlayerError23);
+    }
+    // 2. 聊天总开关关闭。
+    if ctx.chat_off {
+        return Reject(RetCode::ChatNoOpen);
+    }
+    // 3. 与旧名完全相同。
+    if new_name == old_name {
+        return Reject(RetCode::NameDuplicate);
+    }
+    // 4. 不允许出现 ".R"（合服后缀由系统生成）。
+    if new_name.contains(".R") {
+        return Reject(RetCode::NameIllegal);
+    }
+    // 5. 敏感词。
+    if ctx.dirty_word {
+        return Reject(RetCode::NameIllegal);
+    }
+    // 6. 越南 SDK 专用正则。
+    if ctx.is_vn_sdk && !ctx.vn_name_matches {
+        return Reject(RetCode::NameIllegal);
+    }
+    // 7. 长度：VN 按 char 计，其余按 `getLenOf`（中文计 2）。
+    let len = if ctx.is_vn_sdk {
+        new_name.chars().count()
+    } else {
+        string_length(new_name)
+    };
+    if len < 1 || len > ctx.nick_name_length {
+        return Reject(RetCode::NameLength);
+    }
+    // 8. 首尾空白。
+    if contains_first_space(new_name) {
+        return Reject(RetCode::NameIllegal);
+    }
+    // 9. 中间空白（仅在允许空格的配置下放行）。
+    if !ctx.name_space_on && contains_space(new_name) {
+        return Reject(RetCode::NameIllegal);
+    }
+    // 10. 全服重名（原版在 `synchronized(Player.class)` 内查库）。
+    if ctx.name_repeated {
+        return Reject(RetCode::NameDuplicate);
+    }
+    // 11. 收费：只有「旧名不带 .R 且已用过免费改名」才收。
+    if !ctx.old_had_dot_r && ctx.update_name_used {
+        if ctx.has_card_55 {
+            return Accept(RenameCost::Card55);
+        }
+        if ctx.has_change_name_price {
+            return Accept(RenameCost::ChangeNamePrice);
+        }
+        return Reject(RetCode::JewelNo);
+    }
+    Accept(RenameCost::Free)
+}
+
+/// 把判决转成 `UpdateNameResp_1002`。
+#[must_use]
+pub fn build_rename_resp(outcome: RenameOutcome) -> UpdateNameResp1002 {
+    let ret = match outcome {
+        RenameOutcome::Reject(code) => code.as_i32(),
+        RenameOutcome::Accept(_) => RetCode::Ok.as_i32(),
+    };
+    UpdateNameResp1002 { ret }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -702,5 +846,254 @@ mod tests {
     fn resp_carries_ret() {
         assert_eq!(build_resp(RetCode::Ok).ret, 0);
         assert_eq!(build_resp(RetCode::NameDuplicate).ret, 103);
+    }
+}
+
+#[cfg(test)]
+mod rename_tests {
+    use super::*;
+
+    fn ctx() -> RenameCtx {
+        RenameCtx {
+            now: 1_000,
+            forbid_reset_name_until: 0,
+            chat_off: false,
+            is_vn_sdk: false,
+            vn_name_matches: true,
+            name_space_on: false,
+            nick_name_length: NICK_NAME_LENGTH,
+            dirty_word: false,
+            name_repeated: false,
+            update_name_used: false,
+            old_had_dot_r: false,
+            has_card_55: false,
+            has_change_name_price: false,
+        }
+    }
+
+    #[test]
+    fn cooldown_blocks_first() {
+        let c = RenameCtx {
+            now: 999,
+            forbid_reset_name_until: 1_000,
+            ..ctx()
+        };
+        assert_eq!(
+            rename_verdict("新名字", "旧名字", &c),
+            RenameOutcome::Reject(RetCode::PlayerError23)
+        );
+    }
+
+    #[test]
+    fn cooldown_checked_before_everything_else() {
+        // 同时命中冷却与聊天关闭，仍应回 131。
+        let c = RenameCtx {
+            now: 1,
+            forbid_reset_name_until: 2,
+            chat_off: true,
+            ..ctx()
+        };
+        assert_eq!(
+            rename_verdict("新名字", "旧名字", &c),
+            RenameOutcome::Reject(RetCode::PlayerError23)
+        );
+    }
+
+    #[test]
+    fn chat_off_blocks() {
+        let c = RenameCtx {
+            chat_off: true,
+            ..ctx()
+        };
+        assert_eq!(
+            rename_verdict("新名字", "旧名字", &c),
+            RenameOutcome::Reject(RetCode::ChatNoOpen)
+        );
+    }
+
+    #[test]
+    fn same_name_is_duplicate() {
+        assert_eq!(
+            rename_verdict("张三", "张三", &ctx()),
+            RenameOutcome::Reject(RetCode::NameDuplicate)
+        );
+    }
+
+    #[test]
+    fn dot_r_suffix_is_illegal() {
+        assert_eq!(
+            rename_verdict("张三.R", "李四", &ctx()),
+            RenameOutcome::Reject(RetCode::NameIllegal)
+        );
+    }
+
+    #[test]
+    fn dirty_word_is_illegal() {
+        let c = RenameCtx {
+            dirty_word: true,
+            ..ctx()
+        };
+        assert_eq!(
+            rename_verdict("张三", "李四", &c),
+            RenameOutcome::Reject(RetCode::NameIllegal)
+        );
+    }
+
+    #[test]
+    fn vn_regex_only_applies_to_vn() {
+        let non_vn = RenameCtx {
+            is_vn_sdk: false,
+            vn_name_matches: false,
+            ..ctx()
+        };
+        assert_eq!(
+            rename_verdict("张三", "李四", &non_vn),
+            RenameOutcome::Accept(RenameCost::Free)
+        );
+        let vn = RenameCtx {
+            is_vn_sdk: true,
+            vn_name_matches: false,
+            ..ctx()
+        };
+        assert_eq!(
+            rename_verdict("张三", "李四", &vn),
+            RenameOutcome::Reject(RetCode::NameIllegal)
+        );
+    }
+
+    #[test]
+    fn vn_length_counts_chars_not_weighted() {
+        // 7 个汉字：VN 按 char 计 = 7（通过），非 VN 按权重计 = 14（也通过）。
+        let name = "一二三四五六七";
+        let vn = RenameCtx {
+            is_vn_sdk: true,
+            ..ctx()
+        };
+        assert_eq!(
+            rename_verdict(name, "旧", &vn),
+            RenameOutcome::Accept(RenameCost::Free)
+        );
+        // 8 个汉字：VN = 8（通过），权重 = 16（超 14 → 105）。
+        let name8 = "一二三四五六七八";
+        assert_eq!(
+            rename_verdict(name8, "旧", &vn),
+            RenameOutcome::Accept(RenameCost::Free)
+        );
+        assert_eq!(
+            rename_verdict(name8, "旧", &ctx()),
+            RenameOutcome::Reject(RetCode::NameLength)
+        );
+    }
+
+    #[test]
+    fn empty_name_is_length_error() {
+        assert_eq!(
+            rename_verdict("", "旧名字", &ctx()),
+            RenameOutcome::Reject(RetCode::NameLength)
+        );
+    }
+
+    #[test]
+    fn leading_space_is_illegal() {
+        assert_eq!(
+            rename_verdict(" 张三", "李四", &ctx()),
+            RenameOutcome::Reject(RetCode::NameIllegal)
+        );
+    }
+
+    #[test]
+    fn inner_space_follows_config() {
+        assert_eq!(
+            rename_verdict("张 三", "李四", &ctx()),
+            RenameOutcome::Reject(RetCode::NameIllegal)
+        );
+        let on = RenameCtx {
+            name_space_on: true,
+            ..ctx()
+        };
+        assert_eq!(
+            rename_verdict("张 三", "李四", &on),
+            RenameOutcome::Accept(RenameCost::Free)
+        );
+    }
+
+    #[test]
+    fn repeated_name_checked_after_format() {
+        // 重名与格式都错时，先命中的是格式（第 4 条），不是重名。
+        let c = RenameCtx {
+            name_repeated: true,
+            ..ctx()
+        };
+        assert_eq!(
+            rename_verdict("李四.R", "张三", &c),
+            RenameOutcome::Reject(RetCode::NameIllegal)
+        );
+        assert_eq!(
+            rename_verdict("李四", "张三", &c),
+            RenameOutcome::Reject(RetCode::NameDuplicate)
+        );
+    }
+
+    #[test]
+    fn first_rename_is_free() {
+        assert_eq!(
+            rename_verdict("张三", "李四", &ctx()),
+            RenameOutcome::Accept(RenameCost::Free)
+        );
+    }
+
+    #[test]
+    fn second_rename_prefers_card_then_jewel() {
+        let mut c = RenameCtx {
+            update_name_used: true,
+            has_card_55: true,
+            has_change_name_price: true,
+            ..ctx()
+        };
+        assert_eq!(
+            rename_verdict("张三", "李四", &c),
+            RenameOutcome::Accept(RenameCost::Card55)
+        );
+        c.has_card_55 = false;
+        assert_eq!(
+            rename_verdict("张三", "李四", &c),
+            RenameOutcome::Accept(RenameCost::ChangeNamePrice)
+        );
+        c.has_change_name_price = false;
+        assert_eq!(
+            rename_verdict("张三", "李四", &c),
+            RenameOutcome::Reject(RetCode::JewelNo)
+        );
+    }
+
+    #[test]
+    fn dot_r_old_name_rerolls_free_rename() {
+        let c = RenameCtx {
+            update_name_used: true,
+            old_had_dot_r: true,
+            has_card_55: false,
+            has_change_name_price: false,
+            ..ctx()
+        };
+        assert_eq!(
+            rename_verdict("张三", "李四.R", &c),
+            RenameOutcome::Accept(RenameCost::Free)
+        );
+    }
+
+    #[test]
+    fn resp_maps_accept_to_zero() {
+        assert_eq!(
+            build_rename_resp(RenameOutcome::Accept(RenameCost::Free)).ret,
+            0
+        );
+        assert_eq!(
+            build_rename_resp(RenameOutcome::Reject(RetCode::PlayerError23)).ret,
+            131
+        );
+        assert_eq!(
+            build_rename_resp(RenameOutcome::Reject(RetCode::JewelNo)).ret,
+            7
+        );
     }
 }
