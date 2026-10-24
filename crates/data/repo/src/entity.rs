@@ -26,6 +26,8 @@ pub struct PlayerRow {
     pub open_id: Option<String>,
     /// 所属服（分服用）。
     pub server_id: i32,
+    /// 角色创建时间（对应原版 `createPlayerTime`）。
+    pub create_time: DateTime<Utc>,
 }
 
 /// `item` 表。

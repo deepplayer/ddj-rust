@@ -29,7 +29,7 @@ impl PgPlayerRepo {
 impl PlayerRepo for PgPlayerRepo {
     async fn find(&self, id: PlayerId) -> Result<Option<PlayerRow>> {
         let row = sqlx::query_as::<sqlx::Postgres, PlayerRow>(
-            "SELECT player_id, user_id, name, level, exp, vip, last_login, open_id, server_id \
+            "SELECT player_id, user_id, name, level, exp, vip, last_login, open_id, server_id, create_time \
              FROM player WHERE player_id = $1",
         )
         .bind(id.get())
@@ -58,7 +58,7 @@ impl PlayerRepo for PgPlayerRepo {
 
     async fn find_by_open_id(&self, open_id: &str, server_id: i32) -> Result<Option<PlayerRow>> {
         let row = sqlx::query_as::<sqlx::Postgres, PlayerRow>(
-            "SELECT player_id, user_id, name, level, exp, vip, last_login, open_id, server_id \
+            "SELECT player_id, user_id, name, level, exp, vip, last_login, open_id, server_id, create_time \
              FROM player WHERE open_id = $1 AND server_id = $2",
         )
         .bind(open_id)
@@ -71,8 +71,8 @@ impl PlayerRepo for PgPlayerRepo {
 
     async fn create(&self, row: &PlayerRow) -> Result<()> {
         sqlx::query::<sqlx::Postgres>(
-            "INSERT INTO player (player_id, user_id, name, level, exp, vip, last_login, open_id, server_id) \
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+            "INSERT INTO player (player_id, user_id, name, level, exp, vip, last_login, open_id, server_id, create_time) \
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
         )
         .bind(row.player_id)
         .bind(row.user_id)
@@ -83,6 +83,7 @@ impl PlayerRepo for PgPlayerRepo {
         .bind(row.last_login)
         .bind(&row.open_id)
         .bind(row.server_id)
+        .bind(row.create_time)
         .execute(&self.pool.game)
         .await
         .map_err(|e| ddj_core::AppError::BadRequest(format!("建角色: {e}")))?;

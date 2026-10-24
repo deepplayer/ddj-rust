@@ -30,9 +30,7 @@ impl AccountLookup for PgAccountLookup {
         match self.repo.find_by_open_id(open_id, server_id).await {
             Ok(Some(row)) => Some(Account {
                 player_id: PlayerId::new(row.player_id),
-                create_player_time: row
-                    .last_login
-                    .map_or(0, |t: chrono::DateTime<chrono::Utc>| t.timestamp_millis()),
+                create_player_time: row.create_time.timestamp_millis(),
                 banned_time: 0,
             }),
             Ok(None) => None,
