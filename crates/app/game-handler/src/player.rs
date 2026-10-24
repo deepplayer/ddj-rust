@@ -746,6 +746,116 @@ impl PlayerCacheStore {
     }
 }
 
+// ────────────────────── 1008 看他人 / 1020 他人详情 ──────────────────────
+//
+// 两条消息结构完全相同：先按玩家 id 算出「该玩家属于哪个 game 服」，
+// 同服直接读本地 `Player`，异服走 `RemoteClient.sendRemoteMsg` 同步调用对端 game 服。
+// 差别只有一处：**1008 会改写 `friendScope`，1020 原样透传**。
+
+/// 查看目标所在服。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ViewTarget {
+    /// 目标与自己同服，读本地 `PlayerServerModule.getPlayerById`。
+    Local,
+    /// 目标在其他 game 服，需走远程调用。
+    Remote(i32),
+}
+
+/// 按 `LogicUtils.getTargetGsServerIdOfPlayer` 与 `BaseServer.getServerId` 比较。
+#[must_use]
+pub fn resolve_view_target(target_server_id: i64, my_server_id: i64) -> ViewTarget {
+    if target_server_id == my_server_id {
+        ViewTarget::Local
+    } else {
+        // 原版在转远程前做了 `l2i`，这里同口径截断。
+        #[allow(clippy::cast_possible_truncation)]
+        ViewTarget::Remote(target_server_id as i32)
+    }
+}
+
+/// 1008 / 1020 的处理计划。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ViewPlan {
+    /// 走本地分支。`friend_scope` 只对 1008 有意义。
+    Local { friend_scope: bool },
+    /// 走跨服分支。`friend_scope` 只对 1008 有意义。
+    Remote {
+        target_server: i32,
+        friend_scope: bool,
+    },
+    /// 原版抛异常（含 `getPlayerById` 返回 null 触发的 NPE），被 catch 成 `COMMON_SERVER_BUSY`。
+    Busy,
+}
+
+/// 两条消息共用的查询接口。
+pub trait ViewLookup {
+    /// `LogicUtils.getTargetGsServerIdOfPlayer`。
+    fn target_server_id(&self, player_id: &str) -> i64;
+    /// `PlayerServerModule.getPlayerById`：**可能返回 `None`**（原版返回 null）。
+    fn local_player_exists(&self, player_id: &str) -> bool;
+    /// `FriendServerModule.isCrossPlayerId`。
+    fn is_cross_player_id(&self, player_id: &str) -> bool;
+}
+
+/// `playerViewOtherReq`（1008）。
+///
+/// 本服分支把 `friendScope` 硬编码成 **true**（字节码偏移 52：`iconst_1`）；
+/// 跨服分支则用 `isCrossPlayerId(playerId)` 覆盖对端返回值（偏移 128-140）。
+/// 目标玩家不存在时原版直接 NPE → catch → ret=2，没有专门的「玩家不存在」错误码。
+#[must_use]
+pub fn view_other_plan(player_id: &str, my_server_id: i64, lookup: &dyn ViewLookup) -> ViewPlan {
+    match resolve_view_target(lookup.target_server_id(player_id), my_server_id) {
+        ViewTarget::Local => {
+            if lookup.local_player_exists(player_id) {
+                ViewPlan::Local { friend_scope: true }
+            } else {
+                // `p.toMsgOtherPlayerBuilder()` on null → NPE → 外层 catch。
+                ViewPlan::Busy
+            }
+        }
+        ViewTarget::Remote(target_server) => ViewPlan::Remote {
+            target_server,
+            friend_scope: lookup.is_cross_player_id(player_id),
+        },
+    }
+}
+
+/// `playerViewOtherDetailReq`（1020）。
+///
+/// 与 1008 的差别：**没有 `friendScope` 这一层改写**，跨服拿到对端 `bytes` 后
+/// `mergeFrom` 直接 `build()` 发回（偏移 106-120），字段完全由对端决定。
+#[must_use]
+pub fn view_other_detail_plan(
+    player_id: &str,
+    my_server_id: i64,
+    lookup: &dyn ViewLookup,
+) -> ViewPlan {
+    match resolve_view_target(lookup.target_server_id(player_id), my_server_id) {
+        ViewTarget::Local => {
+            if lookup.local_player_exists(player_id) {
+                ViewPlan::Local {
+                    friend_scope: false,
+                }
+            } else {
+                ViewPlan::Busy
+            }
+        }
+        ViewTarget::Remote(target_server) => ViewPlan::Remote {
+            target_server,
+            friend_scope: false,
+        },
+    }
+}
+
+/// 把计划折算成回包 `ret`（`None` 表示本服成功、由调用方填业务字段）。
+#[must_use]
+pub const fn view_plan_ret(plan: ViewPlan) -> Option<i32> {
+    match plan {
+        ViewPlan::Busy => Some(RetCode::ServerBusy.as_i32()),
+        ViewPlan::Local { .. } | ViewPlan::Remote { .. } => None,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1460,5 +1570,159 @@ mod cache_data_tests {
         st.apply(&[t(9, "i"), t(3, "c"), t(5, "e")]);
         let keys: Vec<i32> = st.snapshot().keys().copied().collect();
         assert_eq!(keys, vec![3, 5, 9]);
+    }
+}
+
+#[cfg(test)]
+mod view_other_tests {
+    use std::cell::Cell;
+
+    use super::*;
+
+    struct Fake {
+        target_server: i64,
+        exists: bool,
+        cross: bool,
+        cross_calls: Cell<u32>,
+    }
+
+    impl Fake {
+        fn new(target_server: i64, exists: bool, cross: bool) -> Self {
+            Self {
+                target_server,
+                exists,
+                cross,
+                cross_calls: Cell::new(0),
+            }
+        }
+    }
+
+    impl ViewLookup for Fake {
+        fn target_server_id(&self, _player_id: &str) -> i64 {
+            self.target_server
+        }
+        fn local_player_exists(&self, _player_id: &str) -> bool {
+            self.exists
+        }
+        fn is_cross_player_id(&self, _player_id: &str) -> bool {
+            self.cross_calls.set(self.cross_calls.get() + 1);
+            self.cross
+        }
+    }
+
+    const MY: i64 = 7_010_544;
+
+    #[test]
+    fn same_server_hits_local_branch() {
+        let f = Fake::new(MY, true, false);
+        assert_eq!(
+            view_other_plan("p1", MY, &f),
+            ViewPlan::Local { friend_scope: true }
+        );
+    }
+
+    #[test]
+    fn local_friend_scope_is_hardcoded_true() {
+        // isCrossPlayerId 返回 false，但本服分支仍必须给 true。
+        let f = Fake::new(MY, true, false);
+        let ViewPlan::Local { friend_scope } = view_other_plan("p1", MY, &f) else {
+            panic!("应走本地分支");
+        };
+        assert!(friend_scope);
+        assert_eq!(f.cross_calls.get(), 0, "本服分支不应查 isCrossPlayerId");
+    }
+
+    #[test]
+    fn missing_local_player_becomes_busy() {
+        // 原版对 null 直接调用 toMsgOtherPlayerBuilder → NPE → catch → ret=2。
+        let f = Fake::new(MY, false, false);
+        assert_eq!(view_other_plan("p1", MY, &f), ViewPlan::Busy);
+        assert_eq!(view_plan_ret(ViewPlan::Busy), Some(2));
+    }
+
+    #[test]
+    fn cross_server_uses_is_cross_player_id() {
+        let t = Fake::new(7_010_106, true, true);
+        assert_eq!(
+            view_other_plan("p1", MY, &t),
+            ViewPlan::Remote {
+                target_server: 7_010_106,
+                friend_scope: true
+            }
+        );
+        let f = Fake::new(7_010_106, true, false);
+        assert_eq!(
+            view_other_plan("p1", MY, &f),
+            ViewPlan::Remote {
+                target_server: 7_010_106,
+                friend_scope: false
+            }
+        );
+    }
+
+    #[test]
+    fn cross_server_ignores_local_existence() {
+        // 跨服分支根本不查本地玩家。
+        let f = Fake::new(7_010_106, false, false);
+        assert!(matches!(
+            view_other_plan("p1", MY, &f),
+            ViewPlan::Remote { .. }
+        ));
+    }
+
+    #[test]
+    fn detail_same_server_has_no_friend_scope_rewrite() {
+        let f = Fake::new(MY, true, true);
+        let plan = view_other_detail_plan("p1", MY, &f);
+        assert_eq!(
+            plan,
+            ViewPlan::Local {
+                friend_scope: false
+            }
+        );
+        assert_eq!(view_plan_ret(plan), None);
+        assert_eq!(f.cross_calls.get(), 0);
+    }
+
+    #[test]
+    fn detail_missing_player_becomes_busy() {
+        let f = Fake::new(MY, false, false);
+        assert_eq!(view_other_detail_plan("p1", MY, &f), ViewPlan::Busy);
+    }
+
+    #[test]
+    fn detail_cross_server_passes_through() {
+        let f = Fake::new(7_010_106, true, true);
+        let plan = view_other_detail_plan("p1", MY, &f);
+        assert_eq!(
+            plan,
+            ViewPlan::Remote {
+                target_server: 7_010_106,
+                friend_scope: false
+            }
+        );
+        // 1020 跨服不改写任何字段，因此不应查 isCrossPlayerId。
+        assert_eq!(f.cross_calls.get(), 0);
+    }
+
+    #[test]
+    fn resolve_target_compares_server_ids() {
+        assert_eq!(resolve_view_target(MY, MY), ViewTarget::Local);
+        assert_eq!(
+            resolve_view_target(7_010_106, MY),
+            ViewTarget::Remote(7_010_106)
+        );
+    }
+
+    #[test]
+    fn ret_zero_is_left_to_caller_on_success() {
+        assert_eq!(view_plan_ret(ViewPlan::Local { friend_scope: true }), None);
+        assert_eq!(
+            view_plan_ret(ViewPlan::Remote {
+                target_server: 1,
+                friend_scope: true
+            }),
+            None
+        );
     }
 }
