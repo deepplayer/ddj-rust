@@ -109,6 +109,8 @@ pub enum LoginOutcome {
         create_player_time: i64,
         /// 封禁截止（-1 永久封禁）。
         banned_time: i64,
+        /// 本次握手的挑战值（`LoginResp_4.loginvar`，1..=10000）。
+        loginvar: i32,
     },
 }
 
@@ -175,6 +177,7 @@ pub async fn resolve(
     open_id: &str,
     server_id: i32,
     now_ms: i64,
+    loginvar: i32,
     lookup: Option<&dyn AccountLookup>,
 ) -> LoginOutcome {
     let LoginOutcome::NeedCreate { names } = out else {
@@ -193,6 +196,7 @@ pub async fn resolve(
             open_server_time: 0,
             create_player_time: acc.create_player_time,
             banned_time: acc.banned_time,
+            loginvar,
         },
     }
 }
@@ -207,12 +211,13 @@ pub async fn handle_with(
     st: &ServerState,
     lookup: Option<&dyn AccountLookup>,
     now_ms: i64,
+    loginvar: i32,
 ) -> Result<LoginResp4> {
     let LoginRequest { req } = LoginRequest::decrypt(body)?;
     let open_id = req.open_id.clone().unwrap_or_default();
     let server_id = req.server_id.unwrap_or(st.server_id);
     let base = evaluate(&req, st);
-    let outcome = resolve(base, &open_id, server_id, now_ms, lookup).await;
+    let outcome = resolve(base, &open_id, server_id, now_ms, loginvar, lookup).await;
     tracing::info!(
         peer = %ctx.peer_ip,
         open_id = %open_id,
@@ -248,12 +253,15 @@ pub fn build_resp(o: LoginOutcome) -> LoginResp4 {
             banned_time: None,
             lan_config: vec![],
         },
+        // 原版 `LoginResp_4` 里没有 playerId 字段（服务端靠 openId 反查），
+        // 所以这里不需要绑定它；`Accepted.player_id` 留给调用方建会话用。
         LoginOutcome::Accepted {
-            player_id,
             server_time,
             open_server_time,
             create_player_time,
             banned_time,
+            loginvar,
+            ..
         } => LoginResp4 {
             ret: RetCode::Ok.as_i32(),
             ok: Some(true),
@@ -262,7 +270,7 @@ pub fn build_resp(o: LoginOutcome) -> LoginResp4 {
             open_server_time: Some(open_server_time),
             create_player_time: Some(create_player_time),
             // 原服这里回的是 playerId 的低 32 位，客户端拿它做校验
-            loginvar: Some(player_id.get() as i32),
+            loginvar: Some(loginvar),
             banned_time: Some(banned_time),
             lan_config: vec![],
         },
@@ -438,11 +446,13 @@ mod tests {
             open_server_time: 1_600_000_000_000,
             create_player_time: 1_650_000_000_000,
             banned_time: 0,
+            loginvar: 608,
         });
         assert_eq!(r.ret, 0);
         assert_eq!(r.ok, Some(true));
         assert_eq!(r.server_time, Some(1_700_000_000_000));
-        assert_eq!(r.loginvar, Some(1129145656));
+        // 信里回的是**挑战值**，不是 playerId —— 原版 `builder.setLoginvar(v27)`
+        assert_eq!(r.loginvar, Some(608));
     }
 
     /// 端到端：客户端 `xxteaEncryptToBase64` 出来的包，服务端必须能解开。
@@ -512,6 +522,7 @@ mod account_tests {
             "open-1",
             7,
             0,
+            608,
             None,
         )
         .await;
@@ -529,6 +540,7 @@ mod account_tests {
             "open-1",
             7,
             12345,
+            608,
             Some(&l),
         )
         .await;
@@ -564,6 +576,7 @@ mod account_tests {
             "open-1",
             7,
             0,
+            608,
             Some(&l),
         )
         .await;
@@ -582,6 +595,7 @@ mod account_tests {
             "open-1",
             7,
             0,
+            608,
             Some(&l),
         )
         .await;

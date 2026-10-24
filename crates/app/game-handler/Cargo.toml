@@ -13,6 +13,7 @@ workspace = true
 [dependencies]
 ddj-core.workspace       = true
 base64.workspace      = true
+md-5.workspace        = true
 prost.workspace      = true
 ddj-codec.workspace      = true
 ddj-pb.workspace         = true

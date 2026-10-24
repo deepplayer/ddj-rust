@@ -727,6 +727,7 @@ dependencies = [
  "ddj-registry",
  "ddj-session",
  "inventory",
+ "md-5",
  "prost",
  "tokio",
  "tracing",

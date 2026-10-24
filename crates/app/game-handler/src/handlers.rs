@@ -73,7 +73,18 @@ impl ErasedHandler for LoginHandler {
 
     async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Bytes>> {
         let now = chrono::Utc::now().timestamp_millis();
-        let resp = login::handle_with(ctx, &body, &self.state, self.lookup.as_deref(), now).await?;
+        // 原版 `UtilsTools.random(1, 10000)`。这里用高精度时间戳取模，
+        // 在同一毫秒内多次登录会重复，但原版 prng 也不是密码学强度。
+        let loginvar = i32::try_from((now.unsigned_abs() % 10_000) + 1).unwrap_or(1);
+        let resp = login::handle_with(
+            ctx,
+            &body,
+            &self.state,
+            self.lookup.as_deref(),
+            now,
+            loginvar,
+        )
+        .await?;
         Ok(Some(Bytes::from(resp.encode_to_vec())))
     }
 }

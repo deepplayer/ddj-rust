@@ -46,6 +46,7 @@ pub mod guild;
 pub mod handlers;
 pub mod item;
 pub mod login;
+pub mod loginvar;
 pub mod mail;
 pub mod player;
 pub mod push;

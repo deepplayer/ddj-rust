@@ -113,6 +113,7 @@ tower-http   = { version = "0.6", features = ["trace", "cors", "compression-gzip
 hyper        = "1.4"
 
 # 可观测 / 错误 / 工具
+md-5 = { version = "0.10", default-features = false }
 tracing              = "0.1"
 tracing-subscriber   = { version = "0.3", features = ["env-filter", "json"] }
 tracing-opentelemetry = "0.26"
