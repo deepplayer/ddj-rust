@@ -79,7 +79,7 @@ impl SessionManager {
     }
 
     /// 全服广播。
-    pub async fn broadcast(&self, frame: bytes::Bytes) {
+    pub async fn broadcast(&self, frame: ddj_codec::Frame) {
         let targets: Vec<Arc<Session>> = self.by_id.iter().map(|r| Arc::clone(r.value())).collect();
         for s in targets {
             let _ = s.send(frame.clone()).await;

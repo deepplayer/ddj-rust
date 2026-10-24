@@ -28,7 +28,11 @@ fn now_ms() -> u64 {
 pub type SessionId = u64;
 
 /// 发往客户端的下行帧。
-pub type Outbound = mpsc::Sender<bytes::Bytes>;
+/// 出站队列。
+///
+/// 承载完整的 [`ddj_codec::Frame`] 而不是裸 body —— 服务端主动推送
+/// （`ItemUpdateResp_11004` 等）必须自带 cmdId，裸字节无法表达。
+pub type Outbound = mpsc::Sender<ddj_codec::Frame>;
 
 /// 下行失败原因：会话已断开。
 ///
@@ -165,7 +169,7 @@ impl Session {
     ///
     /// # Errors
     /// 下行通道已关闭（客户端已断开）。
-    pub async fn send(&self, frame: bytes::Bytes) -> Result<(), SessionClosed> {
+    pub async fn send(&self, frame: ddj_codec::Frame) -> Result<(), SessionClosed> {
         self.tx.send(frame).await.map_err(|_| SessionClosed)
     }
 }

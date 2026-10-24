@@ -309,7 +309,15 @@ impl Module for TcpListenerModule {
 
     async fn start(&mut self) -> Result<()> {
         let c = comps();
-        let server = ddj_tcp::TcpServer::new(c.cfg.net.clone(), Arc::clone(&c.sessions));
+        // 登录守卫：未登录时只放行白名单（`FREE_LOGIN_CMDS`），与原版一致。
+        let guards = ddj_registry::GuardChain::new().with(ddj_registry::LoginGuard);
+        let server = ddj_tcp::TcpServer::new(
+            c.cfg.net.clone(),
+            Arc::clone(&c.sessions),
+            Arc::clone(&c.handlers),
+            Arc::new(guards),
+            c.cfg.service.server_id,
+        );
         let shutdown = wiring::shutdown().unwrap_or_else(|| {
             let (_tx, rx) = tokio::sync::watch::channel(false);
             rx
