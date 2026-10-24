@@ -671,6 +671,8 @@ name = "ddj-game-core"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
+ "axum",
  "ddj-activity",
  "ddj-battle",
  "ddj-cache",
@@ -694,6 +696,7 @@ dependencies = [
  "ddj-tcp",
  "ddj-telemetry",
  "ddj-template",
+ "inventory",
  "serde",
  "tokio",
  "tracing",

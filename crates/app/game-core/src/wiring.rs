@@ -48,3 +48,36 @@ impl Components {
         kinds.contains(&k)
     }
 }
+
+// ---------------------------------------------------------------------------
+// 启动期注入的进程内单例
+// ---------------------------------------------------------------------------
+//
+// `Module` 的工厂签名是 `fn() -> Box<dyn Module>`（无参），所以模块拿不到
+// 配置和连接池。原系统靠 Spring 式的 XML + 反射 + 全局静态持有，这里改成显式注入：
+// `Bootstrap::run()` 装配完 `Components` 后写进 `OnceLock`，模块在生命周期钩子里读。
+//
+// 这是**有意的进程内单例**，不是隐藏依赖：注入点在 `bootstrap.rs` 一处，
+// 读取点全部在 `lifecycle_modules.rs`。
+
+static COMPONENTS: std::sync::OnceLock<Components> = std::sync::OnceLock::new();
+static SHUTDOWN: std::sync::OnceLock<tokio::sync::watch::Receiver<bool>> =
+    std::sync::OnceLock::new();
+
+/// 注入运行时组件与停机信号（只能调用一次）。
+pub fn install(components: Components, shutdown: tokio::sync::watch::Receiver<bool>) {
+    let _ = COMPONENTS.set(components);
+    let _ = SHUTDOWN.set(shutdown);
+}
+
+/// 取运行时组件。生命周期开始前调用会返回 `None`。
+#[must_use]
+pub fn components() -> Option<&'static Components> {
+    COMPONENTS.get()
+}
+
+/// 取停机信号接收端（克隆）。
+#[must_use]
+pub fn shutdown() -> Option<tokio::sync::watch::Receiver<bool>> {
+    SHUTDOWN.get().cloned()
+}
