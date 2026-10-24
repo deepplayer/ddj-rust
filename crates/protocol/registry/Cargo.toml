@@ -1,0 +1,21 @@
+[package]
+name        = "ddj-registry"
+description = "消息注册表：cmdId ↔ Handler 的编译期绑定"
+version.workspace      = true
+edition.workspace      = true
+rust-version.workspace = true
+license.workspace      = true
+authors.workspace      = true
+
+[lints]
+workspace = true
+
+[dependencies]
+ddj-core.workspace      = true
+ddj-pb.workspace        = true
+ddj-codec.workspace     = true
+async-trait.workspace   = true
+tracing.workspace       = true
+bytes.workspace         = true
+dashmap.workspace       = true
+prost.workspace         = true

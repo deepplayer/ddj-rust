@@ -1,0 +1,40 @@
+[package]
+name        = "ddj-game-core"
+description = "应用装配：把 foundation/protocol/net/data/domain 接起来"
+version.workspace      = true
+edition.workspace      = true
+rust-version.workspace = true
+license.workspace      = true
+authors.workspace      = true
+
+[lints]
+workspace = true
+
+[dependencies]
+ddj-core.workspace       = true
+ddj-config.workspace     = true
+ddj-telemetry.workspace  = true
+ddj-runtime.workspace    = true
+ddj-codec.workspace      = true
+ddj-pb.workspace         = true
+ddj-registry.workspace   = true
+ddj-rpc.workspace        = true
+ddj-session.workspace    = true
+ddj-tcp.workspace        = true
+ddj-http.workspace       = true
+ddj-db.workspace         = true
+ddj-cache.workspace      = true
+ddj-template.workspace   = true
+ddj-repo.workspace       = true
+ddj-player.workspace     = true
+ddj-item.workspace       = true
+ddj-mail.workspace       = true
+ddj-economy.workspace    = true
+ddj-guild.workspace      = true
+ddj-rank.workspace       = true
+ddj-activity.workspace   = true
+ddj-battle.workspace     = true
+tokio.workspace = true
+serde.workspace = true
+anyhow.workspace         = true
+tracing.workspace        = true

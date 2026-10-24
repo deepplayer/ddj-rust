@@ -1,0 +1,22 @@
+[package]
+name        = "ddj-mail"
+description = "邮件：系统邮件 / 附件 / 领奖 / 过期清理"
+version.workspace      = true
+edition.workspace      = true
+rust-version.workspace = true
+license.workspace      = true
+authors.workspace      = true
+
+[lints]
+workspace = true
+
+[dependencies]
+ddj-core.workspace       = true
+ddj-repo.workspace       = true
+ddj-template.workspace   = true
+async-trait.workspace    = true
+tokio.workspace          = true
+serde.workspace          = true
+chrono.workspace         = true
+thiserror.workspace      = true
+tracing.workspace        = true

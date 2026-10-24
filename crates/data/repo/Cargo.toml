@@ -1,0 +1,24 @@
+[package]
+name        = "ddj-repo"
+description = "仓储层：实体 ↔ 表映射，领域层只依赖 trait"
+version.workspace      = true
+edition.workspace      = true
+rust-version.workspace = true
+license.workspace      = true
+authors.workspace      = true
+
+[lints]
+workspace = true
+
+[dependencies]
+ddj-core.workspace       = true
+ddj-db.workspace         = true
+ddj-cache.workspace      = true
+ddj-template.workspace   = true
+sqlx.workspace           = true
+async-trait.workspace    = true
+tokio.workspace          = true
+serde.workspace          = true
+chrono.workspace         = true
+thiserror.workspace      = true
+parking_lot.workspace       = true

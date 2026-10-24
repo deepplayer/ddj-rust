@@ -1,0 +1,22 @@
+[package]
+name        = "ddj-db"
+description = "MySQL 访问层：sqlx 连接池 + 事务 + 分库路由"
+version.workspace      = true
+edition.workspace      = true
+rust-version.workspace = true
+license.workspace      = true
+authors.workspace      = true
+
+[lints]
+workspace = true
+
+[dependencies]
+ddj-core.workspace       = true
+ddj-config.workspace     = true
+ddj-telemetry.workspace  = true
+sqlx.workspace           = true
+tokio.workspace          = true
+async-trait.workspace    = true
+thiserror.workspace      = true
+tracing.workspace        = true
+chrono.workspace         = true

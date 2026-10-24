@@ -1,0 +1,28 @@
+[package]
+name        = "ddj-cli"
+description = "单可执行入口：服务启停 / 守护 / 控制台回连"
+version.workspace      = true
+edition.workspace      = true
+rust-version.workspace = true
+license.workspace      = true
+authors.workspace      = true
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "ddj"
+path = "src/main.rs"
+
+[dependencies]
+ddj-game-core.workspace = true
+ddj-telemetry.workspace = true
+ddj-config.workspace    = true
+
+anyhow.workspace = true
+clap.workspace   = true
+libc.workspace   = true
+serde.workspace  = true
+serde_json.workspace = true
+tokio.workspace  = true
+tracing.workspace = true

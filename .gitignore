@@ -1,0 +1,6 @@
+/target
+/.sqlx/
+*.profraw
+*.log
+.env
+.env.local

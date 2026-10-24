@@ -1,0 +1,19 @@
+[package]
+name        = "ddj-codec"
+description = "客户端帧编解码：magic 0x71AB + 大端长度 + cmdId"
+version.workspace      = true
+edition.workspace      = true
+rust-version.workspace = true
+license.workspace      = true
+authors.workspace      = true
+
+[lints]
+workspace = true
+
+[dependencies]
+ddj-core.workspace    = true
+bytes.workspace       = true
+tokio-util.workspace  = true
+thiserror.workspace   = true
+tracing.workspace     = true
+tokio.workspace       = true

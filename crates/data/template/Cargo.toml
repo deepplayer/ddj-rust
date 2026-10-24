@@ -1,0 +1,22 @@
+[package]
+name        = "ddj-template"
+description = "CSV 模板表：445 表 / 45 万行的 typed 加载"
+version.workspace      = true
+edition.workspace      = true
+rust-version.workspace = true
+license.workspace      = true
+authors.workspace      = true
+
+[lints]
+workspace = true
+
+[dependencies]
+ddj-core.workspace       = true
+ddj-config.workspace     = true
+csv.workspace            = true
+serde.workspace          = true
+thiserror.workspace      = true
+tracing.workspace        = true
+dashmap.workspace        = true
+parking_lot.workspace    = true
+indexmap.workspace       = true

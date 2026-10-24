@@ -1,0 +1,23 @@
+[package]
+name        = "ddj-core"
+description = "核心基础类型：强类型 ID / 三层错误 / 可注入时钟 / 可播种随机"
+version.workspace      = true
+edition.workspace      = true
+rust-version.workspace = true
+license.workspace      = true
+authors.workspace      = true
+
+[lints]
+workspace = true
+
+[dependencies]
+thiserror.workspace    = true
+serde.workspace        = true
+serde_json.workspace   = true
+chrono.workspace       = true
+uuid.workspace         = true
+rand.workspace         = true
+bytes.workspace        = true
+tracing.workspace      = true
+dashmap.workspace      = true
+parking_lot.workspace  = true

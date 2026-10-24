@@ -1,0 +1,22 @@
+[package]
+name        = "ddj-rpc"
+description = "跨服 RPC：Hessian 兼容的二进制调用"
+version.workspace      = true
+edition.workspace      = true
+rust-version.workspace = true
+license.workspace      = true
+authors.workspace      = true
+
+[lints]
+workspace = true
+
+[dependencies]
+ddj-core.workspace      = true
+ddj-codec.workspace     = true
+ddj-config.workspace    = true
+tokio.workspace         = true
+bytes.workspace         = true
+async-trait.workspace   = true
+thiserror.workspace     = true
+tracing.workspace       = true
+dashmap.workspace       = true

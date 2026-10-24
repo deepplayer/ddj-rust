@@ -1,0 +1,20 @@
+[package]
+name        = "ddj-pb"
+description = "protobuf 生成物 + 类型化消息分发"
+version.workspace      = true
+edition.workspace      = true
+rust-version.workspace = true
+license.workspace      = true
+authors.workspace      = true
+
+[lints]
+workspace = true
+
+[dependencies]
+ddj-core.workspace     = true
+prost.workspace        = true
+bytes.workspace        = true
+serde.workspace        = true
+
+[build-dependencies]
+prost-build = "0.13"

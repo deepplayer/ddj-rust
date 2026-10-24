@@ -1,0 +1,22 @@
+[package]
+name        = "ddj-runtime"
+description = "服务生命周期：模块注册 / 阶段启动 / 优雅停机"
+version.workspace      = true
+edition.workspace      = true
+rust-version.workspace = true
+license.workspace      = true
+authors.workspace      = true
+
+[lints]
+workspace = true
+
+[dependencies]
+ddj-core.workspace       = true
+ddj-config.workspace     = true
+ddj-telemetry.workspace  = true
+tokio.workspace          = true
+async-trait.workspace    = true
+tracing.workspace        = true
+thiserror.workspace      = true
+futures.workspace        = true
+inventory.workspace     = true

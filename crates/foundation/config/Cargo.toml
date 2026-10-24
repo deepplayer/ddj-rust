@@ -1,0 +1,20 @@
+[package]
+name        = "ddj-config"
+description = "分层配置：TOML + 环境变量覆盖 + 热加载"
+version.workspace      = true
+edition.workspace      = true
+rust-version.workspace = true
+license.workspace      = true
+authors.workspace      = true
+
+[lints]
+workspace = true
+
+[dependencies]
+ddj-core.workspace      = true
+serde.workspace         = true
+toml.workspace          = true
+serde_json.workspace    = true
+thiserror.workspace     = true
+tracing.workspace       = true
+parking_lot.workspace   = true

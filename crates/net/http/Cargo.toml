@@ -1,0 +1,27 @@
+[package]
+name        = "ddj-http"
+description = "HTTP 层：GM 后台 / 健康检查 / metrics"
+version.workspace      = true
+edition.workspace      = true
+rust-version.workspace = true
+license.workspace      = true
+authors.workspace      = true
+
+[lints]
+workspace = true
+
+[dependencies]
+ddj-core.workspace      = true
+ddj-config.workspace    = true
+ddj-telemetry.workspace = true
+axum.workspace          = true
+tower.workspace         = true
+tower-http.workspace    = true
+tokio.workspace         = true
+serde.workspace         = true
+serde_json.workspace    = true
+tracing.workspace       = true
+bytes.workspace         = true
+dashmap.workspace       = true
+rand.workspace          = true
+sqlx.workspace          = true

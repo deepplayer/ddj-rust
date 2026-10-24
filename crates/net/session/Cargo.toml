@@ -1,0 +1,26 @@
+[package]
+name        = "ddj-session"
+description = "会话状态机：连接 / 登录 / 心跳 / 踢号"
+version.workspace      = true
+edition.workspace      = true
+rust-version.workspace = true
+license.workspace      = true
+authors.workspace      = true
+
+[lints]
+workspace = true
+
+[dependencies]
+ddj-core.workspace      = true
+ddj-config.workspace    = true
+ddj-pb.workspace        = true
+ddj-codec.workspace     = true
+tokio.workspace         = true
+futures.workspace       = true
+dashmap.workspace       = true
+parking_lot.workspace   = true
+tracing.workspace       = true
+chrono.workspace        = true
+uuid.workspace          = true
+rand.workspace          = true
+bytes.workspace        = true

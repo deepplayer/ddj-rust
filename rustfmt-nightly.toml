@@ -1,0 +1,7 @@
+# nightly 专用格式选项。用法：cargo +nightly fmt -- --config-path rustfmt-nightly.toml
+edition   = "2021"
+max_width = 100
+tab_spaces = 4
+use_field_init_shorthand = true
+imports_granularity = "Module"
+group_imports       = "StdExternalCrate"

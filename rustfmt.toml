@@ -1,0 +1,10 @@
+# stable rustfmt 只认这里的键。
+# 下面两个是 nightly-only，放 rustfmt-nightly.toml，
+# 想用 `cargo +nightly fmt` 时再切过去：
+#   imports_granularity = "Module"
+#   group_imports      = "StdExternalCrate"
+
+edition   = "2021"
+max_width = 100
+tab_spaces = 4
+use_field_init_shorthand = true

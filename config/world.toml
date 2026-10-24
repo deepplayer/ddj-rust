@@ -1,0 +1,47 @@
+# world 服配置
+# 世界：地图 / 资源点
+#
+# 加载顺序：内置默认 → 本文件 → world.{env}.toml → 环境变量
+# 环境变量格式：DDJ__DB__GAME_URL=...（双下划线分层，见 docs/ARCHITECTURE.md）
+# 字段与 crates/foundation/config/src/schema.rs 一一对应，deny_unknown_fields 会拒绝拼错的键。
+
+[service]
+name        = "world"
+server_id   = 7010544
+cross_group = 1
+
+[net]
+tcp_listen        = "0.0.0.0:11544"
+http_listen       = "127.0.0.1:20885"
+# rpc_listen 不配 = 不启用跨服 RPC
+idle_timeout_secs = 180
+max_conn_per_ip   = 8
+max_conn_total    = 20000
+
+[db]
+# MySQL 5.7 的内部 SSL 与 sqlx 默认 TLS 握手不兼容，本地/内网一律显式关闭：
+# .../platform?ssl-mode=DISABLED
+platform_url         = "mysql://game@127.0.0.1:3306/platform?ssl-mode=DISABLED"
+game_url             = "mysql://game@127.0.0.1:3306/game_7010544?ssl-mode=DISABLED"
+max_connections      = 16
+acquire_timeout_secs = 5
+
+[redis]
+url         = "redis://127.0.0.1:6379"
+key_prefix  = "ddj:7010544"
+lock_ttl_ms = 3000
+
+[template]
+dir           = "../../data/apps/world7010002/template"
+load_on_start = true
+strict        = false          # 原表有 `sting` 笔误，非严格模式容忍
+
+[telemetry]
+log_level  = "info"
+log_format = "json"
+metrics    = true
+
+[gameplay]
+item_use_limit = 999           # 原 useLimit 的服务端兜底
+bag_capacity   = 500
+mail_keep_days = 30

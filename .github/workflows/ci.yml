@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  check:
+    name: fmt + clippy + test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: rustfmt
+        run: cargo fmt --all -- --check
+
+      - name: clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: test
+        run: cargo test --workspace
+
+      - name: 分层依赖校验
+        run: cargo run -p xtask -- check-arch
+
+  # 真实配置表解析（需要 data/ 目录，只在自托管 runner 跑）
+  real-tables:
+    name: 445 张 CSV 解析
+    runs-on: self-hosted
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      - name: 模板表加载
+        env:
+          DDJ_CSV_DIR: ${{ vars.DDJ_CSV_DIR }}
+        run: cargo test -p ddj-template --test real_tables -- --nocapture

@@ -1,0 +1,170 @@
+# =============================================================================
+#  我是大东家 · Rust 服务端            workspace root
+#  对应 Java 侧：6 个独立 JVM 进程 / 5034 类 / 103 Handler / 2986 cmdId
+# =============================================================================
+[workspace]
+resolver = "2"
+members = [
+    # ── foundation 地基：无业务，所有人可用 ──────────────────────────────
+    "crates/foundation/core",
+    "crates/foundation/config",
+    "crates/foundation/telemetry",
+    "crates/foundation/runtime",
+
+    # ── protocol 协议层：帧 / 消息 / 注册表 / 跨服 RPC ───────────────────
+    "crates/protocol/codec",
+    "crates/protocol/pb",
+    "crates/protocol/registry",
+    "crates/protocol/rpc",
+
+    # ── net 传输层：TCP 长连 / HTTP / 会话状态机 ─────────────────────────
+    "crates/net/session",
+    "crates/net/tcp",
+    "crates/net/http",
+
+    # ── data 数据层：MySQL / Redis / CSV 模板 / 仓储 ─────────────────────
+    "crates/data/db",
+    "crates/data/cache",
+    "crates/data/template",
+    "crates/data/repo",
+
+    # ── domain 领域层：纯业务模型，不依赖 IO ────────────────────────────
+    "crates/domain/player",
+    "crates/domain/item",
+    "crates/domain/mail",
+    "crates/domain/economy",
+    "crates/domain/guild",
+    "crates/domain/rank",
+    "crates/domain/activity",
+    "crates/domain/battle",
+
+    # ── app 装配层：handler + 单一可执行 ddj ────────────────────────────
+    "crates/app/game-core",
+    "crates/app/game-handler",
+    "crates/app/ddj-cli",
+
+    "xtask",
+]
+
+[workspace.package]
+version      = "0.1.0"
+edition      = "2021"
+rust-version = "1.88"
+license      = "MIT"
+authors      = ["DDJ Server Team"]
+repository   = "https://example.invalid/ddj-server"
+
+# ── 统一依赖版本：只在这里写一次，成员 crate 用 { workspace = true } ──
+[workspace.dependencies]
+# 内部 crate
+ddj-core       = { path = "crates/foundation/core" }
+ddj-config     = { path = "crates/foundation/config" }
+ddj-telemetry  = { path = "crates/foundation/telemetry" }
+ddj-runtime    = { path = "crates/foundation/runtime" }
+ddj-codec      = { path = "crates/protocol/codec" }
+ddj-pb         = { path = "crates/protocol/pb" }
+ddj-registry   = { path = "crates/protocol/registry" }
+ddj-rpc        = { path = "crates/protocol/rpc" }
+ddj-session    = { path = "crates/net/session" }
+ddj-tcp        = { path = "crates/net/tcp" }
+ddj-http       = { path = "crates/net/http" }
+ddj-db         = { path = "crates/data/db" }
+ddj-cache      = { path = "crates/data/cache" }
+ddj-template   = { path = "crates/data/template" }
+ddj-repo       = { path = "crates/data/repo" }
+ddj-player     = { path = "crates/domain/player" }
+ddj-item       = { path = "crates/domain/item" }
+ddj-mail       = { path = "crates/domain/mail" }
+ddj-economy    = { path = "crates/domain/economy" }
+ddj-guild      = { path = "crates/domain/guild" }
+ddj-rank       = { path = "crates/domain/rank" }
+ddj-activity   = { path = "crates/domain/activity" }
+ddj-battle     = { path = "crates/domain/battle" }
+ddj-game-core  = { path = "crates/app/game-core" }
+ddj-game-handler = { path = "crates/app/game-handler" }
+
+# 异步运行时
+tokio        = { version = "1.40", features = ["full"] }
+tokio-util   = { version = "0.7", features = ["codec"] }
+futures      = "0.3"
+async-trait  = "0.1"
+
+# 序列化 / 协议
+prost        = "0.13"
+prost-build  = "0.13"
+bytes        = "1.7"
+serde        = { version = "1.0", features = ["derive"] }
+serde_json   = "1.0"
+clap         = { version = "4.5", features = ["derive", "env"] }
+libc         = "0.2"
+toml         = "0.8"
+quick-xml    = "0.36"
+
+# 数据层
+sqlx         = { version = "0.8", default-features = false, features = ["runtime-tokio-rustls", "mysql", "macros", "migrate", "chrono", "uuid", "json"] }
+redis        = { version = "0.27", features = ["tokio-comp", "connection-manager"] }
+csv          = "1.3"
+
+# 传输层
+axum         = "0.7"
+tower        = "0.5"
+tower-http   = { version = "0.6", features = ["trace", "cors", "compression-gzip"] }
+hyper        = "1.4"
+
+# 可观测 / 错误 / 工具
+tracing              = "0.1"
+tracing-subscriber   = { version = "0.3", features = ["env-filter", "json"] }
+tracing-opentelemetry = "0.26"
+metrics              = "0.23"
+metrics-exporter-prometheus = "0.15"
+thiserror            = "2.0"
+anyhow               = "1.0"
+rand                 = "0.8"
+chrono               = { version = "0.4", features = ["serde"] }
+uuid                 = { version = "1.10", features = ["v4", "serde"] }
+dashmap              = "6.0"
+inventory            = "0.3"
+parking_lot          = "0.12"
+smallvec             = "1.13"
+indexmap             = "2.6"
+
+# 开发 / 测试
+criterion        = "0.5"
+insta            = "1.40"
+proptest         = "1.5"
+rstest           = "0.22"
+tokio-test       = "0.4"
+fake             = "3.0"
+
+# ── 每个 crate 都吃同样的 lint，一处定义全局生效 ──────────────────────
+[workspace.lints.rust]
+# 默认 deny；只有 daemon.rs（fork/setsid/dup2）显式 allow，
+# 用 allow 而非 forbid 才能留出这一个受控例外。
+unsafe_code           = "deny"
+missing_docs          = "warn"
+unreachable_pub       = "warn"
+unused_qualifications = "warn"
+
+[workspace.lints.clippy]
+# 只看会出错的地方，不追风格。
+# `pedantic` / `nursery` 默认**不开**——它们会产生几百条 `doc_markdown`
+# `missing_const_for_fn` 之类噪音，把真正的问题埋掉。
+# 需要时单 crate 里临时 `#![warn(clippy::pedantic)]`。
+all         = { level = "warn", priority = -1 }
+correctness = { level = "deny", priority = -1 }
+suspicious  = { level = "deny", priority = -1 }
+
+# 服务端禁止隐式 panic：unwrap / expect / panic 必须显式处理
+unwrap_used = "warn"
+expect_used = "warn"
+panic       = "warn"
+
+# 骨架阶段允许 todo!()
+todo = "allow"
+
+# 允许 `#[allow(...)]` 不写 reason（骨架期大量使用）
+allow_attributes_without_reason = "allow"
+# 数值强转在协议编解码里是常态，但要逐处确认
+cast_possible_truncation = "allow"
+cast_sign_loss           = "allow"
+cast_possible_wrap       = "allow"

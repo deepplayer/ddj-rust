@@ -1,0 +1,22 @@
+[package]
+name        = "ddj-item"
+description = "道具：背包 / 使用 / 消耗 / 合成 / 限次校验"
+version.workspace      = true
+edition.workspace      = true
+rust-version.workspace = true
+license.workspace      = true
+authors.workspace      = true
+
+[lints]
+workspace = true
+
+[dependencies]
+ddj-core.workspace       = true
+ddj-repo.workspace       = true
+ddj-template.workspace   = true
+async-trait.workspace    = true
+tokio.workspace          = true
+serde.workspace          = true
+chrono.workspace         = true
+thiserror.workspace      = true
+tracing.workspace        = true

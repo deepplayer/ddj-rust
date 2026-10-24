@@ -1,0 +1,30 @@
+[package]
+name        = "ddj-game-handler"
+description = "103 个 Handler / 1705 个方法的 Rust 落地处"
+version.workspace      = true
+edition.workspace      = true
+rust-version.workspace = true
+license.workspace      = true
+authors.workspace      = true
+
+[lints]
+workspace = true
+
+[dependencies]
+ddj-core.workspace       = true
+ddj-pb.workspace         = true
+ddj-registry.workspace   = true
+ddj-session.workspace    = true
+ddj-player.workspace     = true
+ddj-item.workspace       = true
+ddj-mail.workspace       = true
+ddj-economy.workspace    = true
+ddj-guild.workspace      = true
+ddj-rank.workspace       = true
+ddj-activity.workspace   = true
+ddj-battle.workspace     = true
+async-trait.workspace    = true
+tokio.workspace          = true
+tracing.workspace        = true
+bytes.workspace          = true
+inventory.workspace     = true
