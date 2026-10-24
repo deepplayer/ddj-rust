@@ -18,6 +18,7 @@
 
 pub mod account;
 pub mod bootstrap;
+pub mod create_player_repo;
 pub mod gm_backend;
 pub mod lifecycle_modules;
 pub mod modules;

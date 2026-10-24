@@ -23,9 +23,13 @@ use ddj_registry::{ErasedHandler, HandlerCtx, HandlerTable};
 use prost::Message;
 
 use crate::login::{self, AccountLookup, ServerState};
+use crate::player::{self, CreateCtx, CreateOutcome, CreatePlayerRepo, NewPlayerRow};
 
 /// 登录消息号（`LoginMessage.LoginReq_4`）。
 pub const CMD_LOGIN: i32 = ddj_pb::cmd::login::LOGIN;
+
+/// 创角消息号（`LoginMessage.CreatePlayerReq_6`）。
+pub const CMD_CREATE_PLAYER: i32 = 6;
 
 /// 登录（`cv = 4`）。
 ///
@@ -84,14 +88,20 @@ pub fn register(
     table: &mut HandlerTable,
     state: ServerState,
     lookup: Option<Arc<dyn AccountLookup>>,
+    create: Option<(Arc<dyn CreatePlayerRepo>, Arc<dyn player::FashionLookup>)>,
 ) -> Result<usize> {
     let mut n = 0;
+    let server_id = state.server_id;
     let h = match lookup {
         Some(l) => LoginHandler::with_lookup(state, l),
         None => LoginHandler::new(state),
     };
     table.insert(Box::new(h));
     n += 1;
+    if let Some((repo, fashion)) = create {
+        table.insert(Box::new(CreatePlayerHandler::new(repo, server_id, fashion)));
+        n += 1;
+    }
     Ok(n)
 }
 
@@ -99,6 +109,108 @@ pub fn register(
 #[must_use]
 pub fn login_handler(state: ServerState) -> Arc<dyn ErasedHandler> {
     Arc::new(LoginHandler::new(state))
+}
+
+/// 创角（`cv = 6`）。
+///
+/// 原版 `WorkTaskCreatePlayer.run()` 的 17 个分支见 [`crate::player`]。
+/// 这里只做三件事：查必要的外部数据 → 交给纯函数判定 → 落库并回包。
+///
+/// ## 为什么回包类型不固定
+/// 分支 1/5/6 原版回的是 `LoginResp_4`（不是 `CreatePlayerResp_6`），
+/// 所以本处理器直接实现 [`ErasedHandler`] 而不是 `MessageHandler`。
+pub struct CreatePlayerHandler {
+    repo: Arc<dyn CreatePlayerRepo>,
+    server_id: i32,
+    /// 一个只读的默认扮装表（启动时注入；空表 = 全部 `faceId` 走默认补齐）。
+    fashion: Arc<dyn player::FashionLookup>,
+}
+
+impl CreatePlayerHandler {
+    /// 构造。
+    #[must_use]
+    pub fn new(
+        repo: Arc<dyn CreatePlayerRepo>,
+        server_id: i32,
+        fashion: Arc<dyn player::FashionLookup>,
+    ) -> Self {
+        Self {
+            repo,
+            server_id,
+            fashion,
+        }
+    }
+}
+
+#[async_trait]
+impl ErasedHandler for CreatePlayerHandler {
+    fn cmd_id(&self) -> i32 {
+        CMD_CREATE_PLAYER
+    }
+
+    fn requires_login(&self) -> bool {
+        false
+    }
+
+    async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Bytes>> {
+        let req = ddj_pb::gen::engine_message::CreatePlayerReq6::decode(body)
+            .map_err(|e| ddj_core::AppError::BadRequest(format!("创角包解码失败: {e}")))?;
+        let name = req.name.clone().unwrap_or_default();
+
+        // 原版分支 14 才查重名。这里提前查是为了把 `name_repeated` 作为入参传进
+        // 纯函数 —— 输出完全一致，代价是非法请求多一次查询。
+        let name_repeated = self.repo.name_exists(&name).await;
+        let mut c = CreateCtx::healthy(self.server_id);
+        c.name_repeated = name_repeated;
+        c.register_num = self.repo.register_count().await;
+
+        match player::evaluate(&req, &c, self.fashion.as_ref())? {
+            CreateOutcome::Reject { ret, as_login_resp } => {
+                let bytes = if as_login_resp {
+                    login::build_resp(login::LoginOutcome::Reject(ret)).encode_to_vec()
+                } else {
+                    player::build_resp(ret).encode_to_vec()
+                };
+                tracing::info!(peer = %ctx.peer_ip, ret = ret.as_i32(), as_login = as_login_resp, "创角被拒");
+                Ok(Some(Bytes::from(bytes)))
+            }
+            CreateOutcome::Accept { face_ids } => {
+                let open_id = req.open_id.clone().unwrap_or_default();
+                let now = chrono::Utc::now().timestamp_millis();
+                // 发号 + 插入可能并发撞名，重试一次即可收敛
+                // （原版靠 `synchronized (Player.class)` 串行化，这里靠唯一键）。
+                for attempt in 0..2 {
+                    let player_id = self.repo.next_player_id(self.server_id).await;
+                    let row = NewPlayerRow {
+                        player_id,
+                        open_id: open_id.clone(),
+                        server_id: self.server_id,
+                        name: name.clone(),
+                        ico: req.ico.clone().unwrap_or_default(),
+                        sex: req.sex.unwrap_or_default().to_string(),
+                        now_ms: now,
+                    };
+                    if self.repo.create(&row).await {
+                        tracing::info!(
+                            peer = %ctx.peer_ip,
+                            player_id,
+                            face_ids = ?face_ids,
+                            attempt,
+                            "创角成功"
+                        );
+                        return Ok(Some(Bytes::from(
+                            player::build_resp(ddj_pb::cmd::RetCode::Ok).encode_to_vec(),
+                        )));
+                    }
+                }
+                // 两次都撞 → 原版 `createPlayer` 返回 null → PLAYER_ERROR_3(103)
+                tracing::warn!(peer = %ctx.peer_ip, name = %name, "创角落库连续冲突");
+                Ok(Some(Bytes::from(
+                    player::build_resp(ddj_pb::cmd::RetCode::NameDuplicate).encode_to_vec(),
+                )))
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -126,7 +238,7 @@ mod tests {
     #[test]
     fn register_counts_login() {
         let mut t = HandlerTable::empty();
-        let n = register(&mut t, ServerState::healthy(1), None).expect("注册");
+        let n = register(&mut t, ServerState::healthy(1), None, None).expect("注册");
         assert_eq!(n, 1);
         assert!(t.get(CMD_LOGIN).is_some(), "登录应已入表");
         assert!(t.get(11002).is_none(), "未移植的链路不应凭空出现");

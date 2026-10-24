@@ -370,11 +370,17 @@ impl Bootstrap {
         let mut table = HandlerTable::empty();
         let account_repo = Arc::new(ddj_repo::PgPlayerRepo::new((*db).clone()));
         let lookup: Arc<dyn ddj_game_handler::login::AccountLookup> =
-            Arc::new(crate::account::PgAccountLookup::new(account_repo));
+            Arc::new(crate::account::PgAccountLookup::new(account_repo.clone()));
         let registered = ddj_game_handler::handlers::register(
             &mut table,
             ddj_game_handler::login::ServerState::healthy(cfg.service.server_id),
             Some(lookup),
+            Some((
+                Arc::new(crate::create_player_repo::PgCreatePlayerRepo::new(
+                    db.game.clone(),
+                )),
+                Arc::new(crate::create_player_repo::EmptyFashion),
+            )),
         )?;
         tracing::info!(count = registered, "业务处理器已注册");
         let handlers = Arc::new(table);

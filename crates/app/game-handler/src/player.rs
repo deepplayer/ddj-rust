@@ -53,6 +53,7 @@
 //! - 默认脸：`Z-装扮-Fashion.csv` 中 `getType()==3` 的行按 `type` 索引：
 //!   type5→[2501..2508]，type6→[2601..2608]，type7→[2701..2708]
 //!   （`createFashionDBs` 只收 `getType()==3`，`getFashionDBTyFaceId(type)` 取其一）
+use async_trait::async_trait;
 
 use ddj_core::{AppError, Result};
 use ddj_pb::gen::engine_message::{CreatePlayerReq6, CreatePlayerResp6};
@@ -243,7 +244,7 @@ pub struct FashionInfo {
 }
 
 /// 创角数据源（CSV/DB 由调用方注入）。
-pub trait FashionLookup {
+pub trait FashionLookup: Send + Sync {
     /// 查装扮。
     ///
     /// # Errors
@@ -397,6 +398,43 @@ pub fn validate_face_ids(face_ids: &[i32], fashion: &dyn FashionLookup) -> Resul
         }
     }
     Ok(out)
+}
+
+/// 创角落库需要的最小仓储能力。
+///
+/// 只抽这几个方法，是因为原版创角链路里真正碰数据库的只有四处：
+/// 分支 14 的重名查（`DBPlayerModule.repeated`）、分支 6 的已注册人数
+/// （`getRegisterPlayerNum`）、发号（`PlayerServerModule.createPlayer` 内部）、
+/// 以及最后那一次插入。
+#[async_trait]
+pub trait CreatePlayerRepo: Send + Sync {
+    /// 名字是否已被占用（`DBPlayerModule.repeated`）。
+    async fn name_exists(&self, name: &str) -> bool;
+    /// 本服已注册人数（`getRegisterPlayerNum`）。
+    async fn register_count(&self) -> i32;
+    /// 发号（`PlayerServerModule` 的发号器）。
+    async fn next_player_id(&self, server_id: i32) -> i64;
+    /// 插入。`false` = 唯一键冲突（并发抢同一个名字），对应原版 `createPlayer` 返回 null。
+    async fn create(&self, row: &NewPlayerRow) -> bool;
+}
+
+/// 待插入的角色行。
+#[derive(Debug, Clone)]
+pub struct NewPlayerRow {
+    /// 已发号的角色 ID。
+    pub player_id: i64,
+    /// 账号（`LoginReq_4.openId`）。
+    pub open_id: String,
+    /// 所属服。
+    pub server_id: i32,
+    /// 角色名。
+    pub name: String,
+    /// 头像（proto 里是 string）。
+    pub ico: String,
+    /// 性别（proto 里是 string）。
+    pub sex: String,
+    /// 建角时间（毫秒）。
+    pub now_ms: i64,
 }
 
 /// 把校验结果转成 `CreatePlayerResp6`（ret-only 信封）。
