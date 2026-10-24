@@ -49,4 +49,5 @@ pub mod player;
 pub mod push;
 pub mod rank;
 pub mod shop;
+pub mod sign;
 pub mod task;

@@ -138,6 +138,12 @@ pub enum RetCode {
     NotLoginPlatform = 106,
     /// 登录时已经加入到排队列里面去了。
     InQueue = 107,
+    /// 今天已经签过到了（`SIGN_ERROR_REPEATED`）。
+    SignErrorRepeated = 1201,
+    /// 这个签到宝箱已经领过了（`SIGN_ERROR_REPEATED_BOX`）。
+    SignErrorRepeatedBox = 1202,
+    /// 签到天数还不够开这个宝箱（`SIGN_ERROR_NOT_SIGNED`）。
+    SignErrorNotSigned = 1203,
     /// 邮件领取失败——请求里没有任何一封可领（`MAIL_ERROR_1`）。
     MailError1 = 301,
     /// 改名冷却未结束（`PLAYER_ERROR_23`）。
@@ -215,6 +221,9 @@ impl RetCode {
             106 => Self::NotLoginPlatform,
             107 => Self::InQueue,
             131 => Self::PlayerError23,
+            1201 => Self::SignErrorRepeated,
+            1202 => Self::SignErrorRepeatedBox,
+            1203 => Self::SignErrorNotSigned,
             301 => Self::MailError1,
             1101 => Self::ItemError1,
             1102 => Self::ItemError2,
@@ -277,6 +286,9 @@ impl RetCode {
             Self::NameLength => "玩家名字长度不符合",
             Self::NotLoginPlatform => "您还没有登录平台",
             Self::InQueue => "登录时已经加入到排队列里面去了",
+            Self::SignErrorRepeated => "今天已经签过到了",
+            Self::SignErrorRepeatedBox => "这个签到宝箱已经领过了",
+            Self::SignErrorNotSigned => "签到天数还不够开这个宝箱",
             Self::MailError1 => "邮件领取失败",
             Self::PlayerError23 => "改名冷却未结束",
             Self::ItemError1 => "道具合成 - 资源不够",
