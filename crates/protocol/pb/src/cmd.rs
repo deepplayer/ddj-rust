@@ -138,8 +138,9 @@ pub enum RetCode {
     NotLoginPlatform = 106,
     /// 登录时已经加入到排队列里面去了。
     InQueue = 107,
-    /// 改名冷却未结束（`PLAYER_ERROR_23`）。
+    /// 邮件领取失败——请求里没有任何一封可领（`MAIL_ERROR_1`）。
     MailError1 = 301,
+    /// 改名冷却未结束（`PLAYER_ERROR_23`）。
     PlayerError23 = 131,
     /// 道具合成 - 资源不够（`ITEM_ERROR_1`）。
     ItemError1 = 1101,
