@@ -139,6 +139,7 @@ pub enum RetCode {
     /// 登录时已经加入到排队列里面去了。
     InQueue = 107,
     /// 改名冷却未结束（`PLAYER_ERROR_23`）。
+    MailError1 = 301,
     PlayerError23 = 131,
     /// 道具合成 - 资源不够（`ITEM_ERROR_1`）。
     ItemError1 = 1101,
@@ -213,6 +214,7 @@ impl RetCode {
             106 => Self::NotLoginPlatform,
             107 => Self::InQueue,
             131 => Self::PlayerError23,
+            301 => Self::MailError1,
             1101 => Self::ItemError1,
             1102 => Self::ItemError2,
             1103 => Self::ItemError3,
@@ -274,6 +276,7 @@ impl RetCode {
             Self::NameLength => "玩家名字长度不符合",
             Self::NotLoginPlatform => "您还没有登录平台",
             Self::InQueue => "登录时已经加入到排队列里面去了",
+            Self::MailError1 => "邮件领取失败",
             Self::PlayerError23 => "改名冷却未结束",
             Self::ItemError1 => "道具合成 - 资源不够",
             Self::ItemError2 => "道具数量不足",
