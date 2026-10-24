@@ -148,6 +148,8 @@ pub enum RetCode {
     ItemError4 = 1104,
     /// 道具错误 5（`ITEM_ERROR_5`）。
     ItemError5 = 1105,
+    /// 时效道具已过期（`ITEM_ERROR_11`）。
+    ItemError11 = 1111,
 }
 
 impl RetCode {
@@ -213,6 +215,7 @@ impl RetCode {
             1103 => Self::ItemError3,
             1104 => Self::ItemError4,
             1105 => Self::ItemError5,
+            1111 => Self::ItemError11,
             _ => return None,
         })
     }
@@ -273,6 +276,7 @@ impl RetCode {
             Self::ItemError3 => "道具错误 3",
             Self::ItemError4 => "道具错误 4",
             Self::ItemError5 => "道具错误 5",
+            Self::ItemError11 => "时效道具已过期",
         }
     }
 }

@@ -103,7 +103,7 @@ pub struct Gift {
 }
 
 /// `Item.use()` 的结果（`ItemUseResult`）。
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct UseApply {
     /// `getLanguageUtils()`：非 `None` 表示使用失败。
     pub err: Option<RetCode>,
@@ -433,6 +433,8 @@ pub fn compound(input: CompoundInput, lookups: &dyn CompoundLookup) -> Result<Co
 /// 时效道具（`bf.game.server.module.item.ItemEffective`）。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct EffectiveItem {
+    /// `getTemplateId()`。
+    pub template_id: i32,
     /// `getNum()`。
     pub num: i64,
     /// `getDeadline()`（毫秒）。
@@ -484,6 +486,128 @@ pub fn has_effective_item(template_id: i32, now: i64, items: &[(i32, EffectiveIt
         .any(|(tid, eff)| *tid == template_id && eff.num > 0 && eff.deadline > now)
 }
 
+// ──────────────────── 11005 时效道具使用 ────────────────────
+
+/// `ItemDB` 中 11005 用到的字段。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct EffectiveUseTemplate {
+    /// `getUseLimit()`。
+    pub use_limit: i32,
+}
+
+/// 11005 所需数据源。
+pub trait EffectiveUseLookup {
+    /// `allEffectiveItem.get(id)`。
+    ///
+    /// # Errors
+    /// 数据层故障。
+    fn effective(&self, id: i64) -> Result<Option<EffectiveItem>>;
+    /// `ItemDBCache.getItemTemplate(templateId)`。
+    ///
+    /// # Errors
+    /// 数据层故障。
+    fn item_template(&self, template_id: i32) -> Result<Option<EffectiveUseTemplate>>;
+    /// `ItemEffective.getUseRemoveNum(player, num, param)`。
+    ///
+    /// # Errors
+    /// 数据层故障。
+    fn use_remove_num(&self, id: i64, num: i64) -> Result<i64>;
+    /// `GiftDBCache.getGiftDB(templateId)`。
+    ///
+    /// # Errors
+    /// 数据层故障。
+    fn gift(&self, template_id: i32) -> Result<Option<Gift>>;
+    /// `GiftDBUtils.checkForUsing(gift, player)`。
+    ///
+    /// # Errors
+    /// 数据层故障。
+    fn gift_check_for_using(&self, template_id: i32) -> Result<Option<RetCode>>;
+    /// `ItemSet.checkItem(id, num)`。
+    ///
+    /// # Errors
+    /// 数据层故障。
+    fn check_item(&self, id: i32, num: i64) -> Result<bool>;
+    /// `ItemEffective.use(player, num, param)`。
+    ///
+    /// # Errors
+    /// 数据层故障。
+    fn apply_use(&self, id: i64, num: i64) -> Result<UseApply>;
+}
+
+/// `ItemSet.itemEffectiveUse` 的纯逻辑部分（字节码 487 B）。
+///
+/// ## 与 11002 的差异（逐条对齐字节码）
+/// | 项 | 11002 `Item.itemUseReq` | 11005 `ItemEffective.itemEffectiveUse` |
+/// |---|---|---|
+/// | 容器 | `allItem` | `allEffectiveItem` |
+/// | 首检 | `null ‖ num<=0` → BUSY | `!containsKey` → **RESOURCES_NO(6)** |
+/// | 过期 | 无 | `now >= deadline` → **ITEM_ERROR_11(1111)** |
+/// | `use()` 异常 | `catch` 后按成功处理 | **不捕获，向上抛** |
+/// | 成功包 | `ItemUseResp_11002` | `ItemEffectiveUseResp_11005` |
+/// | `removeNum` 第 4 参 | `false` | **`true`** |
+///
+/// # Errors
+/// 仅数据层故障向上冒泡。
+pub fn effective_use(
+    id: i64,
+    num: i64,
+    now: i64,
+    lookups: &dyn EffectiveUseLookup,
+) -> Result<UseOutcome> {
+    // 1
+    let Some(eff) = lookups.effective(id)? else {
+        return Ok(UseOutcome::Fail(UseFailure::Handler(RetCode::ResourcesNo)));
+    };
+    // 2
+    if now >= eff.deadline {
+        return Ok(UseOutcome::Fail(UseFailure::Handler(RetCode::ItemError11)));
+    }
+    // 3
+    if num <= 0 {
+        return Ok(UseOutcome::Fail(UseFailure::Handler(RetCode::ServerBusy)));
+    }
+    // 4
+    let Some(tpl) = lookups.item_template(eff.template_id)? else {
+        // 原版此处 NPE → Handler 外层 catch → ret=2
+        return Ok(UseOutcome::Fail(UseFailure::Handler(RetCode::ServerBusy)));
+    };
+    // 5
+    if num > i64::from(tpl.use_limit) {
+        return Ok(UseOutcome::Fail(UseFailure::Handler(RetCode::ServerBusy)));
+    }
+    // 6
+    let remove_num = lookups.use_remove_num(id, num)?;
+    // 7
+    if eff.num < remove_num {
+        return Ok(UseOutcome::Fail(UseFailure::Resp(RetCode::ItemError2)));
+    }
+    // 8
+    let gift = lookups.gift(eff.template_id)?;
+    // 9
+    if let Some(code) = lookups.gift_check_for_using(eff.template_id)? {
+        return Ok(UseOutcome::Fail(UseFailure::Resp(code)));
+    }
+    // 10
+    let cost = gift.and_then(|g| g.use_cost);
+    if let Some((cid, cnum)) = cost {
+        if !lookups.check_item(cid, cnum.saturating_mul(remove_num))? {
+            return Ok(UseOutcome::Fail(UseFailure::Handler(
+                RetCode::UseCostResourcesNo,
+            )));
+        }
+    }
+    // 11
+    let applied = lookups.apply_use(id, num)?;
+    if let Some(code) = applied.err {
+        return Ok(UseOutcome::Fail(UseFailure::Resp(code)));
+    }
+    Ok(UseOutcome::Accept {
+        remove_num,
+        cost: cost.map(|(cid, cnum)| (cid, cnum.saturating_mul(remove_num))),
+        has_msg_use_result: applied.has_msg_use_result,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -520,7 +644,7 @@ mod tests {
             if self.apply_err {
                 return Err(AppError::BadRequest("boom".into()));
             }
-            Ok(self.apply.clone().unwrap_or_default())
+            Ok(self.apply.unwrap_or_default())
         }
     }
 
@@ -983,6 +1107,7 @@ mod compound_tests {
                 (
                     1,
                     EffectiveItem {
+                        template_id: 0,
                         num: 1,
                         deadline: 100,
                     },
@@ -990,6 +1115,7 @@ mod compound_tests {
                 (
                     2,
                     EffectiveItem {
+                        template_id: 0,
                         num: 1,
                         deadline: 500,
                     },
@@ -1008,6 +1134,7 @@ mod compound_tests {
             items: RefCell::new(vec![(
                 7,
                 EffectiveItem {
+                    template_id: 0,
                     num: 3,
                     deadline: 200,
                 },
@@ -1023,6 +1150,7 @@ mod compound_tests {
             (
                 9001,
                 EffectiveItem {
+                    template_id: 0,
                     num: 0,
                     deadline: 9_999,
                 },
@@ -1030,6 +1158,7 @@ mod compound_tests {
             (
                 9002,
                 EffectiveItem {
+                    template_id: 0,
                     num: 2,
                     deadline: 50,
                 },
@@ -1037,6 +1166,7 @@ mod compound_tests {
             (
                 9003,
                 EffectiveItem {
+                    template_id: 0,
                     num: 1,
                     deadline: 500,
                 },
@@ -1046,5 +1176,225 @@ mod compound_tests {
         assert!(!has_effective_item(9002, 100, &items));
         assert!(has_effective_item(9003, 100, &items));
         assert!(!has_effective_item(9999, 100, &items));
+    }
+}
+
+#[cfg(test)]
+mod effective_use_tests {
+    use super::*;
+
+    #[derive(Default)]
+    struct Fake {
+        eff: Option<EffectiveItem>,
+        tpl: Option<EffectiveUseTemplate>,
+        remove_num: Option<i64>,
+        gift: Option<Gift>,
+        gift_block: Option<RetCode>,
+        cost_ok: bool,
+        apply: Option<UseApply>,
+        apply_err: bool,
+        seen_cost: std::cell::Cell<Option<(i32, i64)>>,
+    }
+
+    impl EffectiveUseLookup for Fake {
+        fn effective(&self, _id: i64) -> Result<Option<EffectiveItem>> {
+            Ok(self.eff)
+        }
+        fn item_template(&self, _t: i32) -> Result<Option<EffectiveUseTemplate>> {
+            Ok(self.tpl)
+        }
+        fn use_remove_num(&self, _id: i64, num: i64) -> Result<i64> {
+            Ok(self.remove_num.unwrap_or(num))
+        }
+        fn gift(&self, _t: i32) -> Result<Option<Gift>> {
+            Ok(self.gift)
+        }
+        fn gift_check_for_using(&self, _t: i32) -> Result<Option<RetCode>> {
+            Ok(self.gift_block)
+        }
+        fn check_item(&self, id: i32, num: i64) -> Result<bool> {
+            self.seen_cost.set(Some((id, num)));
+            Ok(self.cost_ok)
+        }
+        fn apply_use(&self, _id: i64, _num: i64) -> Result<UseApply> {
+            if self.apply_err {
+                return Err(AppError::BadRequest("boom".into()));
+            }
+            Ok(self.apply.unwrap_or(UseApply {
+                err: None,
+                has_msg_use_result: false,
+            }))
+        }
+    }
+
+    fn ok_base() -> Fake {
+        Fake {
+            eff: Some(EffectiveItem {
+                template_id: 5,
+                num: 10,
+                deadline: 1_000,
+            }),
+            tpl: Some(EffectiveUseTemplate { use_limit: 999 }),
+            remove_num: None,
+            gift: None,
+            gift_block: None,
+            cost_ok: true,
+            apply: None,
+            apply_err: false,
+            seen_cost: std::cell::Cell::new(None),
+        }
+    }
+
+    const NOW: i64 = 500;
+
+    #[test]
+    fn missing_effective_item_is_resources_no() {
+        let mut f = ok_base();
+        f.eff = None;
+        assert_eq!(
+            effective_use(1, 1, NOW, &f).unwrap(),
+            UseOutcome::Fail(UseFailure::Handler(RetCode::ResourcesNo))
+        );
+    }
+
+    #[test]
+    fn expired_is_item_error_11() {
+        let mut f = ok_base();
+        f.eff = Some(EffectiveItem {
+            template_id: 5,
+            num: 10,
+            deadline: NOW,
+        });
+        assert_eq!(
+            effective_use(1, 1, NOW, &f).unwrap(),
+            UseOutcome::Fail(UseFailure::Handler(RetCode::ItemError11))
+        );
+    }
+
+    #[test]
+    fn zero_num_is_busy() {
+        let f = ok_base();
+        assert_eq!(
+            effective_use(1, 0, NOW, &f).unwrap(),
+            UseOutcome::Fail(UseFailure::Handler(RetCode::ServerBusy))
+        );
+    }
+
+    #[test]
+    fn over_use_limit_is_busy() {
+        let mut f = ok_base();
+        f.tpl = Some(EffectiveUseTemplate { use_limit: 3 });
+        assert_eq!(
+            effective_use(1, 4, NOW, &f).unwrap(),
+            UseOutcome::Fail(UseFailure::Handler(RetCode::ServerBusy))
+        );
+    }
+
+    #[test]
+    fn missing_template_is_busy() {
+        let mut f = ok_base();
+        f.tpl = None;
+        assert_eq!(
+            effective_use(1, 1, NOW, &f).unwrap(),
+            UseOutcome::Fail(UseFailure::Handler(RetCode::ServerBusy))
+        );
+    }
+
+    #[test]
+    fn insufficient_count_uses_remove_num_not_num() {
+        let mut f = ok_base();
+        f.eff = Some(EffectiveItem {
+            template_id: 5,
+            num: 5,
+            deadline: 1_000,
+        });
+        f.remove_num = Some(6);
+        assert_eq!(
+            effective_use(1, 1, NOW, &f).unwrap(),
+            UseOutcome::Fail(UseFailure::Resp(RetCode::ItemError2))
+        );
+    }
+
+    #[test]
+    fn gift_block_returns_its_code() {
+        let mut f = ok_base();
+        f.gift_block = Some(RetCode::ItemError3);
+        assert_eq!(
+            effective_use(1, 1, NOW, &f).unwrap(),
+            UseOutcome::Fail(UseFailure::Resp(RetCode::ItemError3))
+        );
+    }
+
+    #[test]
+    fn cost_insufficient_is_handler_use_cost() {
+        let mut f = ok_base();
+        f.gift = Some(Gift {
+            use_cost: Some((900, 2)),
+        });
+        f.cost_ok = false;
+        let out = effective_use(1, 1, NOW, &f).unwrap();
+        assert_eq!(
+            out,
+            UseOutcome::Fail(UseFailure::Handler(RetCode::UseCostResourcesNo))
+        );
+        // Handler 类错误会被遮罩成 ret=2
+        assert_eq!(out.resolve_ret(), Some(RetCode::ServerBusy));
+    }
+
+    #[test]
+    fn cost_scales_with_remove_num() {
+        let mut f = ok_base();
+        f.gift = Some(Gift {
+            use_cost: Some((900, 2)),
+        });
+        f.remove_num = Some(3);
+        let out = effective_use(1, 5, NOW, &f).unwrap();
+        assert_eq!(
+            out,
+            UseOutcome::Accept {
+                remove_num: 3,
+                cost: Some((900, 6)),
+                has_msg_use_result: false
+            }
+        );
+        assert_eq!(f.seen_cost.get(), Some((900, 6)));
+    }
+
+    #[test]
+    fn use_error_code_returned_verbatim() {
+        let mut f = ok_base();
+        f.apply = Some(UseApply {
+            err: Some(RetCode::ItemError4),
+            has_msg_use_result: false,
+        });
+        assert_eq!(
+            effective_use(1, 1, NOW, &f).unwrap(),
+            UseOutcome::Fail(UseFailure::Resp(RetCode::ItemError4))
+        );
+    }
+
+    #[test]
+    fn use_exception_propagates_unlike_11002() {
+        // 11002 会把 use() 异常吞掉按成功处理；11005 不捕获，直接冒泡
+        let mut f = ok_base();
+        f.apply_err = true;
+        assert!(effective_use(1, 1, NOW, &f).is_err());
+    }
+
+    #[test]
+    fn success_accepts() {
+        let mut f = ok_base();
+        f.apply = Some(UseApply {
+            err: None,
+            has_msg_use_result: true,
+        });
+        assert_eq!(
+            effective_use(1, 1, NOW, &f).unwrap(),
+            UseOutcome::Accept {
+                remove_num: 1,
+                cost: None,
+                has_msg_use_result: true
+            }
+        );
     }
 }
