@@ -336,20 +336,17 @@ impl Bootstrap {
             unreachable!("所有服务都需要数据库")
         };
 
-        // Redis 缺失时降级：用一条连不通的本地地址占位，业务层访问缓存会报错，
-        // 但不阻塞启动（Web 端本来就不需要 Redis）。
+        // 不需要缓存的服务（GM / 纯 HTTP）根本不连 Redis。
+        // 原实现会去连一条默认地址占位，`RedisPool::connect` 没有超时，
+        // 本地没有 Redis 时整个启动就卡在这里 —— 属于依赖声明与实际不符。
         let cache = if self.kind.needs(ModuleKind::Cache) {
-            Arc::new(
+            Some(Arc::new(
                 RedisPool::connect(&cfg.redis)
                     .await
                     .context("连接 Redis 失败")?,
-            )
+            ))
         } else {
-            Arc::new(
-                RedisPool::connect(&ddj_config::schema::RedisCfg::default())
-                    .await
-                    .context("连接 Redis 失败")?,
-            )
+            None
         };
 
         // ---- Init：配置表与注册表 ----

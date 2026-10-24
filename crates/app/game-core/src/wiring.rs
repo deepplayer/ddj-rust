@@ -19,8 +19,9 @@ pub struct Components {
     pub cfg: Arc<Config>,
     /// 数据库。
     pub db: Arc<DbPools>,
-    /// 缓存。
-    pub cache: Arc<RedisPool>,
+    /// 缓存。`ServiceKind::needs(Cache) == false` 的服务（如 GM）为 `None`，
+    /// 不会有连不上的 Redis 拖住启动。
+    pub cache: Option<Arc<RedisPool>>,
     /// 配置表。
     pub templates: Arc<TemplateStore>,
     /// 会话。
