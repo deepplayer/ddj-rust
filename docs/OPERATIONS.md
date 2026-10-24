@@ -141,29 +141,34 @@ config/<service>.toml         ← 服务基线
 环境变量用双下划线表示层级：
 
 ```bash
-export DDJ__DB__GAME_URL='mysql://root:pw@127.0.0.1:3306/game_7010544?ssl-mode=DISABLED'
+export DDJ__DB__GAME_URL='postgres://game:pw@127.0.0.1:5432/game_7010544'
 export DDJ__TEMPLATE__DIR=/srv/ddj/csv
 export DDJ__TELEMETRY__LOG_FORMAT=pretty
 ```
 
 环境选择：`DDJ_ENV=dev|staging|prod`（默认 `dev`）。
 
-### 5.1 MySQL 连接串必须带 `ssl-mode=DISABLED`
+### 5.1 PostgreSQL：不再需要 `ssl-mode`，但要盯住迁移校验
 
-**MySQL 5.7 开了内部 SSL，但与 sqlx 默认（rustls + TLS1.3）握手不兼容**，
-表现为启动即失败：
+切到 PostgreSQL 后原来那条 `?ssl-mode=DISABLED` 的经验**不适用了**（那是 MySQL
+5.7 与 rustls 的握手问题）。PostgreSQL 侧真正会咬人的是迁移：
 
 ```text
-连接数据库失败: error communicating with database:
-received fatal alert: HandshakeFailure: received fatal alert: HandshakeFailure
+首次迁移: VersionMismatch(1)
 ```
 
-两种解法，任选其一：
+这不是连接问题，而是 `_sqlx_migrations` 里已存的第 1 版校验和与当前文件不一致。
+常见来源有两个：
 
-1. 连接串加 `?ssl-mode=DISABLED`（本项目 `config/*.toml` 已默认这样写）；
-2. 服务端升级到 MySQL 8 并确认 TLS 版本，或改用 Unix socket 连接。
+1. **改了已发布的迁移文件**——迁移一旦并入主干就不可再改，要改就加新版本号；
+2. **远端残留了旧文件**——`ws sync` 默认只覆盖不删除，改名后新旧两份都在，
+   同一版本号出现两次。用 `ws sync --clean` 或手工删掉残留文件。
 
-内网/同机部署推荐方案 1，简单且无额外开销。
+本地开发想直接重来，清库即可：
+
+```bash
+psql -U game -d platform -c 'drop schema public cascade; create schema public;'
+```
 
 ---
 

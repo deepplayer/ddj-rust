@@ -11,7 +11,7 @@
 //! | `world7010002` | — | 世界 |
 //!
 //! ## 子模块
-//! - [`pool`]       连接池构建（每库一个 `MySqlPool`）
+//! - [`pool`]       连接池构建（每库一个 `PgPool`）
 //! - [`tx`]         事务包装 `UnitOfWork`
 //! - [`shard`]      分服路由：`ServerId → 库名`
 //! - [`migration`]  内嵌 sqlx migrations

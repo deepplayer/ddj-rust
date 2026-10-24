@@ -43,7 +43,7 @@
 | net | `ddj-tcp` | Netty 4.1.17 pipeline | 164 |
 | | `ddj-session` | `ChannelPlayer` 绑定 | — |
 | | `ddj-http` | jetty 1544 + 11 个 PHP | — |
-| data | `ddj-db` | mysql-connector + druid | 197 |
+| data | `ddj-db` | sqlx + PostgreSQL | 197 |
 | | `ddj-cache` | jedis-2.9.0 | 215 |
 | | `ddj-template` | CSV 配置表加载 | 453 |
 | | `ddj-repo` | `JDBCRepository` | 322 |

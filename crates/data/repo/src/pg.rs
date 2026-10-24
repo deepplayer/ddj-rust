@@ -1,4 +1,9 @@
-//! sqlx 实现
+//! sqlx + PostgreSQL 实现
+//!
+//! 与原 MySQL 实现的差异只有三处语法：
+//! - 占位符 `?` → `$1`/`$2`
+//! - `ON DUPLICATE KEY UPDATE` → `ON CONFLICT (...) DO UPDATE SET`
+//! - `LAST_INSERT_ID()` → `RETURNING id`
 
 use async_trait::async_trait;
 use ddj_core::{PlayerId, Result};
@@ -7,12 +12,12 @@ use ddj_db::pool::DbPools;
 use crate::entity::{ItemRow, PlayerRow};
 use crate::traits::{ItemRepo, PlayerRepo};
 
-/// MySQL 角色仓储。
-pub struct MyPlayerRepo {
+/// PostgreSQL 角色仓储。
+pub struct PgPlayerRepo {
     pool: DbPools,
 }
 
-impl MyPlayerRepo {
+impl PgPlayerRepo {
     /// 构造。
     #[must_use]
     pub fn new(pool: DbPools) -> Self {
@@ -21,11 +26,11 @@ impl MyPlayerRepo {
 }
 
 #[async_trait]
-impl PlayerRepo for MyPlayerRepo {
+impl PlayerRepo for PgPlayerRepo {
     async fn find(&self, id: PlayerId) -> Result<Option<PlayerRow>> {
-        let row = sqlx::query_as::<_, PlayerRow>(
+        let row = sqlx::query_as::<sqlx::Postgres, PlayerRow>(
             "SELECT player_id, user_id, name, level, exp, vip, last_login \
-             FROM player WHERE player_id = ?",
+             FROM player WHERE player_id = $1",
         )
         .bind(id.get())
         .fetch_optional(&self.pool.game)
@@ -35,9 +40,9 @@ impl PlayerRepo for MyPlayerRepo {
     }
 
     async fn save(&self, row: &PlayerRow) -> Result<()> {
-        sqlx::query(
-            "UPDATE player SET name = ?, level = ?, exp = ?, vip = ?, last_login = ? \
-             WHERE player_id = ?",
+        sqlx::query::<sqlx::Postgres>(
+            "UPDATE player SET name = $1, level = $2, exp = $3, vip = $4, last_login = $5 \
+             WHERE player_id = $6",
         )
         .bind(&row.name)
         .bind(row.level)
@@ -52,12 +57,12 @@ impl PlayerRepo for MyPlayerRepo {
     }
 }
 
-/// MySQL 道具仓储。
-pub struct MyItemRepo {
+/// PostgreSQL 道具仓储。
+pub struct PgItemRepo {
     pool: DbPools,
 }
 
-impl MyItemRepo {
+impl PgItemRepo {
     /// 构造。
     #[must_use]
     pub fn new(pool: DbPools) -> Self {
@@ -66,10 +71,10 @@ impl MyItemRepo {
 }
 
 #[async_trait]
-impl ItemRepo for MyItemRepo {
+impl ItemRepo for PgItemRepo {
     async fn count(&self, player: PlayerId, template_id: i32) -> Result<i64> {
         let n: Option<i64> =
-            sqlx::query_scalar("SELECT num FROM item WHERE player_id = ? AND template_id = ?")
+            sqlx::query_scalar::<sqlx::Postgres, i64>("SELECT num FROM item WHERE player_id = $1 AND template_id = ?")
                 .bind(player.get())
                 .bind(template_id)
                 .fetch_optional(&self.pool.game)
@@ -79,9 +84,14 @@ impl ItemRepo for MyItemRepo {
     }
 
     async fn add(&self, player: PlayerId, template_id: i32, delta: i64) -> Result<()> {
-        sqlx::query(
-            "INSERT INTO item (player_id, template_id, num) VALUES (?, ?, ?) \
-             ON DUPLICATE KEY UPDATE num = GREATEST(0, num + VALUES(num))",
+        // 注意：不能照搬 MySQL 的 `VALUES(num)`。
+        // `item.num` 上有 CHECK (num >= 0)，PostgreSQL 会先校验待插入元组，
+        // 所以负数 delta 必须在这里就夹一次；而 DO UPDATE 中要用**原始** $3
+        // 参与累加（用 EXCLUDED.num 会把扣减变成 0，语义错）。
+        sqlx::query::<sqlx::Postgres>(
+            "INSERT INTO item (player_id, template_id, num) VALUES ($1, $2, GREATEST(0, $3)) \
+             ON CONFLICT (player_id, template_id) \
+             DO UPDATE SET num = GREATEST(0, item.num + $3)",
         )
         .bind(player.get())
         .bind(template_id)
@@ -93,8 +103,8 @@ impl ItemRepo for MyItemRepo {
     }
 
     async fn list(&self, player: PlayerId) -> Result<Vec<ItemRow>> {
-        sqlx::query_as::<_, ItemRow>(
-            "SELECT id, player_id, template_id, num FROM item WHERE player_id = ?",
+        sqlx::query_as::<sqlx::Postgres, ItemRow>(
+            "SELECT id, player_id, template_id, num FROM item WHERE player_id = $1",
         )
         .bind(player.get())
         .fetch_all(&self.pool.game)
@@ -102,3 +112,4 @@ impl ItemRepo for MyItemRepo {
         .map_err(|e| ddj_core::AppError::BadRequest(format!("列道具: {e}")))
     }
 }
+

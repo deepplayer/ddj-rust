@@ -21,8 +21,8 @@ max_conn_total    = 20000
 [db]
 # MySQL 5.7 的内部 SSL 与 sqlx 默认 TLS 握手不兼容，本地/内网一律显式关闭：
 # .../platform?ssl-mode=DISABLED
-platform_url         = "mysql://game@127.0.0.1:3306/platform?ssl-mode=DISABLED"
-game_url             = "mysql://game@127.0.0.1:3306/game_7010544?ssl-mode=DISABLED"
+platform_url         = "postgres://game@127.0.0.1:5432/platform"
+game_url             = "postgres://game@127.0.0.1:5432/game_7010544"
 max_connections      = 16
 acquire_timeout_secs = 5
 

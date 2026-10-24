@@ -73,23 +73,24 @@ cargo test -p ddj-item -p ddj-player -p ddj-rank -p ddj-mail -p ddj-guild -p ddj
 
 | 依赖 | 版本 | 用途 | 是否必需 |
 |---|---|---|---|
-| MySQL | 5.7 / 8.0 | 账号库 + 游戏库 | 必需 |
+| PostgreSQL | 15 / 16 | 账号库 + 游戏库 | 必需 |
 | Redis | 5.0+ | 缓存 / 排行榜 / 跨进程锁 | Web 端可无，游戏服必需 |
 | protoc | 3.x | 编译期生成 proto（`DDJ_GEN_PB=1` 时才用） | 可选 |
 | Rust | 1.99.1 | 见 `rust-toolchain.toml` | 必需 |
 
-数据库准备：
+数据库准备（schema 由迁移自动建，不用手工导 SQL）：
 
 ```bash
-mysql -uroot -p < ../data/sql/platform.sql
-# 游戏库由各服首次启动时按 template 建表
+createdb -U game platform
+createdb -U game game_7010544
+# 首次启动时 sqlx 自动跑 crates/data/db/migrations
 ```
 
 密码不进配置文件，用环境变量注入：
 
 ```bash
-export DDJ__DB__PLATFORM_URL='mysql://game:PASS@127.0.0.1:3306/platform'
-export DDJ__DB__GAME_URL='mysql://game:PASS@127.0.0.1:3306/game_7010544'
+export DDJ__DB__PLATFORM_URL='postgres://game:PASS@127.0.0.1:5432/platform'
+export DDJ__DB__GAME_URL='postgres://game:PASS@127.0.0.1:5432/game_7010544'
 export DDJ__REDIS__URL='redis://127.0.0.1:6379/0'
 ```
 

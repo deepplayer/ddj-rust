@@ -104,8 +104,8 @@ pub struct DbCfg {
 impl Default for DbCfg {
     fn default() -> Self {
         Self {
-            platform_url: "mysql://game:pass@127.0.0.1:3306/platform".into(),
-            game_url: "mysql://game:pass@127.0.0.1:3306/game_7010544".into(),
+            platform_url: "postgres://game:pass@127.0.0.1:5432/platform".into(),
+            game_url: "postgres://game:pass@127.0.0.1:5432/game_7010544".into(),
             max_connections: 16,
             acquire_timeout_secs: 5,
         }

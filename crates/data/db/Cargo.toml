@@ -1,6 +1,6 @@
 [package]
 name        = "ddj-db"
-description = "MySQL 访问层：sqlx 连接池 + 事务 + 分库路由"
+description = "PostgreSQL 访问层：sqlx 连接池 + 事务 + 分库路由"
 version.workspace      = true
 edition.workspace      = true
 rust-version.workspace = true
@@ -20,3 +20,6 @@ async-trait.workspace    = true
 thiserror.workspace      = true
 tracing.workspace        = true
 chrono.workspace         = true
+
+[dev-dependencies]
+tokio.workspace = true

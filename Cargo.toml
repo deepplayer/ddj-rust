@@ -101,7 +101,7 @@ toml         = "0.8"
 quick-xml    = "0.36"
 
 # 数据层
-sqlx         = { version = "0.8", default-features = false, features = ["runtime-tokio-rustls", "mysql", "macros", "migrate", "chrono", "uuid", "json"] }
+sqlx         = { version = "0.8", default-features = false, features = ["runtime-tokio-rustls", "postgres", "macros", "migrate", "chrono", "uuid", "json"] }
 redis        = { version = "0.27", features = ["tokio-comp", "connection-manager"] }
 csv          = "1.3"
 

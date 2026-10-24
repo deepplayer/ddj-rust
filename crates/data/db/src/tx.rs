@@ -8,7 +8,7 @@
 
 /// 事务内的操作序列。
 pub struct UnitOfWork<'a> {
-    tx: Option<sqlx::Transaction<'a, sqlx::MySql>>,
+    tx: Option<sqlx::Transaction<'a, sqlx::Postgres>>,
 }
 
 impl<'a> UnitOfWork<'a> {
@@ -16,7 +16,7 @@ impl<'a> UnitOfWork<'a> {
     ///
     /// # Errors
     /// 取连接失败。
-    pub async fn begin(pool: &'a sqlx::MySqlPool) -> Result<Self, sqlx::Error> {
+    pub async fn begin(pool: &'a sqlx::PgPool) -> Result<Self, sqlx::Error> {
         Ok(Self {
             tx: Some(pool.begin().await?),
         })
@@ -25,7 +25,7 @@ impl<'a> UnitOfWork<'a> {
     /// 访问底层事务。
     ///
     /// 已提交后返回 `None`——调用方不应再复用同一事务。
-    pub fn tx(&mut self) -> Option<&mut sqlx::Transaction<'a, sqlx::MySql>> {
+    pub fn tx(&mut self) -> Option<&mut sqlx::Transaction<'a, sqlx::Postgres>> {
         self.tx.as_mut()
     }
 

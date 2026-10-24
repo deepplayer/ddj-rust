@@ -14,6 +14,6 @@ pub const MIGRATION_DIR: &str = "./migrations";
 ///
 /// # Errors
 /// 目录缺失或 SQL 执行失败。
-pub async fn run(pool: &sqlx::MySqlPool) -> Result<(), sqlx::migrate::MigrateError> {
+pub async fn run(pool: &sqlx::PgPool) -> Result<(), sqlx::migrate::MigrateError> {
     sqlx::migrate!("./migrations").run(pool).await
 }
