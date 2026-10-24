@@ -56,7 +56,7 @@
 
 use ddj_core::{AppError, Result};
 use ddj_pb::gen::engine_message::{CreatePlayerReq6, CreatePlayerResp6};
-use ddj_pb::gen::player_message::UpdateNameResp1002;
+use ddj_pb::gen::player_message::{UpPlayerLvResp1003, UpdateNameResp1002};
 use ddj_pb::RetCode;
 
 /// 名字长度上限（`ConfigDB.NickNameLength`）。
@@ -572,6 +572,98 @@ pub fn build_rename_resp(outcome: RenameOutcome) -> UpdateNameResp1002 {
         RenameOutcome::Accept(_) => RetCode::Ok.as_i32(),
     };
     UpdateNameResp1002 { ret }
+}
+
+// ───────────────────────────── 1003 主动升级 ─────────────────────────────
+//
+// `PlayerMessageHandler.upPlayerLvReq` 只有三行：转发 `Player.upPlayerLvReq()`，
+// `catch(Exception)` → 回 `UpPlayerLvResp_1003{ret=COMMON_SERVER_BUSY}`。
+// 真正的分支在 `Player.upPlayerLvReq()`（229 条字节码），顺序如下：
+//   1. `getPlayerLvTemplate(lv) == null`            → throw BUSY
+//   2. `exp < tpl.getPlayerExp()`                   → throw BUSY（经验不足）
+//   3. `getPlayerLvTemplate(lv+1) == null`          → save + unlock + **return，不发包**（满级）
+//   4. `lv = next.getId()`；`lvUpgradeTime.put(lv, now)`
+//   5. 事件 `EventType.StatusID` + `EventLogSendRecord.level`
+//   6. `lastUpdateTime = now`；`save()`
+//   —  之后：`sendPlayerAbUpdate(player, true, {5, 6})` → `UpPlayerLvResp_1003{ret=0}` → `drawEverydayClearTime()`
+
+/// `S-身份表-Status.csv` 里升级用到的两列。
+///
+/// `player_exp` 是「升到下一级所需经验」，满级行实测为 0。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct LevelTemplate {
+    /// `StatusDB.getId()`（身份 ID）。
+    pub id: i32,
+    /// `StatusDB.getPlayerExp()`。
+    pub player_exp: i64,
+}
+
+/// 查 `StatusDBCache.getPlayerLvTemplate(level)`。
+pub trait LevelLookup {
+    /// 不存在时返回 `None`（原版返回 null）。
+    fn template(&self, level: i32) -> Option<LevelTemplate>;
+}
+
+/// 升级成功后的落库/推送所需数据。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct LevelUpPlan {
+    /// 新等级（取 `next.getId()`，不是 `lv + 1`）。
+    pub new_level: i32,
+    /// `lvUpgradeTime.put(newLevel, now)` 的值。
+    pub upgrade_time: i64,
+    /// `lastUpdateTime`。
+    pub last_update_time: i64,
+}
+
+/// 升级判决。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LevelUpOutcome {
+    /// 满级：原版直接 `return`，**一个包都不发**。
+    Silent,
+    /// `HandlerException(COMMON_SERVER_BUSY)` → 被 handler 的 catch 遮罩成 `ret=2`。
+    Reject(RetCode),
+    /// `ret=0`，并推送属性 `[5, 6]`。
+    Accept(LevelUpPlan),
+}
+
+/// `sendPlayerAbUpdate(player, true, new Integer[]{5, 6})` 的属性类型。
+pub const LEVEL_UP_PUSH_ATTRS: [i32; 2] = [5, 6];
+
+/// 按 `Player.upPlayerLvReq()` 的字节码分支序判定升级。
+///
+/// 特别注意第 3 条：**满级时静默返回**，既不回包也不报错，客户端不会收到任何响应。
+#[must_use]
+pub fn level_up(current: i32, exp: i64, now: i64, lookup: &dyn LevelLookup) -> LevelUpOutcome {
+    // 1. 当前等级模板不存在。
+    let Some(cur) = lookup.template(current) else {
+        return LevelUpOutcome::Reject(RetCode::ServerBusy);
+    };
+    // 2. 经验不足（`lcmp; ifge` → 相等也通过）。
+    if exp < cur.player_exp {
+        return LevelUpOutcome::Reject(RetCode::ServerBusy);
+    }
+    // 3. 下一级模板不存在 = 满级 → 静默返回。
+    let Some(next) = lookup.template(current.wrapping_add(1)) else {
+        return LevelUpOutcome::Silent;
+    };
+    // 4. 升级。
+    LevelUpOutcome::Accept(LevelUpPlan {
+        new_level: next.id,
+        upgrade_time: now,
+        last_update_time: now,
+    })
+}
+
+/// 把判决转成要发的包；`Silent` 返回 `None`（原版不发包）。
+#[must_use]
+pub fn build_level_up_resp(outcome: LevelUpOutcome) -> Option<UpPlayerLvResp1003> {
+    match outcome {
+        LevelUpOutcome::Silent => None,
+        LevelUpOutcome::Reject(code) => Some(UpPlayerLvResp1003 { ret: code.as_i32() }),
+        LevelUpOutcome::Accept(_) => Some(UpPlayerLvResp1003 {
+            ret: RetCode::Ok.as_i32(),
+        }),
+    }
 }
 
 #[cfg(test)]
@@ -1095,5 +1187,130 @@ mod rename_tests {
             build_rename_resp(RenameOutcome::Reject(RetCode::JewelNo)).ret,
             7
         );
+    }
+}
+
+#[cfg(test)]
+mod level_up_tests {
+    use super::*;
+
+    /// 与 `S-身份表-Status.csv` 实测一致：1→100、2→1000、满级 24 行为 0。
+    struct FakeStatus(Vec<LevelTemplate>);
+
+    impl LevelLookup for FakeStatus {
+        fn template(&self, level: i32) -> Option<LevelTemplate> {
+            self.0.iter().copied().find(|t| t.id == level)
+        }
+    }
+
+    fn lv(n: i32, exp: i64) -> LevelTemplate {
+        LevelTemplate {
+            id: n,
+            player_exp: exp,
+        }
+    }
+
+    fn table() -> FakeStatus {
+        FakeStatus(vec![lv(1, 100), lv(2, 1_000), lv(3, 2_200), lv(24, 0)])
+    }
+
+    #[test]
+    fn missing_current_template_is_busy() {
+        let out = level_up(99, 0, 1, &table());
+        assert_eq!(out, LevelUpOutcome::Reject(RetCode::ServerBusy));
+    }
+
+    #[test]
+    fn insufficient_exp_is_busy() {
+        let out = level_up(1, 99, 1, &table());
+        assert_eq!(out, LevelUpOutcome::Reject(RetCode::ServerBusy));
+    }
+
+    #[test]
+    fn exact_exp_passes() {
+        // `lcmp; ifge` —— 相等即通过。
+        let out = level_up(1, 100, 1, &table());
+        assert_eq!(
+            out,
+            LevelUpOutcome::Accept(LevelUpPlan {
+                new_level: 2,
+                upgrade_time: 1,
+                last_update_time: 1
+            })
+        );
+    }
+
+    #[test]
+    fn max_level_is_silent() {
+        // 24 的下一级 25 不在表里 → 静默返回。
+        let out = level_up(24, 0, 1, &table());
+        assert_eq!(out, LevelUpOutcome::Silent);
+        assert!(build_level_up_resp(out).is_none(), "满级不发包");
+    }
+
+    #[test]
+    fn missing_current_beats_insufficient_exp() {
+        // 两者都错时先命中第 1 条（模板缺失）。
+        let out = level_up(99, 0, 1, &table());
+        assert!(matches!(out, LevelUpOutcome::Reject(_)));
+    }
+
+    #[test]
+    fn new_level_comes_from_next_id_not_plus_one() {
+        // 故意让 id 与下标错开，证明取的是 `next.getId()`。
+        struct Skewed;
+        impl LevelLookup for Skewed {
+            fn template(&self, level: i32) -> Option<LevelTemplate> {
+                match level {
+                    5 => Some(LevelTemplate {
+                        id: 5,
+                        player_exp: 10,
+                    }),
+                    6 => Some(LevelTemplate {
+                        id: 77,
+                        player_exp: 20,
+                    }),
+                    _ => None,
+                }
+            }
+        }
+        let out = level_up(5, 10, 42, &Skewed);
+        assert_eq!(
+            out,
+            LevelUpOutcome::Accept(LevelUpPlan {
+                new_level: 77,
+                upgrade_time: 42,
+                last_update_time: 42
+            })
+        );
+    }
+
+    #[test]
+    fn timestamps_both_set_to_now() {
+        let out = level_up(2, 1_000, 1_700_000, &table());
+        let LevelUpOutcome::Accept(plan) = out else {
+            panic!("应升级")
+        };
+        assert_eq!(plan.upgrade_time, 1_700_000);
+        assert_eq!(plan.last_update_time, 1_700_000);
+    }
+
+    #[test]
+    fn push_attrs_are_five_and_six() {
+        assert_eq!(LEVEL_UP_PUSH_ATTRS, [5, 6]);
+    }
+
+    #[test]
+    fn resp_codes() {
+        assert_eq!(
+            build_level_up_resp(LevelUpOutcome::Reject(RetCode::ServerBusy)).map(|r| r.ret),
+            Some(2)
+        );
+        let accept = LevelUpOutcome::Accept(LevelUpPlan {
+            new_level: 2,
+            upgrade_time: 0,
+            last_update_time: 0,
+        });
+        assert_eq!(build_level_up_resp(accept).map(|r| r.ret), Some(0));
     }
 }
