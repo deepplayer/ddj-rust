@@ -776,8 +776,11 @@ pub fn resolve_view_target(target_server_id: i64, my_server_id: i64) -> ViewTarg
 /// 1008 / 1020 的处理计划。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ViewPlan {
-    /// 走本地分支。`friend_scope` 只对 1008 有意义。
-    Local { friend_scope: bool },
+    /// 走本地分支。
+    Local {
+        /// 回包里的 `friendScope`。1008 本服恒为 `true`；1020 不使用该字段。
+        friend_scope: bool,
+    },
     /// 走跨服分支。`friend_scope` 只对 1008 有意义。
     Remote {
         target_server: i32,
