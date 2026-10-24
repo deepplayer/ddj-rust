@@ -96,9 +96,9 @@ export DDJ__REDIS__URL='redis://127.0.0.1:6379/0'
 ## 启动
 
 ```bash
-cargo run -p ddj-svc-game       -- --config-dir config   # 10544
-cargo run -p ddj-svc-platform   -- --config-dir config   # 10001
-cargo run -p ddj-svc-cross      -- --config-dir config   # 4106
+cargo run -p ddj-cli -- run game        # 前台，10544
+cargo run -p ddj-cli -- start game      # 后台守护
+cargo run -p ddj-cli -- list            # 全部模块状态
 ```
 
 日志格式由 `config/*.toml` 的 `[telemetry] log_format` 控制（`json` / `pretty`）。

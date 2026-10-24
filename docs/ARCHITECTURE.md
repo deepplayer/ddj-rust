@@ -9,7 +9,7 @@
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│  app/        svc-game svc-platform svc-cross svc-hall …       │  7 个可执行
+│  app/        ddj-cli（唯一二进制：run/start/stop/attach）      │  1 个可执行
 │              game-core（装配）  game-handler（103 Handler）     │
 ├──────────────────────────────────────────────────────────────┤
 │  domain/     player item economy mail guild rank activity battle │  纯业务，无 IO
@@ -57,7 +57,7 @@
 | | `ddj-battle` | 战报 / 校验 | — |
 | app | `ddj-game-core` | 各 `XxxServer.main()` | — |
 | | `ddj-game-handler` | 103 个 `*MessageHandler` | — |
-| | `ddj-svc-{game,platform,cross,hall,battle,world,gm}` | 6 个启动脚本 → 7 个 bin | 18×7 |
+| | `ddj-cli` | 6 个 `start.sh` 启动脚本 → 1 个 `ddj` 二进制 | 18×1 |
 
 ---
 
@@ -146,9 +146,12 @@ crates/<层>/<模块>/
 
 新增一个服务：
 
-1. `tools/scaffold.py` 加一行 → 生成 `crates/app/svc-<name>`
-2. `ServiceKind` 加一个变体 + `modules()` 返回其模块清单
-3. 完成。`main.rs` 五行不用改。
+1. `ServiceKind` 加一个变体 + `modules()` 返回其模块清单
+2. `config/<name>.toml` 加一份基线配置
+3. 完成。**不需要新增 crate、不需要改 `main.rs`** —— 二进制已经能 `ddj run <name>`。
+
+这是单二进制带来的实际收益：旧结构下加服务要新增工程 + 新启动脚本，
+现在只是枚举加一个变体。
 
 ---
 
