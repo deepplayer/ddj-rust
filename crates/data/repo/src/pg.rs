@@ -73,13 +73,14 @@ impl PgItemRepo {
 #[async_trait]
 impl ItemRepo for PgItemRepo {
     async fn count(&self, player: PlayerId, template_id: i32) -> Result<i64> {
-        let n: Option<i64> =
-            sqlx::query_scalar::<sqlx::Postgres, i64>("SELECT num FROM item WHERE player_id = $1 AND template_id = ?")
-                .bind(player.get())
-                .bind(template_id)
-                .fetch_optional(&self.pool.game)
-                .await
-                .map_err(|e| ddj_core::AppError::BadRequest(format!("查道具: {e}")))?;
+        let n: Option<i64> = sqlx::query_scalar::<sqlx::Postgres, i64>(
+            "SELECT num FROM item WHERE player_id = $1 AND template_id = ?",
+        )
+        .bind(player.get())
+        .bind(template_id)
+        .fetch_optional(&self.pool.game)
+        .await
+        .map_err(|e| ddj_core::AppError::BadRequest(format!("查道具: {e}")))?;
         Ok(n.unwrap_or(0))
     }
 
@@ -112,4 +113,3 @@ impl ItemRepo for PgItemRepo {
         .map_err(|e| ddj_core::AppError::BadRequest(format!("列道具: {e}")))
     }
 }
-

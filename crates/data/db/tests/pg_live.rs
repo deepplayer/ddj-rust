@@ -56,33 +56,54 @@ async fn item_upsert_accumulates_and_clamps() {
 
     // +10 → 10
     sqlx::query::<sqlx::Postgres>(upsert)
-        .bind(player_id).bind(11002).bind(10i64)
-        .execute(&pool).await.expect("首次插入");
+        .bind(player_id)
+        .bind(11002)
+        .bind(10i64)
+        .execute(&pool)
+        .await
+        .expect("首次插入");
 
     // +5 → 15
     sqlx::query::<sqlx::Postgres>(upsert)
-        .bind(player_id).bind(11002).bind(5i64)
-        .execute(&pool).await.expect("累加");
+        .bind(player_id)
+        .bind(11002)
+        .bind(5i64)
+        .execute(&pool)
+        .await
+        .expect("累加");
 
     let num: i64 = sqlx::query_scalar::<sqlx::Postgres, i64>(
         "SELECT num FROM item WHERE player_id = $1 AND template_id = $2",
     )
-    .bind(player_id).bind(11002)
-    .fetch_one(&pool).await.expect("读回");
+    .bind(player_id)
+    .bind(11002)
+    .fetch_one(&pool)
+    .await
+    .expect("读回");
     assert_eq!(num, 15);
 
     // -100 → 被 GREATEST 夹到 0，不会变负
     sqlx::query::<sqlx::Postgres>(upsert)
-        .bind(player_id).bind(11002).bind(-100i64)
-        .execute(&pool).await.expect("扣减");
+        .bind(player_id)
+        .bind(11002)
+        .bind(-100i64)
+        .execute(&pool)
+        .await
+        .expect("扣减");
 
     let num: i64 = sqlx::query_scalar::<sqlx::Postgres, i64>(
         "SELECT num FROM item WHERE player_id = $1 AND template_id = $2",
     )
-    .bind(player_id).bind(11002)
-    .fetch_one(&pool).await.expect("读回");
+    .bind(player_id)
+    .bind(11002)
+    .fetch_one(&pool)
+    .await
+    .expect("读回");
     assert_eq!(num, 0, "扣到负数应被夹到 0");
 
     sqlx::query::<sqlx::Postgres>("DELETE FROM item WHERE player_id = $1")
-        .bind(player_id).execute(&pool).await.expect("收尾");
+        .bind(player_id)
+        .execute(&pool)
+        .await
+        .expect("收尾");
 }
