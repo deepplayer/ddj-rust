@@ -24,10 +24,12 @@ pub mod decoder;
 pub mod encoder;
 pub mod frame;
 pub mod limits;
+pub mod xxtea;
 
 pub use decoder::FrameDecoder;
 pub use encoder::FrameEncoder;
 pub use frame::{Frame, FrameError, HEADER_LEN, MAGIC};
+pub use xxtea::{unpack_login_body, LoginBodyError, SIGN_KEY};
 
 /// 一帧一帧解析整块字节（测试 / 一次性解析用）。
 ///

@@ -1,6 +1,6 @@
-//! 消息号常量
+//! 消息号常量与通用错误码
 //!
-//! 全部来自 proto message 名后缀：`ItemUseReq_11002` → `11002`。
+//! 消息号全部来自 proto message 名后缀：`ItemUseReq_11002` → `11002`。
 //! 由 `cargo xt gen-cmds` 生成；这里手写高频命令，其余在生成时补齐。
 
 /// 登录相关（原 `LoginCmdId`）。
@@ -11,6 +11,8 @@ pub mod login {
     pub const SERVER_LIST: i32 = 3;
     /// 登录（**唯一加密的消息**，XXTEA + Base64）。
     pub const LOGIN: i32 = 4;
+    /// 取可用名字（`GetPlayerNamesReq_5` 实际是 5 号之外的独立号，见 proto）。
+    pub const NAMES: i32 = 5;
     /// 心跳。
     pub const HEARTBEAT: i32 = 5;
     /// 断线重连。
@@ -27,4 +29,285 @@ pub mod login {
 pub mod item {
     /// 使用道具 —— 本次逆向的起点。
     pub const USE_REQ: i32 = 11002;
+}
+
+/// 通用错误码（`bf.common.utils.LanguageUtils`）。
+///
+/// ## 来源
+/// 用 `tools/jclass2.py` 反汇编 `jb3.common.v1.jar` 里
+/// `bf/common/utils/LanguageUtils.class` 的 `<clinit>`，逐个枚举常量取第二个
+/// `push` 操作数（第一个是 ordinal，第二个才是 `value`，也就是协议里的 `ret`）。
+///
+/// ## 为什么不能自己编号
+/// 客户端拿到 `ret` 后去多语言表查文案，`ret` 本身就是协议的一部分。
+/// 少一个码最多显示空白，错一个码会给玩家看错提示。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(i32)]
+pub enum RetCode {
+    /// 成功。
+    Ok = 0,
+    /// 服务器正在维护中。
+    ServerWeihu = 1,
+    /// 服务器繁忙，请稍后再试!
+    ServerBusy = 2,
+    /// 服务器停服了。
+    ServerStop = 3,
+    /// 当前服务器人数过多。
+    MaxPlayerNum = 4,
+    /// 金币不够。
+    MoneyNo = 5,
+    /// 资源不够。
+    ResourcesNo = 6,
+    /// 元宝不够。
+    JewelNo = 7,
+    /// 后台把玩家踢下线了。
+    GmOffline = 9,
+    /// 被封禁了，不可以登录。
+    NotSignIn = 10,
+    /// 被禁言了，不可以聊天。
+    NotChat = 11,
+    /// 您输入的字符有非法字符。
+    StrIllegality = 12,
+    /// 您输入的字符太长。
+    StrTooLong = 13,
+    /// 您还没有开启该系统。
+    SysNoOpen = 14,
+    /// 访问频率限制。
+    RequestLimit = 15,
+    /// 跨服服务器繁忙。
+    CrossServerError = 16,
+    /// VIP 等级不够。
+    VipNo = 17,
+    /// 家族等级不够。
+    JiazuNo = 18,
+    /// 财运等级不够。
+    CaiyunNo = 19,
+    /// 当前不能注册新用户了。
+    RegisterNo = 20,
+    /// 活动已结束。
+    ActivityEnd = 21,
+    /// 活动还未结束。
+    ActivityEndNo = 22,
+    /// 服务器开没有开服。
+    NoOpen = 23,
+    /// 操作太频繁。
+    OperateTooOften = 24,
+    /// 财力不足。
+    MoneyLimit = 25,
+    /// 道具使用所需资源消耗不够。
+    UseCostResourcesNo = 26,
+    /// 功能维护中，请耐心等待！
+    ChatNoOpen = 27,
+    /// 开服天数不够。
+    ServerOpenDayNo = 28,
+    /// 参数错误。
+    ParamError = 29,
+    /// 阶段错误。
+    StageError = 30,
+    /// 体力不足。
+    EnergyNotEnough = 31,
+    /// 免费次数不足。
+    BuyLimitFreeTimes = 32,
+    /// 玩家等级不足。
+    PlayerLvNo = 33,
+    /// 购买次数达到上限。
+    BuyLimitTimes = 34,
+    /// 活动被封禁。
+    ActivityForbid = 35,
+    /// 瓦肆服务器繁忙。
+    HallServerBusy = 36,
+    /// 跨服榜单分组不同。
+    RankGroupError = 37,
+    /// 输入财力不符合规范。
+    InputMoneyError = 38,
+    /// 账号被限制登录该区服。
+    LoginForbidden = 39,
+    /// 客户端版本不对（`LoginResp_4.ret` 注释点名的 99）。
+    VersionNo = 99,
+    /// 该客户端之前已经登录过了!
+    RepeatLogin = 101,
+    /// 您的账号在其它地方抢登了。
+    Kicked = 102,
+    /// 玩家名字重复了。
+    NameDuplicate = 103,
+    /// 玩家名字有非法字符。
+    NameIllegal = 104,
+    /// 玩家名字长度不符合。
+    NameLength = 105,
+    /// 您还没有登录平台。
+    NotLoginPlatform = 106,
+    /// 登录时已经加入到排队列里面去了。
+    InQueue = 107,
+    /// 道具合成 - 资源不够（`ITEM_ERROR_1`）。
+    ItemError1 = 1101,
+    /// 道具数量不足（`ITEM_ERROR_2`）。
+    ItemError2 = 1102,
+    /// 道具错误 3（`ITEM_ERROR_3`）。
+    ItemError3 = 1103,
+    /// 道具错误 4（`ITEM_ERROR_4`）。
+    ItemError4 = 1104,
+    /// 道具错误 5（`ITEM_ERROR_5`）。
+    ItemError5 = 1105,
+}
+
+impl RetCode {
+    /// 转成协议里的 `ret` 数值。
+    #[must_use]
+    pub const fn as_i32(self) -> i32 {
+        self as i32
+    }
+
+    /// 从协议数值还原；未识别的返回 `None`（不要自己造码）。
+    #[must_use]
+    pub const fn from_i32(v: i32) -> Option<Self> {
+        Some(match v {
+            0 => Self::Ok,
+            1 => Self::ServerWeihu,
+            2 => Self::ServerBusy,
+            3 => Self::ServerStop,
+            4 => Self::MaxPlayerNum,
+            5 => Self::MoneyNo,
+            6 => Self::ResourcesNo,
+            7 => Self::JewelNo,
+            9 => Self::GmOffline,
+            10 => Self::NotSignIn,
+            11 => Self::NotChat,
+            12 => Self::StrIllegality,
+            13 => Self::StrTooLong,
+            14 => Self::SysNoOpen,
+            15 => Self::RequestLimit,
+            16 => Self::CrossServerError,
+            17 => Self::VipNo,
+            18 => Self::JiazuNo,
+            19 => Self::CaiyunNo,
+            20 => Self::RegisterNo,
+            21 => Self::ActivityEnd,
+            22 => Self::ActivityEndNo,
+            23 => Self::NoOpen,
+            24 => Self::OperateTooOften,
+            25 => Self::MoneyLimit,
+            26 => Self::UseCostResourcesNo,
+            27 => Self::ChatNoOpen,
+            28 => Self::ServerOpenDayNo,
+            29 => Self::ParamError,
+            30 => Self::StageError,
+            31 => Self::EnergyNotEnough,
+            32 => Self::BuyLimitFreeTimes,
+            33 => Self::PlayerLvNo,
+            34 => Self::BuyLimitTimes,
+            35 => Self::ActivityForbid,
+            36 => Self::HallServerBusy,
+            37 => Self::RankGroupError,
+            38 => Self::InputMoneyError,
+            39 => Self::LoginForbidden,
+            99 => Self::VersionNo,
+            101 => Self::RepeatLogin,
+            102 => Self::Kicked,
+            103 => Self::NameDuplicate,
+            104 => Self::NameIllegal,
+            105 => Self::NameLength,
+            106 => Self::NotLoginPlatform,
+            107 => Self::InQueue,
+            1101 => Self::ItemError1,
+            1102 => Self::ItemError2,
+            1103 => Self::ItemError3,
+            1104 => Self::ItemError4,
+            1105 => Self::ItemError5,
+            _ => return None,
+        })
+    }
+
+    /// 中文文案（原 `LanguageUtils` 里写死的那句）。
+    #[must_use]
+    pub const fn text(self) -> &'static str {
+        match self {
+            Self::Ok => "成功",
+            Self::ServerWeihu => "服务器正在维护中",
+            Self::ServerBusy => "服务器繁忙，请稍后再试!",
+            Self::ServerStop => "服务器停服了",
+            Self::MaxPlayerNum => "当前服务器人数过多",
+            Self::MoneyNo => "金币不够",
+            Self::ResourcesNo => "资源不够",
+            Self::JewelNo => "元宝不够",
+            Self::GmOffline => "后台把玩家踢下线了",
+            Self::NotSignIn => "被封禁了，不可以登录",
+            Self::NotChat => "被禁言了，不可以聊天",
+            Self::StrIllegality => "您输入的字符有非法字符",
+            Self::StrTooLong => "您输入的字符太长",
+            Self::SysNoOpen => "您还没有开启该系统",
+            Self::RequestLimit => "访问频率限制",
+            Self::CrossServerError => "跨服服务器繁忙",
+            Self::VipNo => "VIP等级不够",
+            Self::JiazuNo => "家族等级不够",
+            Self::CaiyunNo => "财运等级不够",
+            Self::RegisterNo => "当前不能注册新用户了",
+            Self::ActivityEnd => "活动已结束",
+            Self::ActivityEndNo => "活动还未结束",
+            Self::NoOpen => "服务器开没有开服",
+            Self::OperateTooOften => "操作太频繁",
+            Self::MoneyLimit => "财力不足",
+            Self::UseCostResourcesNo => "道具使用所需资源消耗不够",
+            Self::ChatNoOpen => "功能维护中，请耐心等待！",
+            Self::ServerOpenDayNo => "开服天数不够",
+            Self::ParamError => "参数错误",
+            Self::StageError => "阶段错误",
+            Self::EnergyNotEnough => "体力不足",
+            Self::BuyLimitFreeTimes => "免费次数不足",
+            Self::PlayerLvNo => "玩家等级不足",
+            Self::BuyLimitTimes => "购买次数达到上限",
+            Self::ActivityForbid => "活动被封禁",
+            Self::HallServerBusy => "瓦肆服务器繁忙",
+            Self::RankGroupError => "跨服榜单分组不同",
+            Self::InputMoneyError => "输入财力不符合规范",
+            Self::LoginForbidden => "账号被限制登录该区服",
+            Self::VersionNo => "客户端版本不对",
+            Self::RepeatLogin => "该客户端之前已经登录过了!",
+            Self::Kicked => "您的账号在其它地方抢登了",
+            Self::NameDuplicate => "玩家名字重复了",
+            Self::NameIllegal => "玩家名字有非法字符",
+            Self::NameLength => "玩家名字长度不符合",
+            Self::NotLoginPlatform => "您还没有登录平台",
+            Self::InQueue => "登录时已经加入到排队列里面去了",
+            Self::ItemError1 => "道具合成 - 资源不够",
+            Self::ItemError2 => "道具数量不足",
+            Self::ItemError3 => "道具错误 3",
+            Self::ItemError4 => "道具错误 4",
+            Self::ItemError5 => "道具错误 5",
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn version_no_is_99_as_proto_says() {
+        // LoginResp_4 的注释明确写了「99为客户端版本不对」
+        assert_eq!(RetCode::VersionNo.as_i32(), 99);
+        assert_eq!(RetCode::from_i32(99), Some(RetCode::VersionNo));
+    }
+
+    #[test]
+    fn banned_is_10() {
+        // 注释：「10, 被封禁了，不可以登录」
+        assert_eq!(RetCode::NotSignIn.as_i32(), 10);
+        assert_eq!(RetCode::NotSignIn.text(), "被封禁了，不可以登录");
+    }
+
+    #[test]
+    fn roundtrip_all_variants() {
+        for v in [
+            0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+            25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 99, 101, 102, 103, 104,
+            105, 106, 107,
+        ] {
+            let c = RetCode::from_i32(v).unwrap_or_else(|| panic!("缺 {v}"));
+            assert_eq!(c.as_i32(), v);
+            assert!(!c.text().is_empty());
+        }
+        // 8 在原枚举里不存在（GM_OFFLINE=9 跳过了 8）；100 同样空缺。
+        assert_eq!(RetCode::from_i32(8), None);
+        assert_eq!(RetCode::from_i32(100), None);
+    }
 }

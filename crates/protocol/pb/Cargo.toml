@@ -10,6 +10,13 @@ authors.workspace      = true
 [lints]
 workspace = true
 
+[lib]
+# 生成物里带着 proto 的中文注释，其中有 4 空格缩进的 proto 语法片段，
+# rustdoc 会把它们当 Rust 代码块去编译，于是报
+# `expected one of '!' or '::', found MsgBoBingAchievement`。
+# 这些注释是协议文档的一部分必须原样保留 → 关掉本 crate 的 doctest。
+doctest = false
+
 [dependencies]
 ddj-core.workspace     = true
 prost.workspace        = true
@@ -17,4 +24,7 @@ bytes.workspace        = true
 serde.workspace        = true
 
 [build-dependencies]
-prost-build = "0.13"
+# 自带 protoc 二进制：不让构建依赖系统里预装的 protobuf-compiler，
+# 新机器 `git clone` 后直接 `cargo build` 就能过。
+prost-build         = "0.13"
+protoc-bin-vendored = "3"

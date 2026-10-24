@@ -24,7 +24,10 @@ pub mod dispatch;
 #[allow(missing_docs, clippy::all, clippy::pedantic)]
 pub mod gen {
     //! `prost-build` 生成物（扁平导出）。
-    include!(concat!(env!("OUT_DIR"), "/letsproto.rs"));
+    // 文件名跟 proto 的 `package` 走（源文件是 `package pb;` → `pb.rs`），
+    // 不是跟文件名走。`DDJ_PB_STUB=1` 时 build.rs 也写 `pb.rs`。
+    include!(concat!(env!("OUT_DIR"), "/pb.rs"));
 }
 
+pub use cmd::RetCode;
 pub use dispatch::{MessageKind, TypedMessage};
