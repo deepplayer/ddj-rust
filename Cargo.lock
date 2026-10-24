@@ -681,6 +681,7 @@ dependencies = [
  "ddj-core",
  "ddj-db",
  "ddj-economy",
+ "ddj-game-handler",
  "ddj-guild",
  "ddj-http",
  "ddj-item",

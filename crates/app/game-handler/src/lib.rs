@@ -43,6 +43,7 @@ pub mod chat;
 pub mod friend;
 pub mod gm;
 pub mod guild;
+pub mod handlers;
 pub mod item;
 pub mod login;
 pub mod mail;

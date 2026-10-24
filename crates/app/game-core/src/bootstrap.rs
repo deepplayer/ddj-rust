@@ -367,7 +367,13 @@ impl Bootstrap {
             Arc::new(TemplateStore::new())
         };
 
-        let handlers = Arc::new(HandlerTable::empty());
+        let mut table = HandlerTable::empty();
+        let registered = ddj_game_handler::handlers::register(
+            &mut table,
+            ddj_game_handler::login::ServerState::healthy(cfg.service.server_id),
+        )?;
+        tracing::info!(count = registered, "业务处理器已注册");
+        let handlers = Arc::new(table);
         let sessions = Arc::new(SessionManager::new());
 
         let comps = Components {
