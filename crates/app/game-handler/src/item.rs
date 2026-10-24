@@ -433,6 +433,8 @@ pub fn compound(input: CompoundInput, lookups: &dyn CompoundLookup) -> Result<Co
 /// 时效道具（`bf.game.server.module.item.ItemEffective`）。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct EffectiveItem {
+    /// 在 `allEffectiveItem` 里的键（`Long id`）。
+    pub id: i64,
     /// `getTemplateId()`。
     pub template_id: i32,
     /// `getNum()`。
@@ -606,6 +608,181 @@ pub fn effective_use(
         cost: cost.map(|(cid, cnum)| (cid, cnum.saturating_mul(remove_num))),
         has_msg_use_result: applied.has_msg_use_result,
     })
+}
+
+// ──────────────── 11006 时效道具一键使用 ────────────────
+
+/// `ItemSet$1` 比较器：**按 `deadline` 升序**（先过期的先处理），相等返回 0。
+#[must_use]
+pub fn one_key_sort_key(eff: &EffectiveItem) -> i64 {
+    eff.deadline
+}
+
+/// 一键使用里单条 `ItemEffective.use()` 的结果。
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct OneKeyApplied {
+    /// `getLanguageUtils()`：非 `None` 表示失败（原版此时 **break**，不返回错误码）。
+    pub err: Option<RetCode>,
+    /// `getMsgUseResult().getMsgResourcesList()` 转成的 `(id, num)`。
+    pub msg_resources: Vec<(i32, i64)>,
+}
+
+/// 11006 所需数据源。
+pub trait OneKeyLookup {
+    /// `GiftDBCache.getGiftDB(templateId)`。
+    ///
+    /// # Errors
+    /// 数据层故障。
+    fn gift(&self, template_id: i32) -> Result<Option<Gift>>;
+    /// `GiftDBUtils.checkForUsing(gift, player)`。
+    ///
+    /// # Errors
+    /// 数据层故障。
+    fn gift_check_for_using(&self, template_id: i32) -> Result<Option<RetCode>>;
+    /// `ItemSet.checkItem(id, num)`。
+    ///
+    /// # Errors
+    /// 数据层故障。
+    fn check_item(&self, id: i32, num: i64) -> Result<bool>;
+    /// `ItemEffective.getUseRemoveNum(player, num, param)`。
+    ///
+    /// # Errors
+    /// 数据层故障。
+    fn use_remove_num(&self, id: i64, num: i64) -> Result<i64>;
+    /// `ItemEffective.use(player, removeNum, param)`。
+    ///
+    /// # Errors
+    /// 数据层故障。
+    fn apply_use(&self, id: i64, num: i64) -> Result<OneKeyApplied>;
+}
+
+/// 一键使用的执行计划（原版边算边改，这里把副作用摊平成数据）。
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct OneKeyPlan {
+    /// 扫描时顺手从 `allEffectiveItem` 删掉的过期条目 id。
+    pub expired: Vec<i64>,
+    /// 成功使用并已被 `removeNum` 的 `(id, remove_num)`。
+    pub used: Vec<(i64, i64)>,
+    /// 已累计的消耗（同 id 已合并）。
+    pub cost: Vec<(i32, i64)>,
+    /// 累计产出（同 id 已合并）。
+    pub gains: Vec<(i32, i64)>,
+    /// 是否因为某条失败而提前 `break`（原版不报错，静默收尾）。
+    pub interrupted: bool,
+}
+
+/// 一键使用结论。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum OneKeyOutcome {
+    /// 回 `ItemUseResp_11002{ret}`（Handler 层被遮罩成 2）。
+    Reject(UseFailure),
+    /// 成功，回 `ItemEffectiveOneKeyUseResp_11006{ret=0, msgUseResult.msgResources}`。
+    Accept(OneKeyPlan),
+}
+
+fn merge_pairs(list: &[(i32, i64)]) -> Vec<(i32, i64)> {
+    let mut out: Vec<(i32, i64)> = Vec::new();
+    for &(id, num) in list {
+        match out.iter_mut().find(|(k, _)| *k == id) {
+            Some(slot) => slot.1 = slot.1.saturating_add(num),
+            None => out.push((id, num)),
+        }
+    }
+    out
+}
+
+/// `ItemSet.itemEffectiveOneKeyUse` 的纯逻辑部分（字节码 629 B）。
+///
+/// ## 与 11005 的关键差异（字节码实证）
+/// 1. 扫描时对过期条目执行 `iterator.remove()` —— **一键使用会顺带清理过期数据**。
+/// 2. 排序用 `ItemSet$1`：**`deadline` 升序**。
+/// 3. 循环内中断条件是 `removeNum < getNum()`（方向与 11005 相反）。
+/// 4. 循环内 `use()` 失败**只 break**，不返回错误码，已成功的部分照常结算。
+/// 5. 循环外预校验用的是**单份** `cost.num`，不是累计值。
+/// 6. `useCostJson == null` 时原版直接 NPE（`invokevirtual` on null）→ 外层 catch → ret=2。
+///
+/// # Errors
+/// 仅数据层故障向上冒泡。
+pub fn effective_one_key_use(
+    template_id: i32,
+    now: i64,
+    items: &[EffectiveItem],
+    lookups: &dyn OneKeyLookup,
+) -> Result<OneKeyOutcome> {
+    let mut plan = OneKeyPlan::default();
+    let mut candidates: Vec<EffectiveItem> = Vec::new();
+    for eff in items {
+        if now >= eff.deadline {
+            plan.expired.push(eff.id);
+            continue;
+        }
+        if eff.num <= 0 || eff.template_id != template_id {
+            continue;
+        }
+        candidates.push(*eff);
+    }
+    // `List.sort` 是稳定排序，用 sort_by_key 保持一致语义
+    candidates.sort_by_key(one_key_sort_key);
+
+    let Some(gift) = lookups.gift(template_id)? else {
+        if candidates.is_empty() {
+            return Ok(OneKeyOutcome::Reject(UseFailure::Handler(
+                RetCode::ResourcesNo,
+            )));
+        }
+        return Ok(OneKeyOutcome::Reject(UseFailure::Handler(
+            RetCode::ServerBusy,
+        )));
+    };
+    if candidates.is_empty() {
+        return Ok(OneKeyOutcome::Reject(UseFailure::Handler(
+            RetCode::ResourcesNo,
+        )));
+    }
+    let Some((cost_id, cost_num)) = gift.use_cost else {
+        // 原版此处 NPE，被外层 catch 遮罩成 ret=2
+        return Ok(OneKeyOutcome::Reject(UseFailure::Handler(
+            RetCode::ServerBusy,
+        )));
+    };
+    // 循环外：只校验单份
+    if !lookups.check_item(cost_id, cost_num)? {
+        return Ok(OneKeyOutcome::Reject(UseFailure::Handler(
+            RetCode::UseCostResourcesNo,
+        )));
+    }
+
+    let mut total_cost = 0_i64;
+    for eff in &candidates {
+        if lookups.gift_check_for_using(template_id)?.is_some() {
+            plan.interrupted = true;
+            break;
+        }
+        let remove_num = lookups.use_remove_num(eff.id, eff.num)?;
+        // 原版：removeNum < getNum() → break
+        if remove_num < eff.num {
+            plan.interrupted = true;
+            break;
+        }
+        let this_cost = cost_num.saturating_mul(remove_num);
+        // 循环内：累计校验
+        if !lookups.check_item(cost_id, total_cost.saturating_add(this_cost))? {
+            plan.interrupted = true;
+            break;
+        }
+        let applied = lookups.apply_use(eff.id, remove_num)?;
+        if applied.err.is_some() {
+            plan.interrupted = true;
+            break;
+        }
+        plan.used.push((eff.id, remove_num));
+        plan.cost.push((cost_id, this_cost));
+        total_cost = total_cost.saturating_add(this_cost);
+        plan.gains.extend(applied.msg_resources);
+    }
+    plan.cost = merge_pairs(&plan.cost);
+    plan.gains = merge_pairs(&plan.gains);
+    Ok(OneKeyOutcome::Accept(plan))
 }
 
 #[cfg(test)]
@@ -1107,6 +1284,7 @@ mod compound_tests {
                 (
                     1,
                     EffectiveItem {
+                        id: 0,
                         template_id: 0,
                         num: 1,
                         deadline: 100,
@@ -1115,6 +1293,7 @@ mod compound_tests {
                 (
                     2,
                     EffectiveItem {
+                        id: 0,
                         template_id: 0,
                         num: 1,
                         deadline: 500,
@@ -1134,6 +1313,7 @@ mod compound_tests {
             items: RefCell::new(vec![(
                 7,
                 EffectiveItem {
+                    id: 0,
                     template_id: 0,
                     num: 3,
                     deadline: 200,
@@ -1150,6 +1330,7 @@ mod compound_tests {
             (
                 9001,
                 EffectiveItem {
+                    id: 0,
                     template_id: 0,
                     num: 0,
                     deadline: 9_999,
@@ -1158,6 +1339,7 @@ mod compound_tests {
             (
                 9002,
                 EffectiveItem {
+                    id: 0,
                     template_id: 0,
                     num: 2,
                     deadline: 50,
@@ -1166,6 +1348,7 @@ mod compound_tests {
             (
                 9003,
                 EffectiveItem {
+                    id: 0,
                     template_id: 0,
                     num: 1,
                     deadline: 500,
@@ -1230,6 +1413,7 @@ mod effective_use_tests {
     fn ok_base() -> Fake {
         Fake {
             eff: Some(EffectiveItem {
+                id: 0,
                 template_id: 5,
                 num: 10,
                 deadline: 1_000,
@@ -1261,6 +1445,7 @@ mod effective_use_tests {
     fn expired_is_item_error_11() {
         let mut f = ok_base();
         f.eff = Some(EffectiveItem {
+            id: 0,
             template_id: 5,
             num: 10,
             deadline: NOW,
@@ -1304,6 +1489,7 @@ mod effective_use_tests {
     fn insufficient_count_uses_remove_num_not_num() {
         let mut f = ok_base();
         f.eff = Some(EffectiveItem {
+            id: 0,
             template_id: 5,
             num: 5,
             deadline: 1_000,
@@ -1396,5 +1582,238 @@ mod effective_use_tests {
                 has_msg_use_result: true
             }
         );
+    }
+}
+
+#[cfg(test)]
+mod one_key_tests {
+    use std::cell::RefCell;
+
+    use super::*;
+
+    #[derive(Default)]
+    struct Fake {
+        use_cost: Option<(i32, i64)>,
+        has_gift: bool,
+        gift_block: Option<RetCode>,
+        remove_num: Option<i64>,
+        /// `check_item` 的放行上限（`None` = 永不通过）
+        cost_limit: Option<i64>,
+        apply_err: Option<RetCode>,
+        resources: Vec<(i32, i64)>,
+        checks: RefCell<Vec<(i32, i64)>>,
+        applied: RefCell<Vec<(i64, i64)>>,
+    }
+
+    impl OneKeyLookup for Fake {
+        fn gift(&self, _t: i32) -> Result<Option<Gift>> {
+            Ok(if self.has_gift {
+                Some(Gift {
+                    use_cost: self.use_cost,
+                })
+            } else {
+                None
+            })
+        }
+        fn gift_check_for_using(&self, _t: i32) -> Result<Option<RetCode>> {
+            Ok(self.gift_block)
+        }
+        fn check_item(&self, id: i32, num: i64) -> Result<bool> {
+            self.checks.borrow_mut().push((id, num));
+            Ok(self.cost_limit.is_some_and(|lim| num <= lim))
+        }
+        fn use_remove_num(&self, _id: i64, num: i64) -> Result<i64> {
+            Ok(self.remove_num.unwrap_or(num))
+        }
+        fn apply_use(&self, id: i64, num: i64) -> Result<OneKeyApplied> {
+            self.applied.borrow_mut().push((id, num));
+            match self.apply_err {
+                Some(code) => Ok(OneKeyApplied {
+                    err: Some(code),
+                    msg_resources: vec![],
+                }),
+                None => Ok(OneKeyApplied {
+                    err: None,
+                    msg_resources: self.resources.clone(),
+                }),
+            }
+        }
+    }
+
+    fn eff(id: i64, template_id: i32, num: i64, deadline: i64) -> EffectiveItem {
+        EffectiveItem {
+            id,
+            template_id,
+            num,
+            deadline,
+        }
+    }
+
+    fn base() -> Fake {
+        Fake {
+            use_cost: Some((900, 2)),
+            has_gift: true,
+            gift_block: None,
+            remove_num: None,
+            cost_limit: Some(1_000_000),
+            apply_err: None,
+            resources: vec![],
+            checks: RefCell::new(vec![]),
+            applied: RefCell::new(vec![]),
+        }
+    }
+
+    const NOW: i64 = 1_000;
+    const TPL: i32 = 8001;
+
+    #[test]
+    fn no_candidates_is_resources_no() {
+        let f = base();
+        let out = effective_one_key_use(TPL, NOW, &[], &f).unwrap();
+        assert_eq!(
+            out,
+            OneKeyOutcome::Reject(UseFailure::Handler(RetCode::ResourcesNo))
+        );
+    }
+
+    #[test]
+    fn expired_entries_are_collected_and_removed() {
+        let f = base();
+        let items = [eff(1, TPL, 5, 900), eff(2, TPL, 5, 2_000)];
+        let OneKeyOutcome::Accept(plan) = effective_one_key_use(TPL, NOW, &items, &f).unwrap()
+        else {
+            panic!("应成功");
+        };
+        assert_eq!(plan.expired, vec![1]);
+        assert_eq!(plan.used, vec![(2, 5)]);
+        assert!(!plan.interrupted);
+    }
+
+    #[test]
+    fn only_matching_template_and_positive_num() {
+        let f = base();
+        let items = [
+            eff(1, TPL, 0, 2_000),
+            eff(2, 999, 5, 2_000),
+            eff(3, TPL, 4, 2_000),
+        ];
+        let OneKeyOutcome::Accept(plan) = effective_one_key_use(TPL, NOW, &items, &f).unwrap()
+        else {
+            panic!("应成功");
+        };
+        assert_eq!(plan.used, vec![(3, 4)]);
+    }
+
+    #[test]
+    fn sorted_by_deadline_ascending() {
+        let f = base();
+        let items = [
+            eff(1, TPL, 1, 3_000),
+            eff(2, TPL, 1, 2_000),
+            eff(3, TPL, 1, 2_500),
+        ];
+        effective_one_key_use(TPL, NOW, &items, &f).unwrap();
+        let order: Vec<i64> = f.applied.borrow().iter().map(|(id, _)| *id).collect();
+        assert_eq!(order, vec![2, 3, 1], "必须按 deadline 升序");
+    }
+
+    #[test]
+    fn missing_cost_is_busy_like_npe() {
+        let mut f = base();
+        f.use_cost = None;
+        let items = [eff(1, TPL, 5, 2_000)];
+        assert_eq!(
+            effective_one_key_use(TPL, NOW, &items, &f).unwrap(),
+            OneKeyOutcome::Reject(UseFailure::Handler(RetCode::ServerBusy))
+        );
+    }
+
+    #[test]
+    fn outer_check_uses_single_amount_then_inner_accumulates() {
+        let f = base();
+        let items = [eff(1, TPL, 5, 2_000), eff(2, TPL, 5, 2_500)];
+        effective_one_key_use(TPL, NOW, &items, &f).unwrap();
+        let checks = f.checks.borrow().clone();
+        // 循环外只校验单份 2；循环内 10、再累计 20
+        assert_eq!(checks, vec![(900, 2), (900, 10), (900, 20)]);
+    }
+
+    #[test]
+    fn inner_cost_failure_breaks_and_keeps_previous() {
+        let mut f = base();
+        f.cost_limit = Some(15); // 只允许累计到 15
+        let items = [eff(1, TPL, 5, 2_000), eff(2, TPL, 5, 2_500)];
+        let OneKeyOutcome::Accept(plan) = effective_one_key_use(TPL, NOW, &items, &f).unwrap()
+        else {
+            panic!("应成功收尾");
+        };
+        assert!(plan.interrupted);
+        assert_eq!(plan.used, vec![(1, 5)], "第一条成功，第二条因累计超限中断");
+    }
+
+    #[test]
+    fn remove_num_less_than_num_breaks() {
+        let mut f = base();
+        f.remove_num = Some(1);
+        let items = [eff(1, TPL, 5, 2_000)];
+        let OneKeyOutcome::Accept(plan) = effective_one_key_use(TPL, NOW, &items, &f).unwrap()
+        else {
+            panic!("应成功收尾");
+        };
+        assert!(plan.interrupted);
+        assert!(plan.used.is_empty());
+    }
+
+    #[test]
+    fn use_error_breaks_without_code() {
+        let mut f = base();
+        f.apply_err = Some(RetCode::ItemError4);
+        let items = [eff(1, TPL, 5, 2_000)];
+        let OneKeyOutcome::Accept(plan) = effective_one_key_use(TPL, NOW, &items, &f).unwrap()
+        else {
+            panic!("原版 use() 失败只 break，不返回错误码");
+        };
+        assert!(plan.interrupted);
+        assert!(plan.used.is_empty());
+        assert!(plan.cost.is_empty());
+    }
+
+    #[test]
+    fn gift_block_breaks_before_any_use() {
+        let mut f = base();
+        f.gift_block = Some(RetCode::ItemError3);
+        let items = [eff(1, TPL, 5, 2_000)];
+        let OneKeyOutcome::Accept(plan) = effective_one_key_use(TPL, NOW, &items, &f).unwrap()
+        else {
+            panic!("应成功收尾");
+        };
+        assert!(plan.interrupted);
+        assert!(plan.used.is_empty());
+        // 循环外的 checkItem 先执行，随后第一条就因 checkForUsing 中断
+        assert_eq!(*f.checks.borrow(), vec![(900, 2)]);
+    }
+
+    #[test]
+    fn gains_merged_by_id() {
+        let mut f = base();
+        f.resources = vec![(7, 1), (8, 2), (7, 3)];
+        let items = [eff(1, TPL, 1, 2_000), eff(2, TPL, 1, 2_500)];
+        let OneKeyOutcome::Accept(plan) = effective_one_key_use(TPL, NOW, &items, &f).unwrap()
+        else {
+            panic!("应成功");
+        };
+        // 两条各回 [(7,1),(8,2),(7,3)] → 合并后 7:1+3+1+3=8、8:2+2=4
+        assert_eq!(plan.gains, vec![(7, 8), (8, 4)]);
+    }
+
+    #[test]
+    fn cost_merged_by_id() {
+        let f = base();
+        let items = [eff(1, TPL, 5, 2_000), eff(2, TPL, 5, 2_500)];
+        let OneKeyOutcome::Accept(plan) = effective_one_key_use(TPL, NOW, &items, &f).unwrap()
+        else {
+            panic!("应成功");
+        };
+        assert_eq!(plan.cost, vec![(900, 20)]);
     }
 }
