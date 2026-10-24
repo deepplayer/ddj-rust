@@ -37,6 +37,7 @@ pub mod macros;
 // 以下模块按原包结构 1:1 对应，逐个填充
 pub mod account;
 pub mod activity;
+pub mod amber;
 pub mod battle;
 pub mod chat;
 pub mod friend;

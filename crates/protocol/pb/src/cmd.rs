@@ -138,6 +138,18 @@ pub enum RetCode {
     NotLoginPlatform = 106,
     /// 登录时已经加入到排队列里面去了。
     InQueue = 107,
+    /// 琥珀福利：不是琥珀/HeyTap 会员（`AMBER_WELFARE_IS_NOT_VIP`）。
+    AmberWelfareIsNotVip = 4701,
+    /// 琥珀福利：签到失败（`AMBER_WELFARE_SIGN_ERROR`）。
+    AmberWelfareSignError = 4702,
+    /// 琥珀福利：今天不是专属奖励日（`AMBER_WELFARE_IS_NOT_EXCLUSIVE_DAY`）。
+    AmberWelfareIsNotExclusiveDay = 4703,
+    /// 琥珀福利：专属奖励领取失败（`AMBER_WELFARE_EXCLUSIVE_ERROR`）。
+    AmberWelfareExclusiveError = 4704,
+    /// 琥珀福利：充值礼包领取失败（`AMBER_WELFARE_CHARGE_GIFT_ERROR`）。
+    AmberWelfareChargeGiftError = 4705,
+    /// 琥珀福利：充值礼包未达标（`AMBER_WELFARE_CHARGE_GIFT_ERROR2`）。
+    AmberWelfareChargeGiftError2 = 4706,
     /// 今天已经签过到了（`SIGN_ERROR_REPEATED`）。
     SignErrorRepeated = 1201,
     /// 这个签到宝箱已经领过了（`SIGN_ERROR_REPEATED_BOX`）。
@@ -221,6 +233,12 @@ impl RetCode {
             106 => Self::NotLoginPlatform,
             107 => Self::InQueue,
             131 => Self::PlayerError23,
+            4701 => Self::AmberWelfareIsNotVip,
+            4702 => Self::AmberWelfareSignError,
+            4703 => Self::AmberWelfareIsNotExclusiveDay,
+            4704 => Self::AmberWelfareExclusiveError,
+            4705 => Self::AmberWelfareChargeGiftError,
+            4706 => Self::AmberWelfareChargeGiftError2,
             1201 => Self::SignErrorRepeated,
             1202 => Self::SignErrorRepeatedBox,
             1203 => Self::SignErrorNotSigned,
@@ -286,6 +304,12 @@ impl RetCode {
             Self::NameLength => "玩家名字长度不符合",
             Self::NotLoginPlatform => "您还没有登录平台",
             Self::InQueue => "登录时已经加入到排队列里面去了",
+            Self::AmberWelfareIsNotVip => "您还不是琥珀会员",
+            Self::AmberWelfareSignError => "签到失败",
+            Self::AmberWelfareIsNotExclusiveDay => "今天不是专属奖励日",
+            Self::AmberWelfareExclusiveError => "专属奖励领取失败",
+            Self::AmberWelfareChargeGiftError => "充值礼包领取失败",
+            Self::AmberWelfareChargeGiftError2 => "充值未达标，无法领取该礼包",
             Self::SignErrorRepeated => "今天已经签过到了",
             Self::SignErrorRepeatedBox => "这个签到宝箱已经领过了",
             Self::SignErrorNotSigned => "签到天数还不够开这个宝箱",
