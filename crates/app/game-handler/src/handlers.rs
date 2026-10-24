@@ -22,7 +22,7 @@ use ddj_core::Result;
 use ddj_registry::{ErasedHandler, HandlerCtx, HandlerTable};
 use prost::Message;
 
-use crate::login::{self, ServerState};
+use crate::login::{self, AccountLookup, ServerState};
 
 /// 登录消息号（`LoginMessage.LoginReq_4`）。
 pub const CMD_LOGIN: i32 = ddj_pb::cmd::login::LOGIN;
@@ -33,13 +33,26 @@ pub const CMD_LOGIN: i32 = ddj_pb::cmd::login::LOGIN;
 /// 本文档见 [`crate::login`] 的分支表。
 pub struct LoginHandler {
     state: ServerState,
+    lookup: Option<Arc<dyn AccountLookup>>,
 }
 
 impl LoginHandler {
     /// 用给定的服务器状态构造。
     #[must_use]
     pub fn new(state: ServerState) -> Self {
-        Self { state }
+        Self {
+            state,
+            lookup: None,
+        }
+    }
+
+    /// 挂上账号查询（服务端启动时用这个）。
+    #[must_use]
+    pub fn with_lookup(state: ServerState, lookup: Arc<dyn AccountLookup>) -> Self {
+        Self {
+            state,
+            lookup: Some(lookup),
+        }
     }
 }
 
@@ -55,7 +68,8 @@ impl ErasedHandler for LoginHandler {
     }
 
     async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Bytes>> {
-        let resp = login::handle(ctx, &body, &self.state)?;
+        let now = chrono::Utc::now().timestamp_millis();
+        let resp = login::handle_with(ctx, &body, &self.state, self.lookup.as_deref(), now).await?;
         Ok(Some(Bytes::from(resp.encode_to_vec())))
     }
 }
@@ -66,9 +80,17 @@ impl ErasedHandler for LoginHandler {
 ///
 /// # Errors
 /// 目前不会失败；保留 `Result` 是为了后续需要读模板表时不改签名。
-pub fn register(table: &mut HandlerTable, state: ServerState) -> Result<usize> {
+pub fn register(
+    table: &mut HandlerTable,
+    state: ServerState,
+    lookup: Option<Arc<dyn AccountLookup>>,
+) -> Result<usize> {
     let mut n = 0;
-    table.insert(Box::new(LoginHandler::new(state)));
+    let h = match lookup {
+        Some(l) => LoginHandler::with_lookup(state, l),
+        None => LoginHandler::new(state),
+    };
+    table.insert(Box::new(h));
     n += 1;
     Ok(n)
 }
@@ -104,7 +126,7 @@ mod tests {
     #[test]
     fn register_counts_login() {
         let mut t = HandlerTable::empty();
-        let n = register(&mut t, ServerState::healthy(1)).expect("注册");
+        let n = register(&mut t, ServerState::healthy(1), None).expect("注册");
         assert_eq!(n, 1);
         assert!(t.get(CMD_LOGIN).is_some(), "登录应已入表");
         assert!(t.get(11002).is_none(), "未移植的链路不应凭空出现");

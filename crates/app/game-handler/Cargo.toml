@@ -27,6 +27,7 @@ ddj-rank.workspace       = true
 ddj-activity.workspace   = true
 ddj-battle.workspace     = true
 async-trait.workspace    = true
+chrono.workspace         = true
 tokio.workspace          = true
 tracing.workspace        = true
 bytes.workspace          = true

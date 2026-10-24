@@ -23,6 +23,18 @@ impl PlayerRepo for MemPlayerRepo {
         self.rows.write().insert(row.player_id, row.clone());
         Ok(())
     }
+    async fn find_by_open_id(&self, open_id: &str, server_id: i32) -> Result<Option<PlayerRow>> {
+        Ok(self
+            .rows
+            .read()
+            .values()
+            .find(|r| r.open_id.as_deref() == Some(open_id) && r.server_id == server_id)
+            .cloned())
+    }
+    async fn create(&self, row: &PlayerRow) -> Result<()> {
+        self.rows.write().insert(row.player_id, row.clone());
+        Ok(())
+    }
 }
 
 /// 内存道具仓储。

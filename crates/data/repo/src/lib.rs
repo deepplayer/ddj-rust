@@ -13,4 +13,6 @@ pub mod memory;
 pub mod pg;
 pub mod traits;
 
+pub use memory::{MemItemRepo, MemMailRepo, MemPlayerRepo};
+pub use pg::{PgItemRepo, PgPlayerRepo};
 pub use traits::{GuildRepo, ItemRepo, MailRepo, PlayerRepo};

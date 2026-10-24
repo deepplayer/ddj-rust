@@ -22,6 +22,10 @@ pub struct PlayerRow {
     pub vip: i32,
     /// 最后登录时间。
     pub last_login: Option<DateTime<Utc>>,
+    /// 账号（`LoginReq_4.openId`）。老数据可能为空。
+    pub open_id: Option<String>,
+    /// 所属服（分服用）。
+    pub server_id: i32,
 }
 
 /// `item` 表。

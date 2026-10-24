@@ -22,6 +22,7 @@
 //! `Base64.decode`。`SIGN_KEY` 是厂家写死在两端的同一串 `05:&()^&*abddzMQ`。
 //! 客户端 proto 注释写得很直白：`sign`「为空，测试登录」。
 
+use async_trait::async_trait;
 use ddj_codec::{unpack_login_body, LoginBodyError, SIGN_KEY};
 use ddj_core::{AppError, PlayerId, Result};
 use ddj_pb::gen::engine_message::{LoginReq4, LoginResp4};
@@ -142,6 +143,83 @@ pub fn evaluate(req: &LoginReq4, st: &ServerState) -> LoginOutcome {
     }
     // 到这里才需要外部数据（封禁 / 角色是否存在），由调用方补齐。
     LoginOutcome::NeedCreate { names: Vec::new() }
+}
+
+/// 账号侧数据：登录判定里唯一需要外部查询的部分。
+///
+/// 原版这层是 `PlayerServerModule.getPlayerByOpenId(openId, serverId)`，
+/// 现在由仓储实现（见 `game-core` 的 `PgAccountLookup`）。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Account {
+    /// 已有角色 ID。
+    pub player_id: PlayerId,
+    /// 角色创建时间（毫秒）。
+    pub create_player_time: i64,
+    /// 封禁截止（`-1` 永久封禁，`0` 未封禁）。
+    pub banned_time: i64,
+}
+
+/// 账号查询。
+#[async_trait]
+pub trait AccountLookup: Send + Sync {
+    /// 按账号 + 服找角色。没有则 `None`（客户端会去走创角）。
+    async fn find(&self, open_id: &str, server_id: i32) -> Option<Account>;
+}
+
+/// 把 [`evaluate`] 的「待补数据」补齐成最终结果。
+///
+/// 顺序与原版一致：先做服务端状态判定（维护 / 开服 / 版本 / 人数），
+/// 这些都过了才去查账号 —— 所以 `Reject` 分支不会有任何 IO。
+pub async fn resolve(
+    out: LoginOutcome,
+    open_id: &str,
+    server_id: i32,
+    now_ms: i64,
+    lookup: Option<&dyn AccountLookup>,
+) -> LoginOutcome {
+    let LoginOutcome::NeedCreate { names } = out else {
+        return out;
+    };
+    let Some(l) = lookup else {
+        return LoginOutcome::NeedCreate { names };
+    };
+    match l.find(open_id, server_id).await {
+        None => LoginOutcome::NeedCreate { names },
+        Some(acc) => LoginOutcome::Accepted {
+            player_id: acc.player_id,
+            server_time: now_ms,
+            // 开服时间原版取自 `BaseServer.getOpenServerTime()`，
+            // 骨架阶段还没有这层，先回 0（客户端只用来显示）。
+            open_server_time: 0,
+            create_player_time: acc.create_player_time,
+            banned_time: acc.banned_time,
+        },
+    }
+}
+
+/// 带账号查询的登录入口（服务端实际走这条）。
+///
+/// # Errors
+/// 解密失败或 protobuf 损坏。
+pub async fn handle_with(
+    ctx: &HandlerCtx,
+    body: &[u8],
+    st: &ServerState,
+    lookup: Option<&dyn AccountLookup>,
+    now_ms: i64,
+) -> Result<LoginResp4> {
+    let LoginRequest { req } = LoginRequest::decrypt(body)?;
+    let open_id = req.open_id.clone().unwrap_or_default();
+    let server_id = req.server_id.unwrap_or(st.server_id);
+    let base = evaluate(&req, st);
+    let outcome = resolve(base, &open_id, server_id, now_ms, lookup).await;
+    tracing::info!(
+        peer = %ctx.peer_ip,
+        open_id = %open_id,
+        ok = matches!(outcome, LoginOutcome::Accepted { .. }),
+        "登录判定完成"
+    );
+    Ok(build_resp(outcome))
 }
 
 /// 把结果填进回包。
@@ -394,5 +472,123 @@ mod tests {
         let inner = base64_encode(b"x");
         let cipher = ddj_codec::xxtea::encrypt(inner.as_bytes(), b"WRONGKEYWRONGKEY");
         assert!(unpack_login_body(&cipher, &SIGN_KEY).is_err());
+    }
+}
+
+#[cfg(test)]
+mod account_tests {
+    use super::*;
+
+    /// 账号查询的假实现。
+    struct FakeLookup {
+        hit: Option<Account>,
+        /// 记录被查询的 (open_id, server_id)。
+        seen: std::sync::Mutex<Vec<(String, i32)>>,
+    }
+
+    #[async_trait]
+    impl AccountLookup for FakeLookup {
+        async fn find(&self, open_id: &str, server_id: i32) -> Option<Account> {
+            self.seen
+                .lock()
+                .expect("锁")
+                .push((open_id.to_owned(), server_id));
+            self.hit
+        }
+    }
+
+    fn acc(pid: i64) -> Account {
+        Account {
+            player_id: PlayerId::new(pid),
+            create_player_time: 1_700_000_000_000,
+            banned_time: 0,
+        }
+    }
+
+    #[tokio::test]
+    async fn resolve_without_lookup_keeps_need_create() {
+        let out = resolve(
+            LoginOutcome::NeedCreate { names: vec![] },
+            "open-1",
+            7,
+            0,
+            None,
+        )
+        .await;
+        assert!(matches!(out, LoginOutcome::NeedCreate { .. }));
+    }
+
+    #[tokio::test]
+    async fn resolve_finds_existing_player() {
+        let l = FakeLookup {
+            hit: Some(acc(9001)),
+            seen: std::sync::Mutex::new(vec![]),
+        };
+        let out = resolve(
+            LoginOutcome::NeedCreate { names: vec![] },
+            "open-1",
+            7,
+            12345,
+            Some(&l),
+        )
+        .await;
+        match out {
+            LoginOutcome::Accepted {
+                player_id,
+                server_time,
+                create_player_time,
+                banned_time,
+                ..
+            } => {
+                assert_eq!(player_id.get(), 9001);
+                assert_eq!(server_time, 12345);
+                assert_eq!(create_player_time, 1_700_000_000_000);
+                assert_eq!(banned_time, 0);
+            }
+            other => panic!("应为 Accepted，实际 {other:?}"),
+        }
+        assert_eq!(
+            l.seen.lock().expect("锁").as_slice(),
+            [("open-1".to_owned(), 7)]
+        );
+    }
+
+    #[tokio::test]
+    async fn resolve_missing_account_keeps_need_create() {
+        let l = FakeLookup {
+            hit: None,
+            seen: std::sync::Mutex::new(vec![]),
+        };
+        let out = resolve(
+            LoginOutcome::NeedCreate { names: vec![] },
+            "open-1",
+            7,
+            0,
+            Some(&l),
+        )
+        .await;
+        assert!(matches!(out, LoginOutcome::NeedCreate { .. }));
+        assert_eq!(l.seen.lock().expect("锁").len(), 1);
+    }
+
+    #[tokio::test]
+    async fn reject_does_not_touch_lookup() {
+        let l = FakeLookup {
+            hit: Some(acc(9001)),
+            seen: std::sync::Mutex::new(vec![]),
+        };
+        let out = resolve(
+            LoginOutcome::Reject(RetCode::ServerWeihu),
+            "open-1",
+            7,
+            0,
+            Some(&l),
+        )
+        .await;
+        assert_eq!(out, LoginOutcome::Reject(RetCode::ServerWeihu));
+        assert!(
+            l.seen.lock().expect("锁").is_empty(),
+            "Reject 分支不得产生任何 IO"
+        );
     }
 }

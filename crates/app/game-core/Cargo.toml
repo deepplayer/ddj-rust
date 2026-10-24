@@ -27,6 +27,7 @@ ddj-db.workspace         = true
 ddj-cache.workspace      = true
 ddj-template.workspace   = true
 ddj-repo.workspace       = true
+chrono.workspace         = true
 ddj-player.workspace     = true
 ddj-item.workspace       = true
 ddj-mail.workspace       = true

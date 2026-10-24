@@ -14,6 +14,14 @@ pub trait PlayerRepo: Send + Sync {
     async fn find(&self, id: PlayerId) -> Result<Option<PlayerRow>>;
     /// 保存（全字段覆盖）。
     async fn save(&self, row: &PlayerRow) -> Result<()>;
+
+    /// 按账号找角色（对应原版 `PlayerServerModule.getPlayerByOpenId`）。
+    ///
+    /// `open_id` 是 `LoginReq_4.openId`，`server_id` 用来区分分服。
+    async fn find_by_open_id(&self, open_id: &str, server_id: i32) -> Result<Option<PlayerRow>>;
+
+    /// 建角色。`player_id` 由调用方生成（原版由 `PlayerServerModule` 发号）。
+    async fn create(&self, row: &PlayerRow) -> Result<()>;
 }
 
 /// 道具仓储。
