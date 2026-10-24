@@ -46,6 +46,7 @@ pub mod item;
 pub mod login;
 pub mod mail;
 pub mod player;
+pub mod push;
 pub mod rank;
 pub mod shop;
 pub mod task;
