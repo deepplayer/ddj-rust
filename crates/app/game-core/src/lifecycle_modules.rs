@@ -46,11 +46,19 @@ impl Module for DatabaseModule {
     }
 
     async fn pre_init(&mut self) -> Result<()> {
-        comps()
-            .db
-            .ping()
+        let db = &comps().db;
+        db.ping()
             .await
             .map_err(|e| ddj_core::AppError::BadRequest(format!("数据库不可用: {e}")))?;
+        // 两个库都跑同一套迁移（全部 IF NOT EXISTS，幂等）：
+        // platform 承载 277 张 bf_* 表，game 承载 player/item/mail/guild。
+        ddj_db::migration::run(&db.platform)
+            .await
+            .map_err(|e| ddj_core::AppError::BadRequest(format!("platform 迁移失败: {e}")))?;
+        ddj_db::migration::run(&db.game)
+            .await
+            .map_err(|e| ddj_core::AppError::BadRequest(format!("game 迁移失败: {e}")))?;
+        tracing::info!("数据库迁移完成");
         Ok(())
     }
 }

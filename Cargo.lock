@@ -698,6 +698,7 @@ dependencies = [
  "ddj-template",
  "inventory",
  "serde",
+ "sqlx",
  "tokio",
  "tracing",
 ]
@@ -747,6 +748,7 @@ dependencies = [
 name = "ddj-http"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "axum",
  "bytes",
  "dashmap",

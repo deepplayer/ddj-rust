@@ -384,6 +384,9 @@ impl Bootstrap {
         // 模块工厂无参，组件与停机信号在这里显式注入（见 wiring::install 的说明）。
         crate::wiring::install(comps.clone(), stop_rx.clone());
 
+        // GM 三个端点依赖它；判定层在 ddj-http，这里只装 IO。
+        crate::gm_backend::install(&comps);
+
         // ---- Start / Ready：生命周期 ----
         let ctx = ServiceContext {
             service: self.kind.name(),

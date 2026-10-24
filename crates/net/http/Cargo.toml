@@ -11,6 +11,7 @@ authors.workspace      = true
 workspace = true
 
 [dependencies]
+async-trait.workspace = true
 ddj-core.workspace      = true
 ddj-config.workspace    = true
 ddj-telemetry.workspace = true

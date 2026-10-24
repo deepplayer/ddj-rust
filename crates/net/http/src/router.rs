@@ -97,13 +97,14 @@ async fn sdk_pay() -> Json<Value> {
 ///
 /// 用 trait 而不是直接把连接池塞进 `HttpState`，是因为这两个查询落在**不同的库**：
 /// `player` 在游戏库、`user_cdk` 在 `platform` 库。
+#[async_trait::async_trait]
 pub trait GmBackend: Send + Sync {
     /// `SELECT 1 FROM player WHERE id = $1`
-    fn player_exists(&self, userid: &str) -> Result<bool, String>;
+    async fn player_exists(&self, userid: &str) -> Result<bool, String>;
     /// `SELECT 1 FROM user_cdk WHERE userid = $1`
-    fn has_cdk(&self, userid: &str) -> Result<bool, String>;
+    async fn has_cdk(&self, userid: &str) -> Result<bool, String>;
     /// 原版 `sendPostRequest("http://127.0.0.1:1544" + path, $code)`，返回值被丢弃。
-    fn push(&self, path: &str, body: &str) -> Result<(), String>;
+    async fn push(&self, path: &str, body: &str) -> Result<(), String>;
 }
 
 static GM_BACKEND: OnceLock<Arc<dyn GmBackend>> = OnceLock::new();
@@ -139,7 +140,7 @@ async fn gm_pay(Form(form): Form<GmForm>) -> Response {
             .into_response();
     };
     let action = gm::parse_action(&form.request_type);
-    let player_exists = match backend.player_exists(&form.userid) {
+    let player_exists = match backend.player_exists(&form.userid).await {
         Ok(v) => v,
         Err(e) => {
             return (
@@ -151,7 +152,7 @@ async fn gm_pay(Form(form): Form<GmForm>) -> Response {
     };
     // 玩家不存在时原版不会去查 CDK，这里同样短路，避免无谓查询。
     let has_cdk = if player_exists {
-        match backend.has_cdk(&form.userid) {
+        match backend.has_cdk(&form.userid).await {
             Ok(v) => v,
             Err(e) => {
                 return (
@@ -173,7 +174,7 @@ async fn gm_pay(Form(form): Form<GmForm>) -> Response {
             GmAction::Tingfu => "",
         };
         // 原版丢弃下游结果，这里只记不报。
-        if let Err(e) = backend.push(path, &form.code) {
+        if let Err(e) = backend.push(path, &form.code).await {
             tracing::warn!(path, error = %e, "GM 下游转发失败，按原版仍回成功");
         }
     }

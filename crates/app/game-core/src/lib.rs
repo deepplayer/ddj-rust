@@ -17,6 +17,7 @@
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 pub mod bootstrap;
+pub mod gm_backend;
 pub mod lifecycle_modules;
 pub mod modules;
 pub mod wiring;

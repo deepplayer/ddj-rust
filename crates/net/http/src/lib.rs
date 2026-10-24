@@ -24,4 +24,4 @@ pub mod router;
 
 pub use error::{ErrorCode, HttpError};
 pub use middleware::RateLimiter;
-pub use router::{build_router, HttpState};
+pub use router::{build_router, install_gm_backend, GmBackend, HttpState};
