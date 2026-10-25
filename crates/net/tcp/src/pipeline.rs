@@ -18,7 +18,7 @@ pub async fn dispatch(
     guards: &GuardChain,
     ctx: &HandlerCtx,
     frame: Frame,
-) -> Result<Option<Bytes>> {
+) -> Result<Option<ddj_registry::Reply>> {
     guards.run(ctx)?;
 
     let Some(h) = table.get(frame.cmd_id) else {

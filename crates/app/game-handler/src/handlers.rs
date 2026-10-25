@@ -19,7 +19,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use bytes::Bytes;
 use ddj_core::{Clock, Result};
-use ddj_registry::{ErasedHandler, HandlerCtx, HandlerTable};
+use ddj_registry::{ErasedHandler, HandlerCtx, HandlerTable, Reply};
 use prost::Message;
 
 use crate::handshake::{
@@ -87,7 +87,7 @@ impl ErasedHandler for LoginHandler {
         false
     }
 
-    async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Bytes>> {
+    async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Reply>> {
         let now = chrono::Utc::now().timestamp_millis();
         // 原版 `UtilsTools.random(1, 10000)`。这里用高精度时间戳取模，
         // 在同一毫秒内多次登录会重复，但原版 prng 也不是密码学强度。
@@ -214,7 +214,7 @@ impl ErasedHandler for CreatePlayerHandler {
         false
     }
 
-    async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Bytes>> {
+    async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Reply>> {
         let req = ddj_pb::gen::engine_message::CreatePlayerReq6::decode(body)
             .map_err(|e| ddj_core::AppError::BadRequest(format!("创角包解码失败: {e}")))?;
         let name = req.name.clone().unwrap_or_default();
@@ -298,7 +298,7 @@ impl ErasedHandler for HandshakeHandler {
         self.cmd
     }
 
-    async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Bytes>> {
+    async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Reply>> {
         // 三个 Req 的第一个字段都是 `optional string itemId = 1`，
         // 用最小的解码器取它，避免为一个字段依赖三种生成类型。
         let item_id = decode_first_string(body.as_ref())
@@ -386,7 +386,7 @@ impl ErasedHandler for GuideHandler {
         CMD_SAVE_GUIDE
     }
 
-    async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Bytes>> {
+    async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Reply>> {
         let player = ctx.require_player()?;
         let req = ddj_pb::gen::player_message::ClientSaveGuideIdReq1103::decode(body)
             .map_err(|e| ddj_core::AppError::BadRequest(format!("引导存档包解码失败: {e}")))?;
@@ -432,7 +432,7 @@ impl ErasedHandler for CacheSaveHandler {
         CMD_SAVE_CACHE
     }
 
-    async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Bytes>> {
+    async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Reply>> {
         let player = ctx.require_player()?;
         let req = ddj_pb::gen::player_message::PlayerSaveCacheDataReq1111::decode(body)
             .map_err(|e| ddj_core::AppError::BadRequest(format!("缓存存档包解码失败: {e}")))?;
@@ -472,7 +472,7 @@ impl ErasedHandler for CacheGetHandler {
         CMD_GET_CACHE
     }
 
-    async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Bytes>> {
+    async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Reply>> {
         let player = ctx.require_player()?;
         let req = ddj_pb::gen::player_message::GetPlayerCacheDataReq1112::decode(body)
             .map_err(|e| ddj_core::AppError::BadRequest(format!("读缓存包解码失败: {e}")))?;

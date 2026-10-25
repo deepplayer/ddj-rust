@@ -33,7 +33,7 @@ use std::sync::{Arc, Mutex};
 use async_trait::async_trait;
 use bytes::Bytes;
 use ddj_core::{AppError, PlayerId, Result};
-use ddj_registry::{ErasedHandler, HandlerCtx};
+use ddj_registry::{ErasedHandler, HandlerCtx, Reply};
 
 use crate::amber::AmberModelState;
 use crate::mail::MailRecord;
@@ -109,7 +109,7 @@ pub struct FnHandler<F> {
 
 impl<F> FnHandler<F>
 where
-    F: Fn(&HandlerCtx, Bytes) -> Result<Option<Bytes>> + Send + Sync + 'static,
+    F: Fn(&HandlerCtx, Bytes) -> Result<Option<Reply>> + Send + Sync + 'static,
 {
     /// 需要登录的消息。
     pub fn new(cmd: i32, f: F) -> Self {
@@ -131,7 +131,7 @@ where
 #[async_trait]
 impl<F> ErasedHandler for FnHandler<F>
 where
-    F: Fn(&HandlerCtx, Bytes) -> Result<Option<Bytes>> + Send + Sync + 'static,
+    F: Fn(&HandlerCtx, Bytes) -> Result<Option<Reply>> + Send + Sync + 'static,
 {
     fn cmd_id(&self) -> i32 {
         self.cmd
@@ -141,7 +141,7 @@ where
         self.requires_login
     }
 
-    async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Bytes>> {
+    async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Reply>> {
         (self.f)(ctx, body)
     }
 }

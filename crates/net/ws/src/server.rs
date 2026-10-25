@@ -179,8 +179,8 @@ async fn conn(mut socket: WebSocket, peer: SocketAddr, srv: WsServer) {
                     match ddj_tcp::pipeline::dispatch(&inner.handlers, &inner.guards, &ctx, frame)
                         .await
                     {
-                        Ok(Some(body)) => {
-                            let resp = Frame::new(ctx.cmd_id, body);
+                        Ok(Some(reply)) => {
+                            let resp = Frame::new(reply.cmd.unwrap_or(ctx.cmd_id), reply.body);
                             if send_frame(&mut socket, &resp).await.is_err() {
                                 return;
                             }

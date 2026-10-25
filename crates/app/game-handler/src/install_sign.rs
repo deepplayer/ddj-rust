@@ -18,7 +18,7 @@ use ddj_pb::gen::sign_message::{
     MsgGetSignReq16004, MsgGetSignResp16004, MsgSignBoxReq16003, MsgSignBoxResp16003,
     MsgSignReq16002,
 };
-use ddj_registry::HandlerTable;
+use ddj_registry::{HandlerTable, Reply};
 use prost::Message;
 
 use crate::runtime::{decode_err, FnHandler, MemWorld};
@@ -26,6 +26,9 @@ use crate::sign::{self, ClaimBoxOutcome, SignOutcome};
 
 /// 东八区偏移（毫秒）。对应部署环境的 `Asia/Shanghai`。
 const TZ_MS: i64 = 8 * 3600 * 1000;
+
+/// `ErrorResp_1` 自己的消息号（原版 `HandlerException` 出口用它组帧）。
+const ERROR_RESP_CMD: i32 = 1;
 
 /// `DailySignDB` 的 `randTimes`：每行配 5 个奖励、抽 3 个（实测 `M-每日签到表-DailySign.csv` 21 行）。
 const RAND_TIMES: i32 = 3;
@@ -51,7 +54,10 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
 
             let next = match sign::sign(&state, now, TZ_MS) {
                 SignOutcome::Reject(code) => {
-                    return Ok(Some(sign::error_resp(16002, code).encode_to_vec().into()));
+                    return Ok(Some(Reply::with_cmd(
+                        ERROR_RESP_CMD,
+                        sign::error_resp(16002, code).encode_to_vec(),
+                    )));
                 }
                 SignOutcome::Accept(next) => next,
             };
@@ -86,7 +92,10 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
             let state = sign::refresh(&cur, now, TZ_MS).state;
             match sign::claim_box(&state, id, days, &[]) {
                 ClaimBoxOutcome::Reject(code) => {
-                    Ok(Some(sign::error_resp(16003, code).encode_to_vec().into()))
+                    Ok(Some(Reply::with_cmd(
+                        ERROR_RESP_CMD,
+                        sign::error_resp(16003, code).encode_to_vec(),
+                    )))
                 }
                 ClaimBoxOutcome::Accept { state, .. } => {
                     w.with(p, |b| b.sign = state);

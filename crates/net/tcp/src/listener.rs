@@ -211,8 +211,9 @@ async fn serve_conn(
 
         ctx.cmd_id = frame.cmd_id;
         match crate::pipeline::dispatch(&handlers, &guards, &ctx, frame).await {
-            Ok(Some(body)) => {
-                let resp = Frame::new(ctx.cmd_id, body);
+            Ok(Some(reply)) => {
+                // `Reply::cmd` 为 `Some` 时换号组帧（`ErrorResp_1` 走这条）。
+                let resp = Frame::new(reply.cmd.unwrap_or(ctx.cmd_id), reply.body);
                 if let Err(e) = framed.send(resp).await {
                     tracing::debug!(peer = %peer, error = %e, "写回失败，断连");
                     return;

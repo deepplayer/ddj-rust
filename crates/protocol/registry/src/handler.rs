@@ -71,6 +71,6 @@ pub trait ErasedHandler: Send + Sync {
     fn requires_login(&self) -> bool {
         true
     }
-    /// 处理裸字节，返回裸响应字节。
-    async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Bytes>>;
+    /// 处理裸字节，返回待回包（`Reply::cmd` 为 `None` 时沿用请求的消息号）。
+    async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Reply>>;
 }
