@@ -550,6 +550,11 @@ mod tests {
             None,
             None,
             None,
+            ViewDeps {
+                repo: None,
+                my_server_id: 1,
+                id_range: 1_000_000,
+            },
         )
         .expect("注册");
         assert_eq!(n, 1);
