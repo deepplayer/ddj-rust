@@ -9,7 +9,7 @@
 //!
 //! 接好模板后只替换这两个常量的使用点，业务函数与回包逻辑不动。
 
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 
 use ddj_core::{Clock, PlayerId};
 use ddj_pb::gen::sys_activity_message::{
@@ -52,23 +52,49 @@ fn amber_data(state: &AmberModelState) -> AmberData {
     }
 }
 
-/// 只读查询器（模板表暂空）。
+/// 真实琥珀表（由 `game-core` 启动时注入）。
+///
+/// 实测 `H-琥珀福利-AmberWelfare.csv` 共 31 行：
+/// - `type=1` 7 行（day 1..7，每日签到奖励，如 `219=1`）
+/// - `type=2` 1 行（专属奖励，`11=1;33=1;215=3;216=3;30=1;234=1`）
+/// - `type=3` 23 行（充值豪礼，`payValue` 是门槛 98/198/328/648…）
+#[derive(Debug, Default)]
+pub struct AmberTables {
+    /// `type=1` 的行，按 `day` 升序。
+    pub sign_in: Vec<AmberTemplate>,
+    /// `type=2` 的行（只有一行）。
+    pub exclusive: Option<AmberTemplate>,
+    /// `type=3` 的行。
+    pub charges: Vec<AmberTemplate>,
+}
+
+static AMBER_TABLES: OnceLock<Arc<AmberTables>> = OnceLock::new();
+
+/// 注入真实琥珀表（只第一次生效）。
+pub fn install_amber_tables(t: Arc<AmberTables>) {
+    let _ = AMBER_TABLES.set(t);
+}
+
+fn tables() -> Option<&'static Arc<AmberTables>> {
+    AMBER_TABLES.get()
+}
+
+/// 只读查询器。
 struct MemLookup {
-    sign_in: Vec<AmberTemplate>,
-    charge: Vec<AmberTemplate>,
+    empty: Vec<AmberTemplate>,
 }
 
 impl AmberLookup for MemLookup {
     fn sign_in_dbs(&self) -> &[AmberTemplate] {
-        &self.sign_in
+        tables().map_or(&self.empty[..], |t| &t.sign_in[..])
     }
 
     fn exclusive_db(&self) -> Option<&AmberTemplate> {
-        None
+        tables().and_then(|t| t.exclusive.as_ref())
     }
 
     fn by_id(&self, id: i32) -> Option<&AmberTemplate> {
-        self.charge.iter().find(|d| d.id == id)
+        tables().and_then(|t| t.charges.iter().find(|d| d.id == id))
     }
 }
 
@@ -139,8 +165,7 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
                 )));
             }
             let lookup = MemLookup {
-                sign_in: Vec::new(),
-                charge: Vec::new(),
+                empty: Vec::new(),
             };
             let mut store = MemStore {
                 world: &w,
@@ -163,8 +188,7 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
             let p = ctx.require_player()?;
             let state = w.peek(p, |b| b.amber.clone());
             let lookup = MemLookup {
-                sign_in: Vec::new(),
-                charge: Vec::new(),
+                empty: Vec::new(),
             };
             let mut store = MemStore {
                 world: &w,
@@ -187,8 +211,7 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
             let p = ctx.require_player()?;
             let state = w.peek(p, |b| b.amber.clone());
             let lookup = MemLookup {
-                sign_in: Vec::new(),
-                charge: Vec::new(),
+                empty: Vec::new(),
             };
             let mut store = MemStore {
                 world: &w,
