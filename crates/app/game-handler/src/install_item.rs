@@ -29,7 +29,7 @@ use crate::item::{
 use crate::runtime::{decode_err, resources_to_msg, FnHandler, MemWorld};
 
 /// 过渡期用的最小模板上限（真实值来自 `ItemDB.useLimit`）。
-use std::sync::{Arc, OnceLock};
+use std::sync::OnceLock;
 
 const ASSUMED_USE_LIMIT: i32 = 999;
 
