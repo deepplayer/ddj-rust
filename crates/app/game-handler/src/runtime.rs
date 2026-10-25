@@ -221,8 +221,8 @@ pub struct AsyncHandler<F> {
 
 impl<F, Fut> AsyncHandler<F>
 where
-    F: Fn(ddj_registry::HandlerCtx, bytes::Bytes) -> Fut + Send + Sync + 'static,
-    Fut: std::future::Future<Output = ddj_core::Result<Option<Reply>>> + Send + 'static,
+    F: Fn(HandlerCtx, Bytes) -> Fut + Send + Sync + 'static,
+    Fut: std::future::Future<Output = Result<Option<Reply>>> + Send + 'static,
 {
     /// 需要登录的消息。
     pub fn new(cmd: i32, f: F) -> Self {
@@ -234,11 +234,11 @@ where
     }
 }
 
-#[async_trait::async_trait]
-impl<F, Fut> ddj_registry::ErasedHandler for AsyncHandler<F>
+#[async_trait]
+impl<F, Fut> ErasedHandler for AsyncHandler<F>
 where
-    F: Fn(ddj_registry::HandlerCtx, bytes::Bytes) -> Fut + Send + Sync + 'static,
-    Fut: std::future::Future<Output = ddj_core::Result<Option<Reply>>> + Send + 'static,
+    F: Fn(HandlerCtx, Bytes) -> Fut + Send + Sync + 'static,
+    Fut: std::future::Future<Output = Result<Option<Reply>>> + Send + 'static,
 {
     fn cmd_id(&self) -> i32 {
         self.cmd
@@ -250,9 +250,9 @@ where
 
     async fn handle_raw(
         &self,
-        ctx: &ddj_registry::HandlerCtx,
-        body: bytes::Bytes,
-    ) -> ddj_core::Result<Option<Reply>> {
+        ctx: &HandlerCtx,
+        body: Bytes,
+    ) -> Result<Option<Reply>> {
         (self.f)(ctx.clone(), body).await
     }
 }
