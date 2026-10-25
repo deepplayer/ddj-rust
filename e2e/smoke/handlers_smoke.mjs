@@ -128,6 +128,12 @@ const CASES = [
   ['17097 HeyTapVIP', 17097, Buffer.alloc(0)],
 ];
 
+// 原版就不回包的消息：断言「收到回包」反而是错的。
+const NO_REPLY = [
+  // PlayerCacheTemp{key=7, value='x'} → 字段 1 是嵌套消息
+  ['1100 存档回写', 1100, Buffer.from([0x0a, 0x06, 0x08, 0x07, 0x12, 0x01, 0x78])],
+];
+
 const main = async () => {
   const c = await new Client().connect();
   const enc = xxteaEncrypt(Buffer.from(loginBody().toString('base64'), 'binary'), SIGN_KEY);
@@ -150,8 +156,18 @@ const main = async () => {
       console.log('  ❌ %s → %s', name, e.message);
     }
   }
+  for (const [name, cmd, body] of NO_REPLY) {
+    try {
+      await c.call(cmd, body, 1200);
+      console.log('  ⚠️ %s → 意外收到回包', name);
+    } catch {
+      console.log('  ✅ %s → 无回包（符合原版）', name);
+      pass++;
+    }
+  }
   c.close();
-  console.log('\n%s %d/%d 有回包', pass === CASES.length ? '✅' : '⚠️', pass, CASES.length);
+  const total = CASES.length + NO_REPLY.length;
+  console.log('\n%s %d/%d', pass === total ? '✅' : '⚠️', pass, total);
   if (pass !== CASES.length) process.exit(1);
 };
 
