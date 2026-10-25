@@ -31,6 +31,7 @@
 
 pub mod loader;
 pub mod raw;
+pub mod raw_table;
 pub mod schema;
 pub mod store;
 
