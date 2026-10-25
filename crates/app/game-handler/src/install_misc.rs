@@ -44,10 +44,9 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
 
     // 1009 使用礼包码。
     {
-        let w = world.clone();
         table.insert(Box::new(FnHandler::new(1009, move |ctx, body| {
             let req = PlayerUseGiftKeyReq1009::decode(body).map_err(decode_err)?;
-            let p = ctx.require_player()?;
+            ctx.require_player()?;
             let key = req.gift_key.clone().unwrap_or_default();
             // 过渡期 GsGiftManager 为空 → exists 恒 false。
             let out = player_misc::use_gift_key(&key, false);
@@ -55,7 +54,6 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
                 GiftKeyOutcome::Reject(code) => code.as_i32(),
                 GiftKeyOutcome::Accept => 0,
             };
-            let _ = w.peek(p, |_| ());
             Ok(Some(Reply::same(
                 PlayerUseGiftKeyResp1009 {
                     ret,
@@ -104,10 +102,9 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
 
     // 1015 系统开启。
     {
-        let w = world.clone();
         table.insert(Box::new(FnHandler::new(1015, move |ctx, body| {
             let req = SystemOpenReq1015::decode(body).map_err(decode_err)?;
-            let p = ctx.require_player()?;
+            ctx.require_player()?;
             let system_id = req.system_id.unwrap_or(0);
             // 过渡期没有 SystemOpenDB 模板。
             let out = player_misc::system_open(system_id, None);
@@ -115,7 +112,6 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
                 SystemOpenOutcome::Accept { .. } => 0,
                 SystemOpenOutcome::Reject(code) => code.as_i32(),
             };
-            let _ = w.peek(p, |_| ());
             Ok(Some(Reply::same(SystemOpenResp1015 { ret }.encode_to_vec())))
         })));
         n += 1;
