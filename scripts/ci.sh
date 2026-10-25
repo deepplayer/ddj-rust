@@ -13,8 +13,14 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."
 step() { printf '\n=== %s ===\n' "$1"; }
 
 if [ "${SKIP_PULL:-0}" != "1" ]; then
-  step "git pull"
-  git pull --ff-only
+  step "sync"
+  # 远端工作区的唯一真源是 gitee/main：先硬切到它再编译。
+  # 不要用 tar / 上传覆盖工作区 —— 那样「编译的代码」与「仓库里的代码」会不一致，
+  # 出问题时无法回答「这个二进制对应哪个 commit」。
+  git fetch gitee --prune
+  git reset --hard gitee/main
+  git clean -fd
+  git --no-pager log --oneline -1
 fi
 
 step "fmt"
