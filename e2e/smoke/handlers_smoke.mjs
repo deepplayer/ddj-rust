@@ -70,7 +70,7 @@ class Client {
       // 客户端必须按 msgId 派发，否则会把 msgId 当成业务 ret。
       const key = cmd === 1 ? head[1] : cmd;
       const slot = this.#q.get(key);
-      if (slot) { this.#q.delete(key); slot({ cmd, head }); }
+      if (slot) { this.#q.delete(key); slot({ cmd, head, body: b.subarray(10) }); }
     };
     return this;
   }
