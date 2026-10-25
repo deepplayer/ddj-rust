@@ -49,6 +49,8 @@ pub struct MemWorld {
 /// 单个玩家的全部内存态。
 #[derive(Debug, Default)]
 pub struct PlayerBox {
+    /// `Player.wealRewardStatus`：福利领奖状态，非 0 表示已领。
+    pub weal_reward_status: i32,
     /// 背包：`templateId → num`。
     pub bag: HashMap<i32, i64>,
     /// 时效道具：`id → (templateId, num, deadline)`。
