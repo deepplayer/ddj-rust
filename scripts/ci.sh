@@ -18,16 +18,16 @@ if [ "${SKIP_PULL:-0}" != "1" ]; then
 fi
 
 step "fmt"
-cargo fmt --all -- --check
+RUSTFLAGS="-C link-arg=-fuse-ld=lld" cargo fmt --all -- --check
 
 step "clippy"
-cargo clippy --workspace --all-targets -- -D warnings
+RUSTFLAGS="-C link-arg=-fuse-ld=lld" cargo clippy --workspace --all-targets -- -D warnings
 
 step "test"
-cargo test --workspace
+RUSTFLAGS="-C link-arg=-fuse-ld=lld" cargo test --workspace
 
 step "release build"
-cargo build --release -p ddj-cli
+RUSTFLAGS="-C link-arg=-fuse-ld=lld" cargo build --release -p ddj-cli
 
 step "artifact"
 ls -la target/release/ddj

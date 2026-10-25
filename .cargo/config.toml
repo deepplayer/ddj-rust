@@ -1,6 +1,10 @@
-# 本机只有 1.9 GB 内存，限制并行度避免 OOM
-[build]
-jobs = 1
+# 注意：并行度不写在这里。
+#
+# 本机只有 1.9 GB 内存，需要 jobs = 1；远端 32 核 126 GB 需要高并行。
+# 若写进仓库配置，本地设置会被同步到远端，把 32 核压成单核（实测过一次）。
+# 所以：
+#   - 本机：~/.cargo/config.toml 里写 jobs = 1（用户级，不入库）
+#   - 远端：走默认（= 核数），或 CI 里显式 CARGO_BUILD_JOBS
 
 [target.x86_64-unknown-linux-gnu]
 linker = "cc"
