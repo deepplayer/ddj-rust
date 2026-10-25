@@ -1,13 +1,13 @@
 //! 琥珀会员 6 条消息的接线（17091 / 17092 / 17093 / 17094 / 17095 / 17097）。
 //!
 //! ## 过渡期的两处假定
-//! 原版的门禁是 `AmberWelfareDBCache.getOppoCids()`（渠道白名单）与「充值回调里置
-//! `amberVip`」。这两处都要真实配置/支付链路，仓储还没接，所以先用两个常量顶住：
+//! 原版门禁是 `AmberWelfareDBCache.getOppoCids()`（渠道白名单）与充值回调里置
+//! `amberVip`。两处都要真实配置/支付链路，仓储还没接，先用两个常量顶住：
 //!
 //! - [`ASSUMED_AMBER_CID`]：视为白名单内的渠道号；
 //! - [`ASSUMED_AMBER_VIP`]：视为已开通会员，让 `check_vip` 放行。
 //!
-//! 接好模板后只需把这两个常量的使用点换掉，业务函数与回包逻辑不用动。
+//! 接好模板后只替换这两个常量的使用点，业务函数与回包逻辑不动。
 
 use std::sync::Arc;
 
@@ -17,7 +17,8 @@ use ddj_pb::gen::sys_activity_message::{
     AmberWelfareChargeGiftReq17094, AmberWelfareDataReq17091, AmberWelfareExclusiveReq17093,
     AmberWelfareSignReq17092,
 };
-use ddj_registry::{HandlerTable, Reply};
+use ddj_registry::HandlerTable;
+use ddj_registry::Reply;
 use prost::Message;
 
 use crate::amber::{self, AmberData, AmberLookup, AmberModelState, AmberStore, AmberTemplate};
@@ -33,7 +34,7 @@ const ASSUMED_AMBER_CID: &str = "1";
 /// 过渡期假定已开通琥珀会员。
 const ASSUMED_AMBER_VIP: bool = true;
 
-/// 东八区偏移（毫秒）。原版用 `LogicUtils.isSameDay` 走服务器默认时区。
+/// 东八区偏移（毫秒）。原版 `LogicUtils.isSameDay` 走服务器默认时区。
 const TZ_OFFSET_MS: i64 = 8 * 3_600 * 1_000;
 
 /// 从内存态合成 `AmberData`。
@@ -75,7 +76,6 @@ impl AmberLookup for MemLookup {
 struct MemStore<'a> {
     world: &'a MemWorld,
     player: PlayerId,
-    events: Vec<String>,
 }
 
 impl AmberStore for MemStore<'_> {
@@ -100,8 +100,10 @@ impl AmberStore for MemStore<'_> {
         desc: &str,
         rewards: &[Reward],
     ) {
-        self.events
-            .push(format!("amber kind={kind} db={db_id} charge={charge_num} {desc} {rewards:?}"));
+        tracing::info!(
+            target: "ddj_game_handler::amber",
+            kind, db_id, charge_num, desc, ?rewards, "琥珀领奖"
+        );
     }
 }
 
@@ -112,110 +114,106 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
     // 17091 拉活动数据。
     {
         let w = world.clone();
-        table.insert(Arc::new(FnHandler::new(17091, move |ctx: ddj_registry::HandlerCtx, body| {
-            let w = w.clone();
-            async move {
-                let pid = ctx.require_player()?;
-                let _req = AmberWelfareDataReq17091::decode(body).map_err(decode_err)?;
-                let state = w.peek(pid, |b| b.amber.clone());
-                let data = amber_data(&state);
-                let resp = amber::query_resp(ASSUMED_AMBER_CID, Some(&data));
-                Ok(Some(Reply::same(resp.encode_to_vec())))
-            }
+        table.insert(Box::new(FnHandler::new(17091, move |ctx, body| {
+            let _req = AmberWelfareDataReq17091::decode(body).map_err(decode_err)?;
+            let p = ctx.require_player()?;
+            let state = w.peek(p, |b| b.amber.clone());
+            let resp = amber::query_resp(ASSUMED_AMBER_CID, Some(&amber_data(&state)));
+            Ok(Some(Reply::same(resp.encode_to_vec())))
         })));
         n += 1;
     }
 
     // 17092 签到。
     {
-        let w = world.clone();
-        let c = clock.clone();
-        table.insert(Arc::new(FnHandler::new(17092, move |ctx: ddj_registry::HandlerCtx, body| {
-            let (w, c) = (w.clone(), c.clone());
-            async move {
-                let pid = ctx.require_player()?;
-                let _req = AmberWelfareSignReq17092::decode(body).map_err(decode_err)?;
-                let state = w.peek(pid, |b| b.amber.clone());
-                let data = amber_data(&state);
-                if let Err(code) = amber::check_vip(Some(&data)) {
-                    return Ok(Some(Reply::with_cmd(
-                        ERROR_RESP_CMD,
-                        error_resp(17092, code).encode_to_vec(),
-                    )));
-                }
-                let lookup = MemLookup { sign_in: Vec::new(), charge: Vec::new() };
-                let mut store = MemStore { world: &w, player: pid, events: Vec::new() };
-                let now = c.now_millis();
-                let out = amber::sign_up(&state, now, TZ_OFFSET_MS, &lookup, &mut store);
-                Ok(Some(Reply::same(
-                    amber::build_sign_resp(&out).encode_to_vec(),
-                )))
+        let (w, c) = (world.clone(), clock.clone());
+        table.insert(Box::new(FnHandler::new(17092, move |ctx, body| {
+            let _req = AmberWelfareSignReq17092::decode(body).map_err(decode_err)?;
+            let p = ctx.require_player()?;
+            let state = w.peek(p, |b| b.amber.clone());
+            if let Err(code) = amber::check_vip(Some(&amber_data(&state))) {
+                // 原版 `HandlerException` 出口是 `ErrorResp_1`。
+                return Ok(Some(Reply::with_cmd(
+                    ERROR_RESP_CMD,
+                    error_resp(17092, code).encode_to_vec(),
+                )));
             }
+            let lookup = MemLookup {
+                sign_in: Vec::new(),
+                charge: Vec::new(),
+            };
+            let mut store = MemStore {
+                world: &w,
+                player: p,
+            };
+            let now = c.now_millis();
+            let out = amber::sign_up(&state, now, TZ_OFFSET_MS, &lookup, &mut store);
+            Ok(Some(Reply::same(
+                amber::build_sign_resp(&out).encode_to_vec(),
+            )))
         })));
         n += 1;
     }
 
     // 17093 领取专属奖励。
     {
-        let w = world.clone();
-        let c = clock.clone();
-        table.insert(Arc::new(FnHandler::new(17093, move |ctx: ddj_registry::HandlerCtx, body| {
-            let (w, c) = (w.clone(), c.clone());
-            async move {
-                let pid = ctx.require_player()?;
-                let _req = AmberWelfareExclusiveReq17093::decode(body).map_err(decode_err)?;
-                let state = w.peek(pid, |b| b.amber.clone());
-                let lookup = MemLookup { sign_in: Vec::new(), charge: Vec::new() };
-                let mut store = MemStore { world: &w, player: pid, events: Vec::new() };
-                let now = c.now_millis();
-                let out = amber::rev_exclusive_reward(&state, now, &lookup, &mut store);
-                Ok(Some(Reply::same(
-                    amber::build_exclusive_resp(&out).encode_to_vec(),
-                )))
-            }
+        let (w, c) = (world.clone(), clock.clone());
+        table.insert(Box::new(FnHandler::new(17093, move |ctx, body| {
+            let _req = AmberWelfareExclusiveReq17093::decode(body).map_err(decode_err)?;
+            let p = ctx.require_player()?;
+            let state = w.peek(p, |b| b.amber.clone());
+            let lookup = MemLookup {
+                sign_in: Vec::new(),
+                charge: Vec::new(),
+            };
+            let mut store = MemStore {
+                world: &w,
+                player: p,
+            };
+            let now = c.now_millis();
+            let out = amber::rev_exclusive_reward(&state, now, &lookup, &mut store);
+            Ok(Some(Reply::same(
+                amber::build_exclusive_resp(&out).encode_to_vec(),
+            )))
         })));
         n += 1;
     }
 
     // 17094 领取充值豪礼。
     {
-        let w = world.clone();
-        let c = clock.clone();
-        table.insert(Arc::new(FnHandler::new(17094, move |ctx: ddj_registry::HandlerCtx, body| {
-            let (w, c) = (w.clone(), c.clone());
-            async move {
-                let pid = ctx.require_player()?;
-                let req = AmberWelfareChargeGiftReq17094::decode(body).map_err(decode_err)?;
-                let state = w.peek(pid, |b| b.amber.clone());
-                let lookup = MemLookup { sign_in: Vec::new(), charge: Vec::new() };
-                let mut store = MemStore { world: &w, player: pid, events: Vec::new() };
-                let now = c.now_millis();
-                let out = amber::rev_charge_gift(
-                    &state,
-                    req.id.unwrap_or(0),
-                    now,
-                    &lookup,
-                    &mut store,
-                );
-                Ok(Some(Reply::same(
-                    amber::build_charge_gift_resp(&out).encode_to_vec(),
-                )))
-            }
+        let (w, c) = (world.clone(), clock.clone());
+        table.insert(Box::new(FnHandler::new(17094, move |ctx, body| {
+            let req = AmberWelfareChargeGiftReq17094::decode(body).map_err(decode_err)?;
+            let p = ctx.require_player()?;
+            let state = w.peek(p, |b| b.amber.clone());
+            let lookup = MemLookup {
+                sign_in: Vec::new(),
+                charge: Vec::new(),
+            };
+            let mut store = MemStore {
+                world: &w,
+                player: p,
+            };
+            let now = c.now_millis();
+            let out =
+                amber::rev_charge_gift(&state, req.id.unwrap_or(0), now, &lookup, &mut store);
+            Ok(Some(Reply::same(
+                amber::build_charge_gift_resp(&out).encode_to_vec(),
+            )))
         })));
         n += 1;
     }
 
-    // 17095 同步琥珀 VIP 状态。
+    // 17095 同步琥珀 VIP 状态（原版纯转发，`AmberModelState` 不落 vip 位）。
     {
         let w = world.clone();
-        table.insert(Arc::new(FnHandler::new(17095, move |ctx: ddj_registry::HandlerCtx, body| {
-            let w = w.clone();
-            async move {
-                let pid = ctx.require_player()?;
-                let _req = AmberVipReq17095::decode(body).map_err(decode_err)?;
-                let _ = w.peek(pid, |_| ());
-                Ok(Some(Reply::same(AmberVipResp17095 { ret: 0 }.encode_to_vec())))
-            }
+        table.insert(Box::new(FnHandler::new(17095, move |ctx, body| {
+            let _req = AmberVipReq17095::decode(body).map_err(decode_err)?;
+            let p = ctx.require_player()?;
+            let _ = w.peek(p, |_| ());
+            Ok(Some(Reply::same(
+                AmberVipResp17095 { ret: 0 }.encode_to_vec(),
+            )))
         })));
         n += 1;
     }
@@ -223,19 +221,15 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
     // 17097 同步 HeyTap VIP 状态。
     {
         let w = world.clone();
-        table.insert(Arc::new(FnHandler::new(17097, move |ctx: ddj_registry::HandlerCtx, body| {
-            let w = w.clone();
-            async move {
-                let pid = ctx.require_player()?;
-                let _req = AmberHeyTapVipReq17097::decode(body).map_err(decode_err)?;
-                let state = w.peek(pid, |b| b.amber.clone());
-                let data = amber_data(&state);
-                let resp = AmberHeyTapVipResp17097 {
-                    ret: 0,
-                    amber_data: Some(data.to_msg()),
-                };
-                Ok(Some(Reply::same(resp.encode_to_vec())))
-            }
+        table.insert(Box::new(FnHandler::new(17097, move |ctx, body| {
+            let _req = AmberHeyTapVipReq17097::decode(body).map_err(decode_err)?;
+            let p = ctx.require_player()?;
+            let state = w.peek(p, |b| b.amber.clone());
+            let resp = AmberHeyTapVipResp17097 {
+                ret: 0,
+                amber_data: Some(amber_data(&state).to_msg()),
+            };
+            Ok(Some(Reply::same(resp.encode_to_vec())))
         })));
         n += 1;
     }
