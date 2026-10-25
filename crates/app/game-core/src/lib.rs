@@ -17,6 +17,7 @@
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 pub mod account;
+pub mod view_repo;
 pub mod bootstrap;
 pub mod create_player_repo;
 pub mod csv_amber;

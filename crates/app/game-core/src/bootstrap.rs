@@ -372,6 +372,8 @@ impl Bootstrap {
         };
 
         let mut table = HandlerTable::empty();
+        // 原版 `getPlayerIDRange()` 是运行时常量，创角与看他人共用一个。
+        const PLAYER_ID_RANGE: i64 = 1_000_000;
         let account_repo = Arc::new(ddj_repo::PgPlayerRepo::new((*db).clone()));
         let lookup: Arc<dyn ddj_game_handler::login::AccountLookup> =
             Arc::new(crate::account::PgAccountLookup::new(account_repo.clone()));
@@ -398,6 +400,9 @@ impl Bootstrap {
                 ddj_game_handler::runtime::MemWorld::new(),
                 Arc::new(ddj_core::SystemClock) as Arc<dyn ddj_core::Clock>,
             )),
+            Some(Arc::new(crate::view_repo::PgViewRepo::new(account_repo)) as Arc<dyn ddj_game_handler::install_view::ViewRepo>),
+            i64::from(cfg.service.server_id),
+            PLAYER_ID_RANGE,
         )?;
         tracing::info!(count = registered, "业务处理器已注册");
         let handlers = Arc::new(table);

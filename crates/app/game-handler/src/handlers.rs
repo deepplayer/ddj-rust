@@ -125,6 +125,9 @@ pub fn register(
     handshake: Option<Arc<dyn HandshakeStore>>,
     stores: Option<(Arc<dyn PlayerStateStore>, Arc<dyn Clock>)>,
     runtime: Option<(Arc<MemWorld>, Arc<dyn Clock>)>,
+    view: Option<Arc<dyn crate::install_view::ViewRepo>>,
+    my_server_id: i64,
+    id_range: i64,
 ) -> Result<usize> {
     let mut n = 0;
     let server_id = state.server_id;
@@ -166,6 +169,9 @@ pub fn register(
         n += crate::install_player::install(table, world.clone(), clock.clone());
         n += crate::install_sign::install(table, world.clone(), clock.clone());
         n += crate::install_state::install(table, world.clone(), clock.clone());
+        if let Some(v) = view {
+            n += crate::install_view::install(table, v, my_server_id, id_range, clock.clone());
+        }
         n += crate::install_mail::install(table, world, clock);
     }
     Ok(n)
