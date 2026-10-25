@@ -65,8 +65,12 @@ class Client {
     this.#ws.onmessage = (e) => {
       const b = Buffer.from(e.data);
       const cmd = b.readInt32BE(6);
-      const slot = this.#q.get(cmd);
-      if (slot) { this.#q.delete(cmd); slot({ cmd, head: parse(b.subarray(10)) }); }
+      const head = parse(b.subarray(10));
+      // 原版框架的错误出口是 ErrorResp_1（帧号 1），body.msgId 才是请求号。
+      // 客户端必须按 msgId 派发，否则会把 msgId 当成业务 ret。
+      const key = cmd === 1 ? head[1] : cmd;
+      const slot = this.#q.get(key);
+      if (slot) { this.#q.delete(key); slot({ cmd, head }); }
     };
     return this;
   }
