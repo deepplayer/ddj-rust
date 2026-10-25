@@ -1,0 +1,104 @@
+syntax = "proto2";
+
+package bf.messages.game.BridgeActivityMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgBridgeRewardDb {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 taskId = 4;
+    optional int32 rewardType = 5;
+    optional string name = 6;
+    optional int32 integral = 7;
+    optional int32 badgeType = 8;
+    optional string reward = 9;
+}
+
+message MsgBridgePlayerData {
+    optional MsgBridgeData msgBridgeData = 1;
+    optional int64 topScore = 2;
+    repeated MsgBridgeRewardStatus targetRewards = 3;
+    optional int32 randomCode = 4;
+}
+
+message MsgBridgeRewardStatus {
+    optional int32 id = 1;
+    optional int32 status = 2;
+}
+
+message MsgBridgeData {
+    optional int32 curPosition = 1;
+    optional int64 curScore = 2;
+    repeated MsgBridgeRewardStatus blessingRewards = 3;
+    optional int32 scrollTimes = 4;
+    optional int32 masterBridgeTimes = 5;
+    optional bool curBigCloud = 6;
+    optional bool nextBigCloud = 7;
+    optional int32 gameStage = 8;
+    optional int32 nextCloudDistance = 9;
+    optional int32 colorStoneTimes = 10;
+}
+
+message BridgeStartReq_35701 {
+    optional int32 activityId = 1;
+}
+
+message BridgeStartResp_35701 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional MsgBridgeData bridgeData = 3;
+    optional bool targetChanged = 4;
+    repeated MsgBridgeRewardStatus targetRewards = 5;
+}
+
+message BridgeMoveReq_35702 {
+    optional int32 activityId = 1;
+    optional int32 moveType = 2;
+    optional string antiCheating = 3;
+}
+
+message BridgeMoveResp_35702 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional MsgBridgeData bridgeData = 3;
+    optional bool targetChanged = 4;
+    repeated MsgBridgeRewardStatus targetRewards = 5;
+}
+
+message BridgeUseActItemReq_35703 {
+    optional int32 activityId = 1;
+    optional int32 itemId = 2;
+}
+
+message BridgeUseActItemResp_35703 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional MsgBridgeData bridgeData = 3;
+    optional bool targetChanged = 4;
+    repeated MsgBridgeRewardStatus targetRewards = 5;
+}
+
+message BridgeBlessingRewardReq_35704 {
+    optional int32 activityId = 1;
+    optional int32 taskId = 2;
+}
+
+message BridgeBlessingRewardResp_35704 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional MsgBridgeRewardStatus blessingReward = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 4;
+}
+
+message BridgeTargetRewardReq_35705 {
+    optional int32 activityId = 1;
+    optional int32 taskId = 2;
+}
+
+message BridgeTargetRewardResp_35705 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional MsgBridgeRewardStatus targetReward = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 4;
+}

@@ -1,0 +1,467 @@
+syntax = "proto2";
+
+package bf.messages.game.GmActivityColiseumMessage;
+
+import "CommonMsgMessage.proto";
+import "RankingMessage.proto";
+import "GmActivityMessage.proto";
+
+message MsgColiseumCrossAllTemplateData {
+    repeated MsgColiseumCrossTradeTaskDbData msgColiseumCrossTradeTaskDbData = 1;
+    repeated bf.messages.game.GmActivityMessage.MsgRank msgRank = 2;
+}
+
+message MsgColiseumCrossPlayerData {
+    optional int64 useCot = 1;
+    optional int32 index = 2;
+    optional int64 var = 3;
+    repeated int32 rankType = 4;
+    optional bool join = 5;
+    optional MsgColiseumCrossTopData msgColiseumCrossTopData = 6;
+}
+
+message MsgColiseumCrossTopData {
+    optional string topId = 11;
+    optional int32 topServerId = 12;
+    optional string topName = 13;
+    optional int32 topFamilyIco = 14;
+    optional string topValue = 15;
+    optional int32 topSex = 16;
+    repeated int32 topFashionIds = 17;
+    optional int32 topNpcSex = 18;
+}
+
+message MsgColiseumCrossTradeTaskDbData {
+    optional int32 actId = 1;
+    optional int32 taskId = 2;
+    optional string describe = 3;
+    optional string remarks = 4;
+    optional int32 tradeValue = 5;
+    optional int32 mailId = 6;
+    optional int32 jump = 7;
+    optional string icon = 8;
+    optional string reward = 9;
+}
+
+message MsgColiseumCrossData {
+    optional int64 integral = 1;
+    optional int32 index = 3;
+    optional int64 useCot = 2;
+    optional MsgColiseumCrossEntryData toMsgColiseumCrossEntryData = 4;
+    repeated int32 talentIds = 5;
+    optional MsgColiseumCrossNoticeEntryData noticeEntryData = 6;
+    repeated int32 achievementId = 7;
+    repeated int32 rankType = 8;
+    repeated bf.messages.game.RankingMessage.MsgRankingEntryData msgRankingEntryData = 9;
+    optional bool join = 10;
+    optional string manifesto = 11;
+}
+
+message MsgColiseumCrossEntryData {
+    optional int32 index = 1;
+    optional string playerId = 2;
+    optional string name = 3;
+    repeated int32 fashionIds = 4;
+    optional int32 sex = 5;
+    optional int32 lv = 6;
+    optional int64 integral = 7;
+    optional bf.messages.game.CommonMsgMessage.MsgAddress address = 8;
+    optional int32 serverId = 9;
+    optional string money = 10;
+    optional int32 talentNum = 11;
+    optional string manifesto = 12;
+    optional bool join = 13;
+    optional int32 npcSex = 14;
+}
+
+message MsgColiseumCrossBattleResultData {
+    optional int64 oldIntegral = 1;
+    optional int64 newIntegral = 2;
+    optional int32 index = 3;
+    optional int64 toOldIntegral = 4;
+    optional int64 toNewIntegral = 5;
+    optional int32 toIndex = 6;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 7;
+    optional int32 nowNum = 8;
+    optional int32 oldIndex = 9;
+    optional int32 toOldIndex = 10;
+    optional int32 multiple = 11;
+    optional int32 toMultiple = 12;
+    optional int64 useCot = 13;
+    repeated bf.messages.game.RankingMessage.MsgRankingEntryData msgRankingEntryData = 14;
+}
+
+message MsgColiseumCrossNoticeEntryData {
+    optional int64 id = 1;
+    optional int32 type = 2;
+    optional string playerId = 3;
+    optional string name = 4;
+    repeated int32 fashionIds = 5;
+    optional int32 sex = 6;
+    optional int32 lv = 7;
+    optional int32 vipLv = 8;
+    optional int64 integral = 9;
+    optional bf.messages.game.CommonMsgMessage.MsgAddress address = 10;
+    optional int32 serverId = 11;
+    optional int32 npcSex = 12;
+    optional string toPlayerId = 20;
+    optional string toName = 21;
+    optional int32 toServerId = 22;
+    optional int32 winNum = 31;
+    optional bool battle = 32;
+    optional int64 time = 33;
+}
+
+message MsgColiseumCrossLogEntryData {
+    optional int64 id = 1;
+    optional string playerId = 2;
+    optional string name = 3;
+    repeated int32 fashionIds = 4;
+    optional int32 sex = 5;
+    optional int32 lv = 6;
+    optional int32 vipLv = 7;
+    optional int32 index = 8;
+    optional int64 integral = 9;
+    optional string money = 10;
+    optional int32 enmity = 11;
+    optional int32 winNum = 12;
+    optional int64 integralChange = 13;
+    optional bool battle = 14;
+    optional int64 time = 15;
+    optional bool read = 16;
+    optional bf.messages.game.CommonMsgMessage.MsgAddress address = 17;
+    optional int32 serverId = 18;
+    optional int32 battleType = 19;
+    optional int32 npcSex = 20;
+    optional int32 type = 99;
+}
+
+message ColiseumCrossMatchingReq_32021 {
+    optional int32 activityId = 1;
+}
+
+message ColiseumCrossMatchingResp_32021 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional MsgColiseumCrossData msgColiseumCrossData = 3;
+}
+
+message ColiseumCrossBattleReq_32022 {
+    optional int32 activityId = 1;
+    repeated int32 talentIds = 2;
+}
+
+message ColiseumCrossBattleResp_32022 {
+    optional int32 activityId = 1;
+    required int32 ret = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData battleData = 3;
+}
+
+message ColiseumCrossClearBattleResultReq_32023 {
+    optional int32 activityId = 1;
+}
+
+message ColiseumCrossClearBattleResultResp_32023 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+}
+
+message ColiseumCrossLastBattleResultReq_32024 {
+    optional int32 activityId = 1;
+}
+
+message ColiseumCrossLastBattleResultResp_32024 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData battleData = 3;
+}
+
+message ColiseumCrossNoticeGetReq_32025 {
+    optional int32 activityId = 1;
+}
+
+message ColiseumCrossNoticeGetResp_32025 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    repeated MsgColiseumCrossNoticeEntryData datas = 3;
+}
+
+message ColiseumCrossLogGetReq_32026 {
+    optional int32 activityId = 1;
+}
+
+message ColiseumCrossLogGetResp_32026 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    repeated MsgColiseumCrossLogEntryData datas = 3;
+}
+
+message ColiseumCrossChaseSearchReq_32027 {
+    optional int32 activityId = 1;
+    optional string playerId = 2;
+}
+
+message ColiseumCrossChaseSearchResp_32027 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional MsgColiseumCrossEntryData msgColiseumEntryData = 3;
+}
+
+message ColiseumCrossChaseReq_32028 {
+    optional int32 activityId = 1;
+    repeated int32 talentIds = 2;
+    optional string playerId = 3;
+    optional int64 id = 4;
+}
+
+message ColiseumCrossChaseResp_32028 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData battleData = 3;
+    optional int64 id = 4;
+}
+
+message ColiseumCrossChallengeReq_32029 {
+    optional int32 activityId = 1;
+    repeated int32 talentIds = 2;
+    optional int32 type = 3;
+    optional int64 id = 4;
+}
+
+message ColiseumCrossChallengeResp_32029 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData battleData = 3;
+}
+
+message ColiseumCrossLogReadReq_32030 {
+    optional int32 activityId = 1;
+    optional int32 type = 2;
+    optional int64 id = 3;
+}
+
+message ColiseumCrossLogReadResp_32030 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+}
+
+message ColiseumCrossLogOneKeyReadReq_32031 {
+    optional int32 activityId = 1;
+    optional int32 type = 2;
+}
+
+message ColiseumCrossLogOneKeyReadResp_32031 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+}
+
+message ColiseumCrossRankDrawReq_32032 {
+    optional int32 activityId = 1;
+    optional int32 rankType = 2;
+}
+
+message ColiseumCrossRankDrawResp_32032 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 rankType = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResourcesExt = 5;
+}
+
+message ColiseumCrossDampingGetReq_32033 {
+    optional int32 activityId = 1;
+    optional string toPlayerId = 2;
+}
+
+message ColiseumCrossDampingGetResp_32033 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 dampingBh = 3;
+}
+
+message ColiseumCrossDrawAchievementAwardReq_32034 {
+    optional int32 activityId = 1;
+    optional int32 achievementId = 2;
+}
+
+message ColiseumCrossDrawAchievementAwardResp_32034 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 achievementId = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 4;
+}
+
+message ColiseumCrossSetManifestoReq_32035 {
+    optional int32 activityId = 1;
+    optional string manifesto = 2;
+}
+
+message ColiseumCrossSetManifestoResp_32035 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional string manifesto = 3;
+}
+
+message ColiseumCrossGetChaseDataReq_32036 {
+    optional int32 activityId = 1;
+}
+
+message ColiseumCrossGetChaseDataResp_32036 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional MsgColiseumCrossEntryData msgColiseumCrossEntryData = 3;
+}
+
+message ColiseumDoubleCrossChaseReq_32037 {
+    optional int32 activityId = 1;
+    repeated int32 talentIds = 2;
+    optional string playerId = 3;
+    optional int64 id = 4;
+    optional int32 cot = 5;
+}
+
+message ColiseumDoubleCrossChaseResp_32037 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgPvPBattleData battleData = 3;
+    optional int64 id = 4;
+    optional int32 cot = 5;
+}
+
+message ColiseumDoubleCrossChallengeReq_32038 {
+    optional int32 activityId = 1;
+    repeated int32 talentIds = 2;
+    optional int32 type = 3;
+    optional int64 id = 4;
+    optional int32 cot = 5;
+}
+
+message ColiseumDoubleCrossChallengeResp_32038 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgPvPBattleData battleData = 3;
+    optional int32 cot = 4;
+}
+
+message ColiseumCrossGetChaseDataListReq_32039 {
+    optional int32 activityId = 1;
+}
+
+message ColiseumCrossGetChaseDataListResp_32039 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgChaseData msgChaseData = 3;
+}
+
+message MsgColiseumCrossPlayerBattleIntegralReq {
+    optional string playerId = 1;
+    optional int32 serverId = 2;
+    optional int64 addVar = 3;
+}
+
+message MsgColiseumCrossPlayerBattleIntegralResp {
+    optional string playerId = 1;
+    optional int64 oldIntegral = 2;
+    optional int64 newIntegral = 3;
+    optional int32 oldIndex = 4;
+    optional int32 newIndex = 5;
+}
+
+message RemoteColiseumCrossNotifyIntegralReq_32060 {
+    optional int32 activityId = 1;
+    optional int32 activityGroup = 2;
+    repeated MsgColiseumCrossPlayerBattleIntegralReq data = 3;
+}
+
+message RemoteColiseumCrossNotifyIntegralResp_32060 {
+    required int32 ret = 1;
+    repeated MsgColiseumCrossPlayerBattleIntegralResp data = 2;
+    repeated bf.messages.game.RankingMessage.MsgRankingEntryData msgRankingEntryData = 3;
+}
+
+message RemoteColiseumCrossRandomPlayerReq_32062 {
+    optional int32 activityId = 1;
+    optional int32 activityGroup = 2;
+    optional string playerId = 3;
+    optional string lastPlayerId = 4;
+}
+
+message RemoteColiseumCrossRandomPlayerResp_32062 {
+    optional string toPlayerId = 1;
+}
+
+message RemoteColiseumCrossGetRankReq_32063 {
+    optional int32 activityId = 1;
+    optional int32 activityGroup = 2;
+    optional string serverId = 4;
+}
+
+message RemoteColiseumCrossGetRankResp_32063 {
+    repeated bf.messages.game.RankingMessage.MsgRankingEntryData msgRankingEntryData = 1;
+}
+
+message RemoteColiseumCrossGetRankIndexReq_32064 {
+    optional int32 activityId = 1;
+    optional int32 activityGroup = 2;
+    optional int32 rankType = 3;
+    optional string key = 4;
+}
+
+message RemoteColiseumCrossGetRankIndexResp_32064 {
+    optional int32 index = 1;
+    optional int64 integral = 2;
+    optional MsgColiseumCrossTopData msgColiseumCrossTopData = 3;
+}
+
+message RemoteColiseumCrossSynRankReq_32069 {
+    optional int32 activityId = 1;
+    optional int32 activityGroup = 2;
+    repeated MsgColiseumCrossPlayerBattleIntegralReq datas = 3;
+}
+
+message RemoteColiseumCrossSynRankResp_32069 {
+}
+
+message RemoteColiseumCrossNotifyNoticeReq_32065 {
+    optional int32 activityId = 1;
+    optional MsgColiseumCrossNoticeEntryData datas = 2;
+}
+
+message RemoteColiseumCrossNotifyLogReq_32066 {
+    optional int32 activityId = 1;
+    optional string playerId = 2;
+    repeated MsgColiseumCrossLogEntryData datas = 3;
+}
+
+message RemoteColiseumCrossGetBattlePlayerReq_32067 {
+    optional int32 activityId = 1;
+    optional string playerId = 2;
+}
+
+message RemoteColiseumCrossGetBattlePlayerResp_32067 {
+    optional bf.messages.game.CommonMsgMessage.MsgBattlePlayerData msgBattlePlayerData = 1;
+}
+
+message RemoteColiseumCrossGetEntryDataReq_32068 {
+    optional int32 activityId = 1;
+    optional string playerId = 2;
+}
+
+message RemoteColiseumCrossGetEntryDataResp_32068 {
+    optional MsgColiseumCrossEntryData msgColiseumCrossEntryData = 1;
+}
+
+message RemoteColiseumCrossGetGsIntegralReq_32080 {
+    optional int32 activityId = 1;
+    optional string playerId = 2;
+}
+
+message RemoteColiseumCrossGetGsIntegralResp_32080 {
+    optional int64 integral = 1;
+}
+
+message RemoteColiseumCrossUpdateIntegralReq_32081 {
+    optional int32 activityId = 1;
+    optional string playerId = 2;
+    optional int64 integral = 3;
+}

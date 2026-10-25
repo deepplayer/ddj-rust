@@ -1,0 +1,469 @@
+syntax = "proto2";
+
+package bf.messages.game.GmHmongAdventureMessage;
+
+import "CommonMsgMessage.proto";
+import "FamilyMessage.proto";
+import "GmActivityMessage.proto";
+import "GmActivityCommonMessage.proto";
+import "PlayerMessage.proto";
+import "RankingMessage.proto";
+
+message MsgHmongTemplateData {
+    repeated bf.messages.game.GmActivityMessage.MsgRank msgRank = 1;
+    repeated MsgHmongAchievementDb msgAchievements = 2;
+    repeated MsgHmongRankDb arenaDbs = 3;
+    repeated MsgHmongRankListDb arenaRankRewardDbs = 4;
+    repeated MsgHmongStageDb stageDbs = 5;
+}
+
+message MsgHmongAchievementDb {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 achievementId = 3;
+    optional int32 typeId = 4;
+    optional int32 value = 5;
+    optional string reward = 6;
+}
+
+message MsgHmongRankDb {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 arenaId = 3;
+    optional string successItem = 4;
+    optional string failItem = 5;
+    optional int32 successIntegral = 6;
+    optional int32 failIntegral = 7;
+}
+
+message MsgHmongRankListDb {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 rankType = 3;
+    optional string rankInterval = 4;
+    optional string reward = 5;
+    optional int32 grade = 6;
+}
+
+message MsgHmongStageDb {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 stageType = 3;
+    optional string reward = 4;
+}
+
+message MsgHmongPlayerData {
+    repeated bf.messages.game.GmActivityCommonMessage.MsgPlayerRankData rankData = 1;
+    optional bool join = 2;
+    optional int32 playerRank = 3;
+    optional int32 familyRank = 4;
+    optional int32 locatedTotalId = 5;
+    repeated MsgHmongArenaPlayer topPlayers = 6;
+    optional bool hasAchievement = 7;
+    optional bool hasNewArenaLog = 8;
+    optional bool hasArenaSettle = 9;
+    optional int32 arenaId = 10;
+    optional MsgHmongPrayData prayData = 11;
+    optional string averageMoney = 12;
+    optional bool endGame = 13;
+}
+
+message MsgHmongAdventureData {
+    optional int32 locatedZoneId = 1;
+    optional int32 locatedStageId = 2;
+    optional int32 progress = 3;
+}
+
+message MsgHmongPrayData {
+    repeated MsgHmongPrayTeam teams = 1;
+}
+
+message MsgHmongArenaData {
+    optional bf.messages.game.RankingMessage.MsgRankingData rankData = 1;
+    optional int32 refreshTimes = 2;
+    repeated MsgHmongArenaPlayer enemies = 3;
+    optional bool hasNewLog = 4;
+    optional int32 arenaId = 5;
+}
+
+message MsgHmongPrayTeam {
+    optional int32 teamId = 1;
+    optional int32 prayLv = 2;
+    optional int32 prayExp = 3;
+    repeated MsgHmongPrayTeamMember teamMembers = 4;
+    optional MsgHmongTotem pickingTotem = 5;
+}
+
+message MsgHmongPrayTeamMember {
+    optional int32 pos = 1;
+    optional int32 talentId = 2;
+    optional MsgHmongTotem totem = 3;
+}
+
+message MsgHmongTotem {
+    optional int32 id = 1;
+    optional int32 lv = 2;
+    optional int32 quality = 3;
+    optional string power = 4;
+}
+
+message MsgHmongArenaPlayer {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer msgPlayer = 1;
+    optional int32 integral = 2;
+    optional int32 rank = 3;
+    optional bool robot = 4;
+    optional int32 arenaId = 5;
+}
+
+message MsgHmongAchievement {
+    optional int32 achievementId = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer msgPlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgFamilyData msgFamily = 3;
+    optional bool received = 4;
+}
+
+message MsgHmongPrayConfig {
+    optional bool keepHigher = 1;
+    optional int32 times = 2;
+    optional int32 quality = 3;
+}
+
+message MsgHmongArenaLog {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 1;
+    optional bool attack = 2;
+    optional int64 time = 4;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPMultiBattleData pvpData = 5;
+    optional int32 arenaId = 6;
+    optional int32 fromScoreChange = 7;
+    optional int32 toScoreChange = 8;
+}
+
+message MsgHmongBattleFormation {
+    optional int32 teamId = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgBattlePlayerData battlePlayerData = 2;
+    repeated MsgHmongTotem totems = 3;
+}
+
+message MsgHmongBossBattle {
+    optional string bossHp = 1;
+    optional bool win = 2;
+}
+
+message HmongPrayOneReq_33801 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 teamId = 3;
+}
+
+message HmongPrayOneResp_33801 {
+    required int32 ret = 1;
+    optional MsgHmongTotem pickingTotem = 2;
+    optional MsgHmongTotem ownTotem = 3;
+    optional int32 teamId = 4;
+}
+
+message HmongReplaceTotemReq_33802 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 teamId = 4;
+}
+
+message HmongReplaceTotemResp_33802 {
+    required int32 ret = 1;
+    optional int32 addPrayExp = 2;
+    optional MsgHmongPrayTeam prayTeam = 3;
+}
+
+message HmongKeepTotemReq_33803 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 teamId = 4;
+}
+
+message HmongKeepTotemResp_33803 {
+    required int32 ret = 1;
+    optional int32 addPrayExp = 2;
+    optional MsgHmongPrayTeam prayTeam = 3;
+}
+
+message HmongPrayMultiplyReq_33804 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 times = 3;
+    optional int32 teamId = 4;
+}
+
+message HmongPrayMultiplyResp_33804 {
+    required int32 ret = 1;
+    repeated MsgHmongTotem updateTotems = 2;
+    repeated MsgHmongTotem recycleTotems = 3;
+    optional int32 addPrayExp = 4;
+    optional MsgHmongPrayTeam prayTeam = 6;
+    optional int32 realTimes = 7;
+    optional string upPower = 8;
+}
+
+message HmongChallengeBossReq_33805 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 totalId = 3;
+}
+
+message HmongChallengeBossResp_33805 {
+    required int32 ret = 1;
+    optional bool win = 2;
+    optional int32 totalId = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 4;
+    optional int32 oldTotalId = 5;
+    repeated MsgHmongBossBattle teamBattles = 6;
+    optional bool endGame = 14;
+}
+
+message HmongArenaQueryReq_33806 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 arenaId = 3;
+}
+
+message HmongArenaQueryResp_33806 {
+    required int32 ret = 1;
+    optional MsgHmongArenaData arenaData = 2;
+}
+
+message HmongArenaRefreshEnemyReq_33807 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 arenaId = 3;
+}
+
+message HmongArenaRefreshEnemyResp_33807 {
+    required int32 ret = 1;
+    repeated MsgHmongArenaPlayer enemies = 2;
+    optional int32 refreshTimes = 3;
+    optional int32 arenaId = 4;
+}
+
+message HmongEnemyFormationReq_33808 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    required string enemyPlayerId = 3;
+    optional int32 arenaId = 4;
+}
+
+message HmongEnemyFormationResp_33808 {
+    required int32 ret = 1;
+    repeated MsgHmongBattleFormation fromData = 2;
+    repeated MsgHmongBattleFormation toData = 3;
+    optional int32 fromScore = 4;
+    optional int32 fromRank = 5;
+    optional int32 toScore = 6;
+    optional int32 toRank = 7;
+    repeated MsgHmongArenaPlayer enemies = 8;
+}
+
+message HmongArenaChallengeEnemyReq_33809 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional string enemyPlayerId = 3;
+    repeated int32 talentIds = 4;
+    optional int32 arenaId = 5;
+}
+
+message HmongArenaChallengeEnemyResp_33809 {
+    required int32 ret = 1;
+    optional MsgHmongArenaData arenaData = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPMultiBattleData msgPvPBattleData = 3;
+    optional int32 fromScoreChange = 4;
+    optional int32 toScoreChange = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 6;
+}
+
+message HmongArenaLogQueryReq_33810 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message HmongArenaLogQueryResp_33810 {
+    required int32 ret = 1;
+    repeated MsgHmongArenaLog arenaLogs = 2;
+}
+
+message HmongArenaSettleReq_33811 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message HmongArenaSettleResp_33811 {
+    required int32 ret = 1;
+    optional int32 rank = 2;
+    optional int32 arenaId = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 4;
+}
+
+message HmongAchievementQueryReq_33812 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message HmongAchievementQueryResp_33812 {
+    required int32 ret = 1;
+    repeated MsgHmongAchievement achievements = 2;
+}
+
+message HmongAchievementGetReq_33813 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 id = 3;
+}
+
+message HmongAchievementGetResp_33813 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+    repeated int32 ids = 3;
+}
+
+message MsgHmongDataFromCross {
+    optional int32 playerRank = 1;
+    optional int32 familyRank = 2;
+    repeated MsgHmongArenaPlayer topPlayers = 3;
+    repeated int32 achieveTaskIds = 4;
+    optional string averageMoney = 5;
+    optional bool hasNewArenaLog = 8;
+    optional bool hasArenaSettle = 9;
+    optional int32 arenaIdFromCross = 10;
+}
+
+message MsgHmongTalentCross {
+    optional bf.messages.game.CommonMsgMessage.MsgBattleTalentData talent = 1;
+    optional MsgHmongTotem totem = 2;
+    optional int32 pos = 3;
+}
+
+message MsgHmongTeamCross {
+    optional int32 teamId = 1;
+    repeated MsgHmongTalentCross msgTalent = 2;
+}
+
+message HmongGetDataReqGC_33861 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+    optional int32 arenaIdFromGs = 4;
+}
+
+message HmongGetDataRespCG_33861 {
+    required int32 ret = 1;
+    optional MsgHmongDataFromCross crossData = 2;
+}
+
+message HmongUpdateDataAfterPrayReqGC_33862 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+    optional int64 totalPrayExp = 4;
+    optional int64 familyTotalPrayExp = 5;
+    optional MsgHmongTeamCross msgTeam = 6;
+}
+
+message HmongAchieveQueryReqGC_33863 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message HmongAchieveQueryRespCG_33863 {
+    required int32 ret = 1;
+    repeated MsgHmongAchievement crossAchievements = 2;
+}
+
+message HmongArenaQueryReqGC_33864 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    repeated string familyMembers = 3;
+    optional int32 arenaId = 4;
+}
+
+message HmongArenaQueryRespCG_33864 {
+    required int32 ret = 1;
+    optional MsgHmongArenaData arenaData = 2;
+}
+
+message HmongEnemyRefreshReqGC_33865 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    repeated string familyMembers = 3;
+}
+
+message HmongEnemyRefreshRespCG_33865 {
+    required int32 ret = 1;
+    repeated MsgHmongArenaPlayer enemies = 3;
+}
+
+message HmongEnemyFormationReqGC_33866 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional string enemyId = 3;
+    repeated string familyMembers = 4;
+}
+
+message HmongEnemyFormationRespCG_33866 {
+    required int32 ret = 1;
+    repeated MsgHmongBattleFormation fromBattleFormations = 2;
+    repeated MsgHmongBattleFormation toBattleFormations = 3;
+    optional int32 fromScore = 4;
+    optional int32 fromRank = 5;
+    optional int32 toScore = 6;
+    optional int32 toRank = 7;
+    repeated MsgHmongArenaPlayer enemies = 8;
+}
+
+message HmongEnemyBattleReqGC_33867 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional string enemyId = 3;
+    repeated int32 talentIds = 4;
+    repeated string familyMembers = 5;
+}
+
+message HmongEnemyBattleRespCG_33867 {
+    required int32 ret = 1;
+    optional MsgHmongArenaData arenaData = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPMultiBattleData msgPvPBattleData = 3;
+    optional int32 fromScoreChange = 4;
+    optional int32 toScoreChange = 5;
+}
+
+message HmongBattleLogQueryReqGC_33868 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message HmongBattleLogQueryRespCG_33868 {
+    required int32 ret = 1;
+    repeated MsgHmongArenaLog arenaLogs = 2;
+}
+
+message HmongUpdateDataAfterStageReqGC_33869 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    repeated MsgHmongTeamCross teams = 3;
+    optional int32 enterNewArenaId = 4;
+    optional int32 totalStageId = 5;
+}
+
+message HmongArenaSettleReqGC_33870 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message HmongArenaSettleRespCG_33870 {
+    required int32 ret = 1;
+    optional int32 rank = 2;
+    optional int32 rankScore = 3;
+    optional int32 arenaId = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 5;
+}
+
+message HmongArenaResetReqCG_33871 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int32 arenaId = 3;
+}

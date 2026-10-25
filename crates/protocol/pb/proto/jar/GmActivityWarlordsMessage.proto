@@ -1,0 +1,111 @@
+syntax = "proto2";
+
+package bf.messages.game.GmActivityWarlordsMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgWarlordsDb {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 grade = 3;
+    optional int32 needNum = 4;
+    optional string chiefReward = 5;
+    optional string memberReward = 6;
+}
+
+message MsgWarlordsTemplateData {
+    repeated MsgWarlordsDb msgWarlordsDb = 1;
+}
+
+message MsgWarlordsReward {
+    optional int32 grade = 1;
+    optional int32 state = 2;
+    optional bool chiefReward = 3;
+    optional int32 chiefRevNum = 4;
+    optional int32 chiefLimit = 5;
+    optional int32 memberRevNum = 6;
+    optional int32 memberLimit = 7;
+    optional int32 familyState = 8;
+}
+
+message MsgWarlordsMemberData {
+    optional string playerId = 1;
+    repeated int32 fashionIds = 2;
+    optional int32 vipLv = 3;
+    optional int32 job = 4;
+    optional string nickname = 5;
+    optional string money = 6;
+    optional int32 lv = 7;
+    optional string historyContribution = 8;
+    optional int32 sex = 9;
+    optional bf.messages.game.CommonMsgMessage.MsgAddress address = 10;
+    optional bool done = 11;
+    optional int32 npcSex = 12;
+}
+
+message MsgWarlordsPlayerData {
+    optional string exclusiveName = 1;
+    optional string chiefNotice = 2;
+    repeated MsgWarlordsReward states = 3;
+    optional string actNickname = 4;
+    optional int32 job = 5;
+    optional int32 renameNum = 6;
+    optional string chiefId = 7;
+    optional int64 lastChangeNoticeTime = 8;
+}
+
+message WarlordsSetExclusiveNameReq_34001 {
+    optional int32 activityId = 1;
+    optional string exclusiveName = 2;
+}
+
+message WarlordsSetExclusiveNameResp_34001 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional string exclusiveName = 3;
+}
+
+message WarlordsSetNoticeReq_34002 {
+    optional int32 activityId = 1;
+    optional string notice = 2;
+}
+
+message WarlordsSetNoticeResp_34002 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+}
+
+message WarlordsChangeNicknameReq_34003 {
+    optional int32 activityId = 1;
+    optional string nickname = 2;
+}
+
+message WarlordsChangeNicknameResp_34003 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional string nickname = 3;
+    optional bool success = 4;
+}
+
+message WarlordsRewardReq_34004 {
+    optional int32 activityId = 1;
+    optional int32 grade = 2;
+}
+
+message WarlordsRewardResp_34004 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional MsgWarlordsReward state = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 4;
+    optional bool chiefReward = 5;
+}
+
+message WarlordsViewMembersReq_34005 {
+    optional int32 activityId = 1;
+}
+
+message WarlordsViewMembersResp_34005 {
+    required int32 ret = 1;
+    repeated MsgWarlordsMemberData members = 2;
+    optional int32 activityId = 3;
+}

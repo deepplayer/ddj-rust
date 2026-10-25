@@ -1,0 +1,506 @@
+syntax = "proto2";
+
+package bf.messages.game.GmStarryForestMessage;
+
+import "CommonMsgMessage.proto";
+import "FamilyMessage.proto";
+import "GmActivityMessage.proto";
+import "GmActivityCommonMessage.proto";
+import "PlayerMessage.proto";
+
+message MsgStarryForestTemplateData {
+    repeated bf.messages.game.GmActivityMessage.MsgRank msgRank = 1;
+    repeated MsgStarryImageDb imageDbs = 2;
+    repeated MsgStarryAchievementDb achievementDbs = 3;
+    repeated MsgStarryAreaRewardDb areaRewardDbs = 4;
+    repeated MsgStarryEventDb eventDbs = 5;
+}
+
+message MsgStarryImageDb {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 imageId = 3;
+    optional int32 condition = 4;
+    optional int32 param = 5;
+    optional int32 effect = 6;
+}
+
+message MsgStarryAchievementDb {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 achievementId = 3;
+    optional int32 typeId = 4;
+    optional int64 value = 5;
+    optional string reward = 6;
+}
+
+message MsgStarryAreaRewardDb {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 boxId = 3;
+    optional int32 areaType = 4;
+    optional int32 areaId = 5;
+    optional int32 star = 6;
+    optional string reward = 7;
+}
+
+message MsgStarryEventDb {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 eventId = 3;
+    optional int32 eventType = 4;
+    optional string rewardView = 5;
+    optional string reward1 = 6;
+}
+
+message MsgStarryForestPlayerData {
+    optional int32 useImageId = 1;
+    optional int32 charge = 2;
+    optional int64 integral = 3;
+    repeated bf.messages.game.GmActivityCommonMessage.MsgPlayerRankData rankData = 4;
+    optional bool join = 5;
+    optional int32 playerRank = 6;
+    optional int32 familyRank = 7;
+    optional bool hasAchievement = 8;
+}
+
+message MsgStarryForestAchievement {
+    optional int32 achievementId = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer msgPlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgFamilyData msgFamily = 3;
+    optional bool received = 4;
+}
+
+message MsgStarryForestPower {
+    repeated MsgStarryForestRing rings = 1;
+    optional string power = 2;
+}
+
+message MsgStarryForestRing {
+    optional int32 ringId = 1;
+    optional int32 pos = 2;
+    optional string power = 3;
+}
+
+message MsgStarryForestBuff {
+    optional int32 buffId = 1;
+    optional int32 num = 2;
+}
+
+message MsgStarryForestOneKeyConfig {
+    optional int32 id = 11;
+    optional bool enable = 12;
+    optional int32 param = 13;
+}
+
+message MsgStarryForestGameData {
+    optional int32 locatedZoneId = 1;
+    optional int32 locatedStageId = 2;
+    repeated MsgStarryForestZone zones = 3;
+    repeated MsgStarryForestBuff buffs = 4;
+    optional int32 beastProgress = 5;
+    optional MsgStarryEvent curEvent = 6;
+    optional MsgStarryForestPower starryPower = 7;
+    optional int64 integral = 9;
+    optional int32 playerRank = 10;
+    optional int32 soulMasterLv = 11;
+    optional int32 soulMasterExp = 12;
+    repeated MsgStarryForestOneKeyConfig oneKeyConfigs = 13;
+}
+
+message MsgStarryForestZone {
+    optional int32 zoneId = 1;
+    optional int32 star = 2;
+    repeated MsgForestZoneStage stages = 4;
+}
+
+message MsgForestZoneStage {
+    optional int32 stageId = 1;
+    optional int32 star = 2;
+    optional int32 totalId = 3;
+}
+
+message MsgStarryEvent {
+    optional int32 eventType = 1;
+    optional int32 eventId = 2;
+    optional MsgStarryBeastEvent beastEvent = 3;
+    optional MsgStarryRandomBuffEvent buffEvent = 4;
+    optional MsgStarryTroveEvent troveEvent = 5;
+    optional MsgStarryQuizEvent quizEvent = 6;
+    optional MsgStarryBossEvent bossEvent = 11;
+}
+
+message MsgStarryBeastEvent {
+    optional int32 eventId = 1;
+    optional string hp = 2;
+    optional string fullHp = 3;
+}
+
+message MsgStarryRandomBuffEvent {
+    optional int32 eventId = 1;
+}
+
+message MsgStarryTroveEvent {
+    optional int32 eventId = 1;
+}
+
+message MsgStarryQuizEvent {
+    optional int32 eventId = 1;
+    optional int32 quizId = 2;
+}
+
+message MsgStarryMaiEvent {
+    optional int32 eventId = 1;
+}
+
+message MsgStarryBossEvent {
+    optional int32 eventId = 1;
+    optional int32 status = 2;
+    optional MsgStarryBossPanel bossPanel = 4;
+    optional int32 historyStar = 5;
+}
+
+message MsgStarryEventExtParam {
+    optional int32 answer = 1;
+}
+
+message MsgStarryEventResult {
+    optional int32 eventType = 1;
+    repeated int32 effectBuffs = 2;
+    optional MsgStarryEventReward eventReward = 3;
+    optional MsgStarryBeastResult beastResult = 4;
+    optional MsgStarryBuffResult buffResult = 5;
+    optional MsgStarryTroveResult troveResult = 6;
+    optional MsgStarryQuizResult quizResult = 7;
+    optional bool done = 11;
+    optional int32 eventId = 12;
+    optional int32 zoneId = 13;
+    optional int32 stageId = 14;
+}
+
+message MsgStarryEventReward {
+    optional bf.messages.game.CommonMsgMessage.MsgResources integralReward = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgResources buffIntegral = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources buffRewards = 4;
+    optional int32 getRingNum = 5;
+    optional int32 replaceRingNum = 6;
+    optional bf.messages.game.CommonMsgMessage.MsgResources convertIntegral = 7;
+    repeated MsgStarryForestRing newRings = 8;
+    repeated MsgStarryForestRing replacedRings = 9;
+}
+
+message MsgStarryBeastResult {
+    optional int32 eventId = 1;
+    optional bool win = 2;
+    optional string damage = 3;
+    optional string leftHp = 4;
+}
+
+message MsgStarryBuffResult {
+    optional int32 eventId = 1;
+    repeated MsgStarryForestBuff buffs = 2;
+}
+
+message MsgStarryTroveResult {
+    optional int32 eventId = 1;
+}
+
+message MsgStarryQuizResult {
+    optional int32 eventId = 1;
+    optional bool correct = 2;
+}
+
+message MsgStarryBossPanel {
+    optional int32 bossId = 1;
+    optional string fullHp = 2;
+    optional string hp = 3;
+    optional int32 round = 4;
+    optional MsgStarryTile nextElement = 5;
+    repeated MsgStarryTile tiles = 6;
+    optional string combatPower = 7;
+}
+
+message MsgStarryPosition {
+    optional int32 x = 1;
+    optional int32 y = 2;
+}
+
+message MsgStarryTile {
+    optional MsgStarryPosition pos = 1;
+    optional int32 elementId = 3;
+    optional int32 heroLv = 4;
+    optional int32 weaponLv = 5;
+    optional int32 attributeLv = 6;
+}
+
+message MsgStarryMoveTileResult {
+    optional MsgStarryMovingEffect effect = 1;
+    optional int32 status = 2;
+    optional MsgStarryBossSettle settle = 3;
+    optional MsgStarryBossPanel panel = 4;
+}
+
+message MsgStarryBossSettle {
+    optional int32 star = 1;
+    optional int32 round = 2;
+    optional string topDamage = 3;
+    optional MsgStarryEventReward eventReward = 4;
+    optional MsgStarryForestGameData gameData = 5;
+}
+
+message MsgStarryMovingEffect {
+    repeated MsgStarryMoveTile moveTiles = 1;
+    repeated MsgStarryBuildTile buildTiles = 2;
+    repeated MsgStarryAttack attacks = 3;
+    optional bool reload = 11;
+}
+
+message MsgStarryMoveTile {
+    optional MsgStarryPosition start = 1;
+    optional MsgStarryTile tile = 2;
+    optional bool merged = 3;
+}
+
+message MsgStarryAttack {
+    optional MsgStarryPosition position = 1;
+    optional string damage = 2;
+}
+
+message MsgStarryBuildTile {
+    optional MsgStarryTile tile = 1;
+    optional bool bornByMerging = 2;
+}
+
+message MsgStarryOtherPlayerData {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer msgPlayer = 1;
+    optional int32 fashionId = 2;
+    optional int32 playerRank = 3;
+    optional int32 familyRank = 4;
+}
+
+message MsgSoulMaster {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer msgPlayer = 1;
+    optional int32 fashionId = 2;
+    optional int32 soulMasterLv = 3;
+    optional string soulPower = 4;
+    repeated MsgStarryForestRing rings = 5;
+}
+
+message MsgStarryWipeOutResult {
+    repeated MsgStarryForestBuff gainBuffs = 1;
+    repeated MsgStarryForestBuff useBuffs = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgResources integralReward = 3;
+    optional bf.messages.game.CommonMsgMessage.MsgResources buffIntegral = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources buffRewards = 6;
+    optional int32 getRingNum = 7;
+    optional string upPower = 8;
+    optional bf.messages.game.CommonMsgMessage.MsgResources convertIntegral = 9;
+    repeated MsgStarryForestRing newRings = 10;
+    repeated MsgStarryWipeEvent events = 11;
+}
+
+message MsgStarryWipeEvent {
+    optional int32 eventId = 1;
+    optional int32 num = 2;
+}
+
+message StarryForestZoneEnterReq_33701 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 zoneId = 2;
+    optional int32 stageId = 3;
+}
+
+message StarryForestZoneEnterResp_33701 {
+    required int32 ret = 1;
+    optional MsgStarryForestGameData gameData = 2;
+    optional bool triggerBoss = 3;
+}
+
+message StarryForestGameDataQueryReq_33702 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message StarryForestGameDataQueryResp_33702 {
+    required int32 ret = 1;
+    optional MsgStarryForestGameData gameData = 2;
+}
+
+message StarryForestTopPlayersReq_33703 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message StarryForestTopPlayersResp_33703 {
+    required int32 ret = 1;
+    repeated MsgStarryOtherPlayerData players = 2;
+}
+
+message StarryForestSoulMasterReq_33704 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string otherPlayerId = 2;
+}
+
+message StarryForestSoulMasterResp_33704 {
+    required int32 ret = 1;
+    optional MsgSoulMaster info = 2;
+}
+
+message StarryForestImageChangeReq_33705 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 imageId = 2;
+}
+
+message StarryForestImageChangeResp_33705 {
+    required int32 ret = 1;
+}
+
+message StarryForestTaskQueryReq_33707 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message StarryForestTaskQueryResp_33707 {
+    required int32 ret = 1;
+    repeated MsgStarryForestAchievement achievements = 2;
+}
+
+message StarryForestAchievementReq_33708 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 id = 2;
+}
+
+message StarryForestAchievementResp_33708 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+    repeated int32 ids = 3;
+}
+
+message StarryForestExploreReq_33715 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message StarryForestExploreResp_33715 {
+    required int32 ret = 1;
+    optional MsgStarryEvent triggerEvent = 2;
+}
+
+message StarryForestSaveOneKeyConfigReq_33716 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated MsgStarryForestOneKeyConfig configs = 3;
+}
+
+message StarryForestSaveOneKeyConfigResp_33716 {
+    required int32 ret = 1;
+    repeated MsgStarryForestOneKeyConfig configs = 2;
+}
+
+message StarryForestWipeOutReq_33717 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 times = 2;
+}
+
+message StarryForestWipeOutResp_33717 {
+    required int32 ret = 1;
+    optional MsgStarryWipeOutResult result = 3;
+    optional MsgStarryForestGameData gameData = 4;
+}
+
+message StarryForestHandleEventReq_33718 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional MsgStarryEventExtParam param = 2;
+}
+
+message StarryForestHandleEventResp_33718 {
+    required int32 ret = 1;
+    optional MsgStarryEventResult eventResult = 2;
+    optional MsgStarryForestGameData gameData = 5;
+    optional bool triggerBoss = 6;
+}
+
+message StarryForestExploreQuicklyReq_33719 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message StarryForestExploreQuicklyResp_33719 {
+    required int32 ret = 1;
+    repeated MsgStarryEventResult eventResults = 2;
+    optional MsgStarryForestGameData gameData = 5;
+    optional bool triggerBoss = 6;
+}
+
+message StarryForestChallengeBossReq_33720 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message StarryForestChallengeBossResp_33720 {
+    required int32 ret = 1;
+    optional MsgStarryForestGameData gameData = 2;
+}
+
+message StarryForestExitBossReq_33721 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message StarryForestExitBossResp_33721 {
+    required int32 ret = 1;
+    optional MsgStarryForestGameData gameData = 2;
+}
+
+message StarryForestMoveTileReq_33722 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 direction = 2;
+}
+
+message StarryForestMoveTileResp_33722 {
+    required int32 ret = 1;
+    optional int32 direction = 2;
+    optional MsgStarryMoveTileResult moveResult = 3;
+}
+
+message StarryForestGetDataReqGC_33761 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+    optional bool needRank = 4;
+}
+
+message StarryForestGetDataRespCG_33761 {
+    required int32 ret = 1;
+    optional int32 playerRank = 2;
+    optional int32 familyRank = 3;
+    repeated int32 achieveTaskIds = 4;
+}
+
+message StarryForestImagePushGC_33762 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int32 imageId = 3;
+}
+
+message StarryForestSoulInfoReqGG_33763 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string otherPlayerId = 2;
+}
+
+message StarryForestSoulInfoRespGG_33763 {
+    required int32 ret = 1;
+    optional MsgSoulMaster info = 2;
+}
+
+message StarryForestTopPlayersReqGC_33764 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message StarryForestTopPlayersRespCG_33764 {
+    required int32 ret = 1;
+    repeated MsgStarryOtherPlayerData players = 2;
+}
+
+message StarryForestAchieveQueryReqGC_33765 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message StarryForestAchieveQueryRespCG_33765 {
+    required int32 ret = 1;
+    repeated MsgStarryForestAchievement crossAchievements = 2;
+}

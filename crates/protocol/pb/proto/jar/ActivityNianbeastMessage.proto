@@ -1,0 +1,120 @@
+syntax = "proto2";
+
+package bf.messages.game.ActivityNianbeastMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgNianbeastPlayerData {
+    optional int32 score = 1;
+    optional int32 totalScore = 2;
+    repeated int32 gainTaskIds = 3;
+    optional int32 round = 4;
+}
+
+message MsgNianbeastTemplateData {
+    repeated MsgNianbeastRewardTeaplateData rewardDatas = 1;
+}
+
+message MsgNianbeastRewardTeaplateData {
+    optional int32 onlyId = 1;
+    optional int32 awardType = 2;
+    optional int32 distance = 3;
+    optional string reward = 4;
+}
+
+message MsgNianbeastDice {
+    optional int32 x = 1;
+    optional int32 y = 2;
+    optional int32 color = 3;
+    optional int32 count = 4;
+    optional int64 sid = 5;
+}
+
+message MsgNianbeastMonster {
+    optional int32 x = 1;
+    optional int32 y = 2;
+    optional int32 id = 3;
+    optional int32 hp = 4;
+    optional int64 sid = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 6;
+}
+
+message MsgNianbeastMonsterDie {
+    optional MsgNianbeastMonster die = 1;
+    repeated MsgNianbeastMonster monsters = 2;
+}
+
+message NianbeastStartReq_39801 {
+    optional int32 actid = 1;
+}
+
+message NianbeastStartResp_39801 {
+    required int32 ret = 1;
+    optional int32 cutScore = 2;
+    optional int32 baseHP = 3;
+    repeated MsgNianbeastDice dices = 4;
+    repeated MsgNianbeastMonster monsters = 5;
+    optional int32 round = 6;
+}
+
+message NianbeastAttackReq_39802 {
+    optional int32 actid = 1;
+    repeated MsgNianbeastDice dices = 2;
+}
+
+message NianbeastAttackResp_39802 {
+    optional int32 ret = 1;
+    optional int32 cutScore = 2;
+    optional int32 baseHP = 3;
+    repeated MsgNianbeastDice dices = 4;
+    repeated MsgNianbeastMonster beHurtMonster = 5;
+    repeated MsgNianbeastMonster creates = 6;
+    repeated MsgNianbeastMonsterDie dies = 7;
+    repeated MsgNianbeastMonster monsters = 8;
+}
+
+message NianbeastOverReq_39803 {
+    optional int32 actid = 1;
+}
+
+message NianbeastOverResp_39803 {
+    optional int32 ret = 1;
+    optional int32 cutScore = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+    optional bool newRecord = 4;
+}
+
+message NianbeastDelReq_39804 {
+    optional int32 actid = 1;
+    optional int32 x = 2;
+    optional int32 y = 3;
+    repeated MsgNianbeastDice dices = 4;
+}
+
+message NianbeastDelResp_39804 {
+    optional int32 ret = 1;
+    optional int32 cutScore = 2;
+    repeated MsgNianbeastDice dices = 6;
+    repeated MsgNianbeastMonsterDie dies = 7;
+    repeated MsgNianbeastMonster monsters = 8;
+}
+
+message NianbeastGainAchievementReq_39805 {
+    optional int32 id = 1;
+    optional int32 activityId = 3;
+}
+
+message NianbeastGainAchievementResp_39805 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+    repeated int32 achievementId = 3;
+}
+
+message NianbeastSaveDiceReq_39806 {
+    optional int32 activityId = 1;
+    repeated MsgNianbeastDice dices = 4;
+}
+
+message NianbeastSaveDiceResp_39806 {
+    optional int32 ret = 1;
+}

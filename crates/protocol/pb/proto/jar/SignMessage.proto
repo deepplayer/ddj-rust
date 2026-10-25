@@ -1,0 +1,39 @@
+syntax = "proto2";
+
+package bf.messages.game.SignMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgSign {
+    optional int32 signedDay = 1;
+    optional int64 signedTime = 2;
+    repeated int32 boxId = 3;
+}
+
+message MsgSignResp_16001 {
+    optional MsgSign msgSign = 1;
+}
+
+message MsgSignReq_16002 {
+}
+
+message MsgSignResp_16002 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+    optional MsgSign msgSign = 3;
+}
+
+message MsgSignBoxReq_16003 {
+    required int32 id = 1;
+}
+
+message MsgSignBoxResp_16003 {
+    required int32 ret = 1;
+}
+
+message MsgGetSignReq_16004 {
+}
+
+message MsgGetSignResp_16004 {
+    required int32 ret = 1;
+}

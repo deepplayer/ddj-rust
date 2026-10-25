@@ -1,0 +1,108 @@
+syntax = "proto2";
+
+package bf.messages.game.FootballActMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgFootballTemplateData {
+    repeated MsgFootballRewardDb footballRewardDbs = 1;
+}
+
+message MsgFootballRewardDb {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 taskId = 3;
+    optional int32 awardType = 4;
+    optional int32 integral = 5;
+    optional string reward = 6;
+}
+
+message MsgFootballPlayerData {
+    optional int32 topScore = 1;
+    repeated int32 targetIds = 2;
+    optional MsgFootballGameData gameData = 3;
+}
+
+message MsgFootballGameData {
+    repeated MsgFootballCheckpoint checkpoints = 1;
+    optional int32 hp = 2;
+    optional int32 goldShotNum = 3;
+    optional int32 substituteNum = 4;
+    optional int32 state = 5;
+    optional int32 checkpointId = 6;
+    optional int32 surplusTime = 7;
+    optional string secretKey = 8;
+    optional int32 temporaryScore = 9;
+}
+
+message MsgFootballCheckpoint {
+    optional int32 checkpointId = 1;
+    optional int32 eventId = 2;
+}
+
+message FootballStartReq_38001 {
+    optional int32 activityId = 1;
+}
+
+message FootballStartResp_38001 {
+    required int32 ret = 1;
+    optional MsgFootballGameData gameData = 2;
+}
+
+message FootballShootReq_38002 {
+    optional int32 activityId = 1;
+    optional bool success = 2;
+    optional string md5Code = 3;
+}
+
+message FootballShootResp_38002 {
+    required int32 ret = 1;
+    optional MsgFootballGameData gameData = 2;
+}
+
+message FootballGoldShootReq_38003 {
+    optional int32 activityId = 1;
+    optional bool success = 2;
+    optional string md5Code = 3;
+}
+
+message FootballGoldShootResp_38003 {
+    required int32 ret = 1;
+    optional MsgFootballGameData gameData = 2;
+}
+
+message FootballSubstituteReq_38004 {
+    optional int32 activityId = 1;
+}
+
+message FootballSubstituteResp_38004 {
+    required int32 ret = 1;
+    optional MsgFootballGameData gameData = 2;
+}
+
+message FootballGameEndReq_38005 {
+    optional int32 activityId = 1;
+    optional int32 remainingSeconds = 2;
+}
+
+message FootballGameEndResp_38005 {
+    required int32 ret = 1;
+    optional int64 score = 2;
+    optional int32 topScore = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 4;
+    optional bool newRecord = 5;
+    optional int32 timeScore = 6;
+    optional int32 checkpoint = 7;
+}
+
+message FootballTargetRewardReq_38006 {
+    optional int32 activityId = 1;
+    optional int32 taskId = 2;
+}
+
+message FootballTargetRewardResp_38006 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    repeated int32 taskIds = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 4;
+}

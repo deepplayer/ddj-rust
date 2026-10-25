@@ -1,0 +1,114 @@
+syntax = "proto2";
+
+package bf.messages.game.ItemMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgItemData {
+    optional int32 templateId = 1;
+    optional int64 num = 2;
+}
+
+message MsgItemEffectiveData {
+    optional int64 id = 1;
+    optional int32 templateId = 2;
+    optional int64 num = 3;
+    optional int64 deadline = 4;
+}
+
+message MsgUseParameter {
+    optional int32 talentId = 1;
+    optional int32 petId = 2;
+    optional int64 childId = 3;
+    optional int64 feastId = 4;
+    optional int32 feastSeatId = 5;
+    optional int32 actId = 6;
+    optional int32 actType = 7;
+    optional int32 yardId = 8;
+    optional int32 choiceItemId = 9;
+    optional int32 slgSeedType = 10;
+    optional int64 marchId = 11;
+    optional string targetPlayerId = 12;
+    optional int32 pos = 13;
+    optional string crossFeastHostId = 14;
+}
+
+message MsgUseResultExtend {
+    optional int32 id = 1;
+    optional int64 num = 2;
+}
+
+message MsgPalaceGoods {
+    optional int32 type = 1;
+    repeated MsgUseResultExtend goods = 2;
+}
+
+message MsgUseResult {
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+    repeated MsgUseResultExtend MsgPetIntimacy = 3;
+    repeated MsgUseResultExtend MsgPetGrowth = 4;
+    repeated MsgUseResultExtend MsgTalentAptitude = 5;
+    repeated MsgUseResultExtend MsgFeastProtectUse = 6;
+    repeated MsgUseResultExtend MsgSpouseProtectUse = 7;
+    repeated MsgUseResultExtend msgFriendPoints = 8;
+    optional MsgPalaceGoods msgPalaceGoods = 9;
+}
+
+message ItemUseReq_11002 {
+    optional int32 templateId = 1;
+    optional int64 num = 2;
+    optional MsgUseParameter msgUseParameter = 3;
+}
+
+message ItemUseResp_11002 {
+    required int32 ret = 1;
+    optional MsgUseResult msgUseResult = 2;
+}
+
+message ItemCompoundReq_11003 {
+    optional int32 compoundId = 1;
+    optional int64 compoundNum = 2;
+    optional int32 useItemId = 3;
+}
+
+message ItemCompoundResp_11003 {
+    required int32 ret = 1;
+}
+
+message ItemUpdateResp_11004 {
+    repeated MsgItemData msgItemData = 1;
+}
+
+message ItemEffectiveUseReq_11005 {
+    optional int64 id = 1;
+    optional int64 num = 2;
+    optional MsgUseParameter msgUseParameter = 3;
+}
+
+message ItemEffectiveUseResp_11005 {
+    required int32 ret = 1;
+    optional MsgUseResult msgUseResult = 2;
+}
+
+message ItemEffectiveOneKeyUseReq_11006 {
+    optional int32 templateId = 1;
+    optional MsgUseParameter msgUseParameter = 3;
+}
+
+message ItemEffectiveOneKeyUseResp_11006 {
+    required int32 ret = 1;
+    optional MsgUseResult msgUseResult = 2;
+}
+
+message ItemEffectiveUpdateResp_11007 {
+    repeated MsgItemEffectiveData msgItemEffectiveData = 1;
+}
+
+message ConfirmOverdueReq_11008 {
+    repeated int64 id = 1;
+}
+
+message ConfirmOverdueResp_11008 {
+    required int32 ret = 1;
+    repeated int64 id = 2;
+}

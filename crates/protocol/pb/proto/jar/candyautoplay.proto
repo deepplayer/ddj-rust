@@ -1,0 +1,47 @@
+syntax = "proto2";
+
+package bf.messages.game.candyautoplay;
+
+message MsgCandyAutoPlayPus_9770001 {
+    repeated CandyRomanceCoordInfo preCells = 1;
+    optional CandyRomanceCoordInfo moveFrom = 2;
+    optional CandyRomanceCoordInfo moveTo = 3;
+    repeated CandyRomanceCoordInfo newCells = 4;
+    repeated MsgCandyMerge mergeInfo = 5;
+    repeated int32 newNum = 6;
+    optional MsgCandyAutoPlayLog log = 7;
+}
+
+message CandyRomanceCoordInfo {
+    optional int32 x = 1;
+    optional int32 y = 2;
+    optional int32 candyNum = 3;
+}
+
+message MsgCandyMerge {
+    repeated CandyRomanceCoordInfo moveCell = 1;
+    optional CandyRomanceCoordInfo newCell = 2;
+}
+
+message MsgCandyAutoPlayLog {
+    optional int32 endType = 1;
+    optional int32 costEnergy = 2;
+    optional int32 integral = 3;
+    repeated MsgResources costs = 4;
+    repeated MsgGluttonyPetLog rewards = 5;
+    repeated MsgResources boxesRewards = 6;
+    optional int32 energy = 7;
+    repeated CandyRomanceCoordInfo moveCell = 8;
+}
+
+message MsgResources {
+    optional int32 id = 1;
+    optional string num = 2;
+    optional int32 multiple = 3;
+}
+
+message MsgGluttonyPetLog {
+    optional int32 petId = 1;
+    optional int32 growth = 2;
+    optional int32 intimacy = 3;
+}

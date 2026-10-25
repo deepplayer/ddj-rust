@@ -1,0 +1,365 @@
+syntax = "proto2";
+
+package bf.messages.game.ActivityRebornMessage;
+
+import "FamilyMessage.proto";
+import "GmActivityMessage.proto";
+import "PlayerMessage.proto";
+
+message MsgTopBrief {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 1;
+    optional string familyName = 2;
+    repeated MsgApplyBrief msgApply = 3;
+    optional int32 alreadyCnt = 4;
+    optional bool isApply = 5;
+}
+
+message MsgApplyBrief {
+    optional int32 level = 1;
+    optional int32 num = 2;
+}
+
+message MsgRebornCondition {
+    optional int32 id = 1;
+    optional bool isAccord = 2;
+}
+
+message MsgApplicants {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 1;
+    optional int32 level = 2;
+    optional int32 deal = 3;
+    optional int32 refuseCnt = 4;
+    optional int32 state = 5;
+}
+
+message MsgApplyResult {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 1;
+    optional int32 totalCnt = 2;
+    optional int32 state = 3;
+}
+
+message MsgApplication {
+    optional bool isPass = 1;
+    repeated string playerId = 2;
+}
+
+message MsgAlive {
+    optional string playerId = 1;
+    optional string money = 2;
+}
+
+message MsgAliveRank {
+    optional string playerId = 1;
+    optional int32 rank = 2;
+}
+
+message MsgRebornList {
+    optional int32 level = 1;
+    optional int32 peopleCnt = 2;
+}
+
+message MsgTable {
+    optional int32 typeId = 1;
+    repeated string entity = 2;
+}
+
+message MsgBuyRecord {
+    optional int32 giftId = 1;
+    optional int32 buyCnt = 2;
+}
+
+message MsgRebornPlayer {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 1;
+    optional int32 level = 2;
+    optional string oldPlayerName = 3;
+    optional int32 targetServerId = 4;
+}
+
+message GetListOfApplyReq_28001 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 index = 2;
+}
+
+message GetListOfApplyResp_28001 {
+    required int32 ret = 1;
+    optional int32 level = 2;
+    optional int32 applyCnt = 3;
+    repeated MsgTopBrief msgTop = 4;
+}
+
+message ConfirmRebornReq_28002 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 targetServerId = 2;
+    optional bool isReborn = 3;
+}
+
+message ConfirmRebornResp_28002 {
+    required int32 ret = 1;
+    repeated MsgRebornCondition msgCondition = 2;
+    optional int32 rank = 3;
+}
+
+message DeliveryApplyReq_28003 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 targetServerId = 2;
+}
+
+message DeliveryApplyResp_28003 {
+    required int32 ret = 1;
+    optional int32 applyCnt = 2;
+    repeated MsgTopBrief msgTop = 3;
+}
+
+message GetApplicationReq_28004 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetApplicationResp_28004 {
+    required int32 ret = 1;
+    repeated MsgApplyBrief msgApply = 2;
+    repeated MsgApplicants msgApplicants = 3;
+}
+
+message DealWithApplyReq_28005 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required string toPlayerId = 2;
+    required bool isPass = 3;
+}
+
+message DealWithApplyResp_28005 {
+    required int32 ret = 1;
+    repeated MsgApplicants msgApplicants = 2;
+}
+
+message GetApplyResultReq_28006 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetApplyResultResp_28006 {
+    required int32 ret = 1;
+    repeated MsgApplyResult msgResult = 2;
+    optional int32 level = 3;
+    repeated MsgBuyRecord msgBuyRecord = 4;
+    repeated MsgRebornPlayer msgImmigration = 5;
+    repeated MsgRebornPlayer msgEmigration = 6;
+}
+
+message RebornReq_28007 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 targetServerId = 2;
+}
+
+message RebornResp_28007 {
+    required int32 ret = 1;
+}
+
+message GetListOfApplyCsRemote_28008 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional int32 index = 3;
+}
+
+message GetListOfApplyGsRemote_28008 {
+    required int32 ret = 1;
+    optional int32 applyCnt = 2;
+    repeated MsgTopBrief msgTop = 3;
+}
+
+message DeliveryApplyCsRemote_28009 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional int32 level = 3;
+    required int32 targetServerId = 4;
+}
+
+message DeliveryApplyGsRemote_28009 {
+    required int32 ret = 1;
+    optional int32 applyCnt = 2;
+    repeated MsgTopBrief msgTop = 3;
+}
+
+message GetApplicationCsRemote_28010 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bool isJudge = 3;
+}
+
+message GetApplicationGsRemote_28010 {
+    required int32 ret = 1;
+    repeated MsgApplyBrief msgApply = 2;
+    repeated MsgApplicants msgApplicants = 3;
+}
+
+message DealWithApplyCsRemote_28011 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    required string toPlayerId = 3;
+    required bool isPass = 4;
+}
+
+message DealWithApplyGsRemote_28011 {
+    required int32 ret = 1;
+    optional int32 level = 2;
+    repeated MsgApplicants msgApplicants = 3;
+}
+
+message GetApplyResultCsRemote_28012 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+}
+
+message GetApplyResultGsRemote_28012 {
+    required int32 ret = 1;
+    optional bool isRebornTime = 2;
+    repeated MsgApplyResult msgResult = 3;
+}
+
+message RebornCsRemote_28013 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional int32 targetServerId = 3;
+}
+
+message RebornGsRemote_28013 {
+    required int32 ret = 1;
+    repeated MsgApplication msgApplication = 2;
+    optional int32 limitCnt = 3;
+}
+
+message PushServerDataCsRemote_28014 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 serverId = 2;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 3;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 4;
+    repeated MsgAlive msgAlive = 5;
+}
+
+message PushServerDataGsRemote_28014 {
+    required int32 ret = 1;
+}
+
+message PushTopDataCsRemote_28015 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int64 timeStamp = 4;
+}
+
+message PushTopDataGsRemote_28015 {
+    required int32 ret = 1;
+    optional int64 timeStamp = 2;
+}
+
+message GetPlayerRankCsRemote_28016 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional string money = 3;
+}
+
+message GetPlayerRankGsRemote_28016 {
+    required int32 ret = 1;
+    optional int32 rank = 2;
+}
+
+message GetRedDotCsRemote_28017 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional bool isJudge = 3;
+    optional bool isReborn = 4;
+}
+
+message GetRedDotGsRemote_28017 {
+    required int32 ret = 1;
+    optional bool isJudge = 2;
+    optional bool isReborn = 3;
+}
+
+message PushPlayerRankGsRemote_28018 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated MsgAliveRank msgRank = 2;
+}
+
+message UpdateServerRebornGsRemote_28019 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 serverId = 2;
+    repeated MsgRebornList msgList = 3;
+}
+
+message RebornOgRemote_28020 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string openId = 2;
+    optional string playerId = 3;
+    optional string playerName = 4;
+    optional string rebornPlayerId = 5;
+    optional int32 level = 6;
+    repeated MsgTable msgTable = 7;
+}
+
+message RebornGsRemote_28020 {
+    required int32 ret = 1;
+    optional string rebornPlayerId = 2;
+}
+
+message CompleteGsRemote_28021 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required string playerId = 2;
+}
+
+message CompleteOsRemote_28021 {
+    required int32 ret = 1;
+}
+
+message ResendDataGsRemote_28022 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required string playerId = 2;
+    repeated int32 typeId = 3;
+    required string rebornPlayerId = 4;
+}
+
+message ResendDataOsRemote_28022 {
+    required int32 ret = 1;
+}
+
+message GetRankOsRemote_28023 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string money = 2;
+}
+
+message GetRankGsRemote_28023 {
+    required int32 ret = 1;
+    optional int32 rank = 2;
+}
+
+message CheckLevelCsRemote_28024 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 targetServerId = 2;
+    optional int32 level = 3;
+}
+
+message CheckLevelGsRemote_28024 {
+    required int32 ret = 1;
+}
+
+message RecordRebornCsRemote_28025 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 targetServerId = 2;
+    optional int32 level = 3;
+}
+
+message ReConfirmOsRemote_28026 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 level = 2;
+    optional int32 limitCnt = 3;
+}
+
+message ReConfirmGsRemote_28026 {
+    required int32 ret = 1;
+}
+
+message NotifyCrossRemote_28027 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message NotifyGameFixFriendPlayerIdRemote_28028 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}

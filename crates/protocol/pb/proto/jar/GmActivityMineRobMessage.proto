@@ -1,0 +1,813 @@
+syntax = "proto2";
+
+package bf.messages.game.GmActivityMineRobMessage;
+
+import "CommonMsgMessage.proto";
+import "GmActivityCommonMessage.proto";
+import "PlayerMessage.proto";
+import "FamilyMessage.proto";
+import "TalentMessage.proto";
+import "PetMessage.proto";
+
+message MsgAllTemplateData {
+    repeated bf.messages.game.GmActivityCommonMessage.MsgRankReward rankRewards = 1;
+    repeated MsgTurnTemplateData turnData = 2;
+    repeated MsgRewardTemplateData rewardData = 3;
+    repeated MsgGuessTemplateData guessData = 4;
+    repeated MsgBattleRewardTemplateData battleRewardData = 5;
+}
+
+message MsgTurnTemplateData {
+    optional int32 id = 1;
+    optional int32 turn = 2;
+    optional int32 stageType = 3;
+    optional int32 start = 4;
+    optional int32 end = 5;
+}
+
+message MsgRewardTemplateData {
+    optional int32 id = 1;
+    optional string winReward = 2;
+    optional string failReward = 3;
+    optional string destroyReward = 4;
+    optional string attackReward = 5;
+    optional string rankRange = 6;
+    optional string score = 7;
+}
+
+message MsgGuessTemplateData {
+    optional int32 turn = 1;
+    optional int32 guessNum = 2;
+    optional string reward = 3;
+}
+
+message MsgBattleRewardTemplateData {
+    optional string reward = 1;
+    optional int32 kill = 2;
+}
+
+message MsgPlayerSimpleData {
+    optional int32 onlyId = 1;
+    optional bool isEnterFor = 2;
+    optional int32 familyRank = 3;
+    optional bool isJoin = 4;
+    optional int32 playerRank = 5;
+    optional int32 playerRankScore = 6;
+    repeated bf.messages.game.GmActivityCommonMessage.MsgPlayerRankData rankData = 7;
+    optional int32 mineId = 8;
+    optional bool redEnroll = 11;
+    optional bool redGuess = 12;
+    optional bool redMain = 13;
+}
+
+message MsgPlayerData {
+    optional int32 onlyId = 1;
+    optional int32 mineId = 2;
+    optional bf.messages.game.FamilyMessage.MsgFamilyData myFamily = 3;
+    optional bf.messages.game.FamilyMessage.MsgFamilyData tarFamily = 4;
+    repeated MsgGate gateData = 5;
+    optional int32 canAttackNum = 6;
+    optional int32 canDefenseNum = 7;
+    optional int32 attackGateId = 8;
+    optional bool btnDispatch = 9;
+    optional int32 talentNum = 10;
+    optional bool redEventLog = 21;
+    optional bool redDispatch = 22;
+    optional bool redAttack = 23;
+}
+
+message MsgGate {
+    optional int64 familyId = 1;
+    optional int32 gateId = 2;
+    optional int32 dispatchNum = 3;
+    optional int32 myDispatchNum = 4;
+    optional int32 hpMax = 5;
+    optional int32 hp = 6;
+    optional string talentTotalHp = 7;
+}
+
+message MsgDefensePlayer {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 1;
+    repeated MsgDefenseTalent talents = 2;
+}
+
+message MsgDefenseTalent {
+    optional bf.messages.game.TalentMessage.MsgTalentData talent = 1;
+    optional string maxHp = 2;
+    optional string curHp = 3;
+    optional int32 attackSub = 4;
+    optional int32 canDispatchNum = 5;
+    optional int32 gateId = 6;
+}
+
+message MsgAttackTalent {
+    optional bf.messages.game.TalentMessage.MsgTalentData talent = 1;
+    optional string maxHp = 2;
+    optional string curHp = 3;
+    optional int32 attackSub = 4;
+    optional int32 hpUp = 5;
+    optional int32 canAttackNum = 6;
+}
+
+message MsgBattleLog {
+    optional int32 id = 1;
+    optional int64 fromFamilyId = 2;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer fromPlayer = 3;
+    optional bool isWin = 5;
+    optional int32 talentId = 6;
+    optional int32 killNum = 7;
+    optional int32 gateHurt = 8;
+    optional bool haveVideo = 9;
+    optional int64 addTime = 10;
+}
+
+message MsgBattleResult {
+    optional int64 fromFamilyId = 1;
+    optional MsgBattleSpirit attackSpirit = 2;
+    optional MsgBattleSpirit defenseSpirit = 3;
+    optional bool isWin = 4;
+}
+
+message MsgBattleSpirit {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 1;
+    optional bf.messages.game.TalentMessage.MsgTalentData talent = 2;
+    optional bf.messages.game.PetMessage.MsgPetData pet = 3;
+    optional int32 attackSub = 4;
+    optional string maxHp = 5;
+    optional string curHp = 6;
+    optional string hurt = 7;
+}
+
+message MsgBattleAttackGate {
+    optional MsgGate gate = 1;
+    optional bf.messages.game.TalentMessage.MsgTalentData talent = 2;
+    optional int32 gateHurt = 3;
+}
+
+message MsgBattleResultTotal {
+    optional int32 type = 1;
+    optional int32 gateId = 2;
+    optional int32 talentId = 3;
+    optional int32 killNum = 4;
+    optional int32 gateHurt = 5;
+    optional int32 gateHurtType = 6;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 7;
+    optional int32 addIntegral = 8;
+}
+
+message MsgEventLog {
+    optional int32 type = 1;
+    optional int64 fromFamilyId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources winRewards = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources failRewards = 4;
+    optional int32 gateId = 6;
+    optional int32 dieGateNum = 7;
+    optional int32 liveGateNum = 8;
+    optional int32 talentHpAdd = 9;
+    optional int32 winReason = 10;
+    optional int32 talentId = 11;
+    optional int32 killNum = 12;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources myRewards = 15;
+}
+
+message MsgMatchSimple {
+    optional int32 matchId = 1;
+    optional bf.messages.game.FamilyMessage.MsgFamilyData familyA = 2;
+    optional bf.messages.game.FamilyMessage.MsgFamilyData familyB = 3;
+    optional bool isFamilyAWin = 4;
+}
+
+message MsgGuessEntrySimple {
+    optional int32 turn = 1;
+    optional int32 status = 2;
+    repeated bf.messages.game.FamilyMessage.MsgFamilyData guessFamily = 3;
+    optional bool canGain = 4;
+}
+
+message MsgGuessEntry {
+    optional int32 matchId = 1;
+    optional bf.messages.game.FamilyMessage.MsgFamilyData familyA = 2;
+    optional bf.messages.game.FamilyMessage.MsgFamilyData familyB = 3;
+    optional int32 hotA = 4;
+    optional int32 hotB = 5;
+    optional int64 choiceFamilyId = 6;
+    optional int64 winFamilyId = 7;
+}
+
+message MsgEnrollReq_34301 {
+}
+
+message MsgEnrollResp_34301 {
+    required int32 ret = 1;
+    optional int32 familyRank = 2;
+}
+
+message MsgQueryPlayerDataReq_34303 {
+}
+
+message MsgQueryPlayerDataResp_34303 {
+    required int32 ret = 1;
+    optional MsgPlayerData info = 2;
+}
+
+message MsgLeaveRoomReq_34304 {
+}
+
+message MsgLeaveRoomResp_34304 {
+    required int32 ret = 1;
+}
+
+message MsgQueryGateDefenseReq_34306 {
+    optional int32 gateId = 1;
+}
+
+message MsgQueryGateDefenseResp_34306 {
+    required int32 ret = 1;
+    optional int32 gateId = 2;
+    optional int32 playerNum = 3;
+    optional int32 talentLiveNum = 4;
+    optional int32 talentTotalNum = 5;
+    optional string talentTotalMoney = 6;
+    optional string talentTotalHp = 7;
+    optional int32 gateMaxHp = 8;
+    optional int32 gateHp = 9;
+    repeated MsgDefensePlayer defensePlayer = 10;
+}
+
+message MsgQueryDispatchTalentReq_34307 {
+}
+
+message MsgQueryDispatchTalentResp_34307 {
+    required int32 ret = 1;
+    repeated MsgGate gate = 2;
+    repeated MsgDefenseTalent talents = 3;
+}
+
+message MsgDispatchTalentReq_34308 {
+    repeated int32 talentId = 1;
+    optional int32 tarGateId = 2;
+}
+
+message MsgDispatchTalentResp_34308 {
+    required int32 ret = 1;
+}
+
+message MsgOneKeyDispatchTalentReq_34309 {
+}
+
+message MsgOneKeyDispatchTalentResp_34309 {
+    required int32 ret = 1;
+}
+
+message MsgQueryAttackListReq_34311 {
+    optional int32 gateId = 1;
+}
+
+message MsgQueryAttackListResp_34311 {
+    required int32 ret = 1;
+    optional int32 gateId = 2;
+    optional int32 gateMaxHp = 3;
+    optional int32 gateHp = 4;
+    repeated MsgAttackTalent talents = 5;
+}
+
+message MsgAttackReadyReq_34312 {
+    optional int32 type = 1;
+    optional int32 gateId = 2;
+    optional int32 talentId = 3;
+}
+
+message MsgAttackReadyResp_34312 {
+    required int32 ret = 1;
+    optional bool haveDefenseTalent = 2;
+    optional int32 attackGateId = 3;
+}
+
+message MsgQueryAttackDataReq_34313 {
+}
+
+message MsgQueryAttackDataResp_34313 {
+    required int32 ret = 1;
+    repeated MsgDefenseTalent defenseTalent = 2;
+    optional int32 talentLiveNum = 3;
+    optional int32 talentTotalNum = 4;
+    optional MsgAttackTalent attackTalent = 5;
+    optional int32 killNum = 6;
+    optional MsgGate gate = 7;
+}
+
+message MsgAttackReq_34314 {
+    optional int32 type = 1;
+    optional int32 index = 2;
+}
+
+message MsgAttackResp_34314 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+    optional MsgBattleResult battleResult = 3;
+    optional MsgBattleAttackGate attackGate = 4;
+    optional MsgBattleResultTotal resultTotal = 5;
+    optional int32 attackGateId = 10;
+}
+
+message MsgAttackOneKeyReq_34315 {
+}
+
+message MsgAttackOneKeyResp_34315 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+    optional MsgBattleResult battleResult = 3;
+    optional MsgBattleAttackGate attackGate = 4;
+    optional MsgBattleResultTotal resultTotal = 5;
+    optional int32 attackGateId = 10;
+}
+
+message MsgEventPushResp_34318 {
+    required int32 ret = 1;
+    optional MsgEventLog log = 2;
+}
+
+message MsgReadEventLogReq_34319 {
+}
+
+message MsgReadEventLogResp_34319 {
+    required int32 ret = 1;
+    repeated MsgEventLog log = 2;
+}
+
+message MsgQueryBattleLogReq_34321 {
+    optional int32 gateId = 1;
+}
+
+message MsgQueryBattleLogResp_34321 {
+    required int32 ret = 1;
+    optional int32 gateId = 2;
+    repeated MsgBattleLog logs = 3;
+}
+
+message MsgQueryBattleVideoReq_34322 {
+    optional int32 gateId = 1;
+    optional int32 id = 2;
+}
+
+message MsgQueryBattleVideoResp_34322 {
+    required int32 ret = 1;
+    optional MsgBattleResult battleResult = 2;
+}
+
+message MsgQueryAllBattleReq_34323 {
+    optional int32 mineId = 1;
+}
+
+message MsgQueryAllBattleResp_34323 {
+    required int32 ret = 1;
+    optional int32 mineId = 2;
+    repeated MsgMatchSimple infos = 3;
+}
+
+message MsgWatchReq_34324 {
+    optional int32 mineId = 1;
+    optional int32 matchId = 2;
+}
+
+message MsgWatchResp_34324 {
+    required int32 ret = 1;
+    optional MsgPlayerData info = 2;
+}
+
+message MsgQueryGuessTotalReq_34326 {
+}
+
+message MsgQueryGuessTotalResp_34326 {
+    required int32 ret = 1;
+    repeated MsgGuessEntrySimple info = 2;
+    optional int64 endTime = 3;
+}
+
+message MsgQueryGuessDataReq_34327 {
+    optional int32 turn = 1;
+}
+
+message MsgQueryGuessDataResp_34327 {
+    required int32 ret = 1;
+    optional int32 turn = 2;
+    repeated MsgGuessEntry info = 3;
+}
+
+message MsgGuessReq_34328 {
+    repeated int64 familyId = 1;
+}
+
+message MsgGuessResp_34328 {
+    required int32 ret = 1;
+}
+
+message MsgGainGuessRewardReq_34329 {
+    optional int32 turn = 1;
+}
+
+message MsgGainGuessRewardResp_34329 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+}
+
+message MsgG2CTalent {
+    optional bf.messages.game.TalentMessage.MsgTalentData talentData = 1;
+    optional bf.messages.game.PetMessage.MsgPetData petData = 2;
+}
+
+message MsgG2CEnrollFamily {
+    optional int64 familyId = 1;
+    repeated string playerId = 2;
+}
+
+message MsgG2CPlayerTalent {
+    optional string playerId = 1;
+    repeated MsgG2CTalent talentData = 2;
+}
+
+message MsgG2CKafkaLog {
+    optional int32 mineId = 1;
+    optional int32 turn = 2;
+    optional int64 tarFamilyId = 3;
+    optional int32 tarGateId = 4;
+    repeated MsgG2CKafkaLogDispatchTalent dispatchTalents = 5;
+    optional MsgG2CKafkaLogAttack attackData = 6;
+    optional string custom = 11;
+}
+
+message MsgG2CKafkaLogDispatchTalent {
+    optional int32 talentId = 1;
+    optional string talentHp = 2;
+    optional int32 fromGateId = 3;
+    optional int32 canDispatchNum = 4;
+}
+
+message MsgG2CKafkaLogAttack {
+    optional int32 talentId = 1;
+    optional int32 lv = 2;
+    optional string attack = 3;
+    optional int32 attackDown = 4;
+    optional string hp = 5;
+    optional string chgHp = 6;
+    optional string hurt = 7;
+    optional int32 killTalentNum = 8;
+    optional int32 gateHp = 11;
+    optional int32 gateChgHp = 12;
+    optional int32 score = 15;
+    optional int32 addScore = 16;
+}
+
+message MsgG2CKafkaLogMatchResult {
+    optional int32 mineId = 1;
+    optional int64 familyIdA = 2;
+    optional int64 familyIdB = 3;
+    optional int64 winFamilyId = 4;
+}
+
+message MsgG2CEnrollReq_34351 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional int64 familyId = 2;
+    optional string familyMoney = 3;
+}
+
+message MsgG2CEnrollResp_34351 {
+    required int32 ret = 1;
+    optional int32 rank = 2;
+}
+
+message MsgG2CQueryPlayerSimpleDataReq_34352 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+    optional bool isJoin = 4;
+}
+
+message MsgG2CQueryPlayerSimpleDataResp_34352 {
+    required int32 ret = 1;
+    optional MsgPlayerSimpleData info = 2;
+}
+
+message MsgG2CQueryPlayerDataReq_34353 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+}
+
+message MsgG2CQueryPlayerDataResp_34353 {
+    required int32 ret = 1;
+    optional MsgPlayerData info = 2;
+    optional int32 matchId = 3;
+}
+
+message MsgG2CQueryGateDefenseReq_34356 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+    optional int32 gateId = 4;
+}
+
+message MsgG2CQueryGateDefenseResp_34356 {
+    required int32 ret = 1;
+    optional int32 gateId = 2;
+    optional int32 playerNum = 3;
+    optional int32 talentLiveNum = 4;
+    optional int32 talentTotalNum = 5;
+    optional string talentTotalMoney = 6;
+    optional string talentTotalHp = 7;
+    optional int32 gateMaxHp = 8;
+    optional int32 gateHp = 9;
+    repeated MsgDefensePlayer defensePlayer = 10;
+}
+
+message MsgG2CQueryDispatchTalentReq_34357 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+}
+
+message MsgG2CQueryDispatchTalentResp_34357 {
+    required int32 ret = 1;
+    repeated MsgGate gate = 2;
+    repeated MsgDefenseTalent talents = 3;
+}
+
+message MsgG2CDispatchTalentReq_34358 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+    repeated int32 talentId = 4;
+    optional int32 tarGateId = 6;
+}
+
+message MsgG2CDispatchTalentResp_34358 {
+    required int32 ret = 1;
+    optional MsgG2CKafkaLog log = 2;
+}
+
+message MsgG2COneKeyDispatchTalentReq_34359 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+}
+
+message MsgG2COneKeyDispatchTalentResp_34359 {
+    required int32 ret = 1;
+}
+
+message MsgG2CQueryAttackListReq_34361 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+    optional int32 gateId = 4;
+}
+
+message MsgG2CQueryAttackListResp_34361 {
+    required int32 ret = 1;
+    optional int32 gateId = 2;
+    optional int32 gateMaxHp = 3;
+    optional int32 gateHp = 4;
+    repeated MsgAttackTalent talents = 5;
+}
+
+message MsgG2CAttackReadyReq_34362 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+    optional int32 type = 4;
+    optional int32 gateId = 5;
+    optional int32 talentId = 6;
+}
+
+message MsgG2CAttackReadyResp_34362 {
+    required int32 ret = 1;
+    optional bool haveDefenseTalent = 2;
+    optional int32 attackGateId = 3;
+    optional MsgG2CKafkaLog log = 4;
+}
+
+message MsgG2CQueryAttackDataReq_34363 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+}
+
+message MsgG2CQueryAttackDataResp_34363 {
+    required int32 ret = 1;
+    repeated MsgDefenseTalent defenseTalent = 2;
+    optional int32 talentLiveNum = 3;
+    optional int32 talentTotalNum = 4;
+    optional MsgAttackTalent attackTalent = 5;
+    optional int32 killNum = 6;
+    optional MsgGate gate = 7;
+}
+
+message MsgG2CAttackReq_34364 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+    optional int32 type = 4;
+    optional int32 index = 5;
+}
+
+message MsgG2CAttackResp_34364 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+    optional MsgBattleResult battleResult = 3;
+    optional MsgBattleAttackGate attackGate = 4;
+    optional MsgBattleResultTotal resultTotal = 5;
+    optional int32 attackGateId = 10;
+    optional MsgG2CKafkaLog log = 11;
+}
+
+message MsgG2CAttackOneKeyReq_34365 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+}
+
+message MsgG2CAttackOneKeyResp_34365 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+    optional MsgBattleResult battleResult = 3;
+    optional MsgBattleAttackGate attackGate = 4;
+    optional MsgBattleResultTotal resultTotal = 5;
+    optional int32 attackGateId = 10;
+    optional MsgG2CKafkaLog log = 11;
+}
+
+message MsgG2CEventPushResp_34368 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 2;
+    optional int32 matchId = 3;
+    optional MsgEventLog log = 4;
+}
+
+message MsgG2CReadEventLogReq_34369 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+}
+
+message MsgG2CReadEventLogResp_34369 {
+    required int32 ret = 1;
+    repeated MsgEventLog log = 2;
+    optional MsgG2CKafkaLog kafkaLog = 3;
+}
+
+message MsgG2CQueryBattleLogReq_34371 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+    optional int32 gateId = 4;
+}
+
+message MsgG2CQueryBattleLogResp_34371 {
+    required int32 ret = 1;
+    optional int32 gateId = 2;
+    repeated MsgBattleLog logs = 3;
+}
+
+message MsgG2CQueryBattleVideoReq_34372 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+    optional int32 gateId = 4;
+    optional int32 id = 5;
+}
+
+message MsgG2CQueryBattleVideoResp_34372 {
+    required int32 ret = 1;
+    optional MsgBattleResult battleResult = 2;
+}
+
+message MsgG2CQueryAllBattleReq_34373 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int32 mineId = 3;
+}
+
+message MsgG2CQueryAllBattleResp_34373 {
+    required int32 ret = 1;
+    optional int32 mineId = 2;
+    repeated MsgMatchSimple infos = 3;
+}
+
+message MsgG2CWatchReq_34374 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+    optional int32 mineId = 4;
+    optional int32 matchId = 5;
+}
+
+message MsgG2CWatchResp_34374 {
+    required int32 ret = 1;
+    optional MsgPlayerData info = 2;
+    optional int32 matchId = 3;
+}
+
+message MsgG2CQueryGuessTotalReq_34376 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+}
+
+message MsgG2CQueryGuessTotalResp_34376 {
+    required int32 ret = 1;
+    repeated MsgGuessEntrySimple info = 2;
+    optional int64 endTime = 3;
+}
+
+message MsgG2CQueryGuessDataReq_34377 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int32 turn = 3;
+}
+
+message MsgG2CQueryGuessDataResp_34377 {
+    required int32 ret = 1;
+    optional int32 turn = 2;
+    repeated MsgGuessEntry info = 3;
+}
+
+message MsgG2CGuessReq_34378 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    repeated int64 familyId = 3;
+}
+
+message MsgG2CGuessResp_34378 {
+    required int32 ret = 1;
+    optional MsgG2CKafkaLog log = 2;
+}
+
+message MsgG2CGainGuessRewardReq_34379 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int32 turn = 3;
+}
+
+message MsgG2CGainGuessRewardResp_34379 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+    optional MsgG2CKafkaLog log = 3;
+}
+
+message MsgC2GEnrollEndReq_34391 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    repeated int64 familyId = 2;
+}
+
+message MsgC2GEnrollEndResp_34391 {
+    required int32 ret = 1;
+    repeated MsgG2CEnrollFamily family = 2;
+}
+
+message MsgG2CGainTurnRewardReq_34392 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+    optional int32 turn = 4;
+}
+
+message MsgG2CGainTurnRewardResp_34392 {
+    required int32 ret = 1;
+    repeated MsgEventLog log = 2;
+}
+
+message MsgG2CGainGuessRewardReq_34393 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+}
+
+message MsgG2CGainGuessRewardResp_34393 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+}
+
+message MsgG2CSyncPlayerAllTalentDataReq_34394 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    repeated MsgG2CTalent talentData = 3;
+}
+
+message MsgG2CSyncPlayerAllTalentDataResp_34394 {
+    required int32 ret = 1;
+}
+
+message MsgG2CSyncTalentDataReq_34395 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    repeated MsgG2CPlayerTalent info = 2;
+}
+
+message MsgG2CSyncFamilyMoneyReq_34396 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    repeated int64 familyId = 2;
+    repeated string money = 3;
+}
+
+message MsgG2CMatchResultPushReq_34397 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional int32 turn = 2;
+    repeated MsgG2CKafkaLogMatchResult matchResult = 3;
+}

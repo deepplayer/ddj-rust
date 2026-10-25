@@ -1,0 +1,257 @@
+syntax = "proto2";
+
+package bf.messages.game.ActivityTrapMessage;
+
+import "CommonMsgMessage.proto";
+import "PlayerMessage.proto";
+import "GmActivityPawnMessage.proto";
+
+message MsgTrapLog {
+    optional bool attack = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer msgOfflinePlayer = 2;
+    repeated MsgTrapMoveResultArray resultArray = 3;
+    optional int64 time = 4;
+    optional int32 titleSn = 5;
+    optional MsgTrap startTrap = 6;
+    optional bool initLog = 7;
+    optional bool win = 10;
+}
+
+message MsgTrapPlayerData {
+    optional int32 titleSn = 1;
+    optional int32 def = 2;
+    optional int32 defWin = 3;
+    optional int32 attkck = 4;
+    optional int32 attkckWin = 5;
+    optional int32 integral = 6;
+    optional int32 charge = 7;
+    repeated int32 achievementId = 8;
+    optional bool trapLayout = 9;
+    optional bool achievementRed = 10;
+    optional bool logRed = 11;
+}
+
+message MsgTrapTemplateData {
+    repeated bf.messages.game.GmActivityPawnMessage.MsgPawnRewardTemplate taskRewards = 2;
+    optional string titleRewardStr = 3;
+}
+
+message TrapCoordinate {
+    optional int32 x = 1;
+    optional int32 y = 2;
+}
+
+message MsgTrap {
+    optional TrapCoordinate coordinate = 1;
+    optional int32 id = 2;
+    optional string param = 3;
+}
+
+message MsgTrapLayout {
+    repeated MsgTrap pitfall = 1;
+    optional int32 def = 2;
+    optional int32 defWin = 3;
+}
+
+message MsgTrapResult {
+    optional bool win = 1;
+    optional int32 integral = 2;
+    optional int32 allIntegral = 3;
+    optional int32 hp = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 5;
+}
+
+message MsgTrapMoveResultArray {
+    repeated MsgTrapMoveResult moveResult = 1;
+    optional bool wall = 2;
+    repeated TrapCoordinate coordinate = 3;
+    optional int32 searchId = 10;
+    optional bool search = 11;
+}
+
+message MsgTrapMoveResult {
+    optional MsgTrap finish = 3;
+    optional int32 id = 5;
+    repeated MsgTrapBuff trapBuff = 6;
+    repeated MsgTrapCostHp costHp = 9;
+    repeated MsgTrap finishTrap = 12;
+    optional bool strike = 13;
+}
+
+message MsgTrapCostHp {
+    optional int32 type = 1;
+    optional int32 cost = 2;
+    optional int32 id = 3;
+    optional bool magic = 4;
+}
+
+message MsgTrapBuff {
+    optional int32 id = 1;
+    optional int32 move = 2;
+    optional int32 cost = 4;
+    optional int32 strike = 5;
+}
+
+message TrapTitleUpgradeResp_38151 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+    optional int32 titleSn = 3;
+}
+
+message TrapGetLayoutReq_38153 {
+    optional int32 activityId = 1;
+}
+
+message TrapGetLayoutResp_38153 {
+    optional int32 ret = 1;
+    optional MsgTrapLayout layout = 2;
+}
+
+message TrapLayoutReq_38154 {
+    optional int32 activityId = 1;
+    optional MsgTrapLayout layout = 2;
+}
+
+message TrapLayoutResp_38154 {
+    optional int32 ret = 1;
+}
+
+message TrapLayoutCsRemote_38155 {
+    optional int32 activityId = 1;
+    optional int32 activityGroup = 2;
+    optional int32 titleSn = 3;
+    optional string playerId = 6;
+}
+
+message TrapProbeReq_38156 {
+    optional int32 activityId = 1;
+}
+
+message TrapProbeResp_38156 {
+    optional int32 ret = 1;
+    optional bool new = 2;
+    optional TrapCoordinate coordinate = 3;
+    repeated MsgTrap pitfall = 4;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer msgOfflinePlayer = 5;
+    optional int32 toDef = 6;
+    optional int32 toDefWin = 7;
+    optional int32 hp = 8;
+    optional int32 toTitleSn = 9;
+    repeated MsgTrapMoveResultArray resultArray = 10;
+    optional int32 searchNum = 11;
+    repeated MsgTrapBuff trapBuff = 12;
+}
+
+message TrapProbeRandomRemoteReq_38157 {
+    optional int32 activityId = 1;
+    optional string playerId = 2;
+    optional int32 activityGroup = 3;
+}
+
+message TrapProbeRandomRemoteResp_38157 {
+    optional int32 ret = 1;
+    optional string toPlayerId = 2;
+}
+
+message TrapProbeGetRandomResultRemoteReq_38158 {
+    optional string toPlayerId = 1;
+    optional int32 activityId = 2;
+}
+
+message TrapProbeGetRandomResultRemoteResp_38158 {
+    optional MsgTrapLayout layout = 1;
+    optional int32 titleSn = 4;
+}
+
+message TrapMoveReq_38159 {
+    optional int32 activityId = 1;
+    optional TrapCoordinate coordinate = 2;
+}
+
+message TrapMoveResp_38159 {
+    optional int32 ret = 1;
+    optional MsgTrapMoveResultArray resultArray = 2;
+    optional MsgTrapResult result = 3;
+}
+
+message TrapPitfallChoiceReq_38160 {
+    optional int32 activityId = 1;
+    optional int32 choice = 2;
+    optional int32 id = 3;
+}
+
+message TrapPitFallChoiceResp_38160 {
+    optional int32 ret = 1;
+    optional MsgTrapMoveResultArray resultArray = 2;
+    optional MsgTrapResult result = 3;
+}
+
+message MsgGainAchievementReq_38161 {
+    optional int32 id = 1;
+    optional int32 activityId = 3;
+}
+
+message MsgGainAchievementResp_38161 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+    repeated int32 achievementId = 3;
+}
+
+message TrapPitfallSearchReq_38162 {
+    optional int32 activityId = 1;
+    optional TrapCoordinate coordinate = 2;
+}
+
+message TrapPitfallSearchResp_38162 {
+    optional int32 ret = 1;
+    repeated MsgTrap msgTrap = 2;
+    optional int32 searchNum = 3;
+    optional MsgTrapMoveResultArray resultArray = 4;
+}
+
+message TrapProbeGetLayoutReq_38163 {
+    optional int32 activityId = 1;
+}
+
+message TrapProbeGetLayoutResp_38163 {
+    optional int32 ret = 1;
+    optional MsgTrapLayout msgTrapLayout = 2;
+}
+
+message TrapDefWinRemote_38164 {
+    optional int32 activityId = 1;
+    optional string playerId = 2;
+    optional int32 activityGroup = 3;
+}
+
+message TrapAddDefLogRemote_38165 {
+    optional int32 activityId = 1;
+    optional MsgTrapLog log = 2;
+    optional int32 activityGroup = 3;
+    optional string playerId = 4;
+}
+
+message TrapGetLogReq_38166 {
+    optional int32 activityId = 1;
+}
+
+message TrapGetLogResp_38166 {
+    repeated MsgTrapLog log = 1;
+    optional int32 ret = 2;
+}
+
+message TrapGetLogResultReq_38167 {
+    optional int32 activityId = 1;
+    optional int64 time = 2;
+}
+
+message TrapGetLogResultResp_38167 {
+    optional int32 ret = 1;
+    repeated MsgTrapMoveResultArray resultArray = 2;
+    optional MsgTrap startTrap = 3;
+}
+
+message TrapPushResp_38168 {
+    optional int32 red = 1;
+    optional int32 charge = 2;
+}

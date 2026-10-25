@@ -1,0 +1,191 @@
+syntax = "proto2";
+
+package bf.messages.game.ActivityMiniGameMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgMiniGameTempteData {
+    repeated MsgMiniGameRewardData msgDalangRewardData = 1;
+}
+
+message MsgMiniGameRewardData {
+    optional int32 actId = 1;
+    optional int32 levelId = 2;
+    optional int32 unlockType = 3;
+    optional int32 unlockCondition = 4;
+    optional string reward = 5;
+}
+
+message MsgMiniPlayerData {
+    optional int32 bindingGameId = 1;
+    optional int32 levelId = 2;
+    optional bool pass = 3;
+}
+
+message MsgMiniGameLevelReq_38801 {
+    optional int32 actId = 1;
+    optional int32 levelId = 2;
+}
+
+message MsgMiniGameLevelResp_38801 {
+    optional int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+}
+
+message MsgMiniGamePassReq_38802 {
+    optional int32 actId = 1;
+}
+
+message MsgMiniGamePassResp_38802 {
+    optional int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+}
+
+message MsgMiniGameTypeReq_38803 {
+    optional int32 miniGameType = 1;
+}
+
+message MsgMiniGameTypeResp_38803 {
+    optional int32 miniGameType = 1;
+    optional int32 bindingMiniGame = 2;
+    optional int32 ret = 3;
+}
+
+message MsgMiniGamePetroleumData {
+    optional int32 type = 1;
+    optional int32 level = 2;
+}
+
+message MsgMiniGamePetroleumDataReq_38805 {
+    optional int32 actId = 1;
+}
+
+message MsgMiniGamePetroleumDataResp_38805 {
+    optional int32 ret = 1;
+    repeated MsgMiniGamePetroleumData data = 2;
+    optional int32 gold = 3;
+}
+
+message MsgMiniGamePetroleumUpgradeReq_38806 {
+    optional int32 actId = 1;
+    optional int32 type = 2;
+}
+
+message MsgMiniGamePetroleumUpgradeResp_38806 {
+    optional int32 ret = 1;
+    optional int32 type = 2;
+    optional int32 level = 3;
+}
+
+message MsgMiniGamePetroleumGoldReq_38807 {
+    optional int32 actId = 1;
+    optional int32 type = 2;
+    optional int32 num = 3;
+}
+
+message MsgMiniGamePetroleumGoldResp_38807 {
+    optional int32 ret = 1;
+    optional int32 allNum = 2;
+}
+
+message MsgFlowerData {
+    repeated MsgFlower flower = 1;
+    repeated int32 achievementId = 2;
+    repeated MsgFlowerCotData cotData = 3;
+    optional int64 historyIntegral = 4;
+    optional int64 nowIntegral = 5;
+    optional int32 item1 = 6;
+    optional int32 item2 = 7;
+    optional MsgFlower createFlower = 8;
+    optional MsgFlower downFlower = 9;
+}
+
+message MsgFlowerTemplateData {
+    repeated MsgFlowerAchievementRewardDb flowerData = 1;
+}
+
+message MsgFlowerAchievementRewardDb {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 taskId = 3;
+    optional int32 param1 = 4;
+    optional int32 param2 = 5;
+    optional string des = 6;
+    optional string reward = 7;
+}
+
+message MsgFlowerCotData {
+    optional int32 id = 1;
+    optional int32 cot = 2;
+}
+
+message MsgFlower {
+    optional int64 key = 1;
+    optional double x = 2;
+    optional double y = 3;
+    optional int32 id = 4;
+    optional string encryData = 5;
+}
+
+message MsgFlowerSynthesis {
+    optional MsgFlower flower1 = 1;
+    optional MsgFlower flower2 = 2;
+}
+
+message FlowerEnterReq_38830 {
+    optional int32 activityId = 1;
+}
+
+message FlowerEnterResp_38830 {
+    optional int32 ret = 1;
+    optional MsgFlowerData data = 2;
+}
+
+message FlowerDownReq_38831 {
+    optional int32 activityId = 1;
+    optional MsgFlower flower = 2;
+}
+
+message FlowerDownResp_38831 {
+    optional int32 ret = 1;
+}
+
+message FlowerDownFinishReq_38832 {
+    optional int32 activityId = 1;
+    repeated MsgFlowerSynthesis synthesis = 2;
+    repeated MsgFlower flower = 3;
+}
+
+message FlowerDownFinishResp_38832 {
+    optional int32 ret = 1;
+    repeated int32 drawAchievementId = 2;
+    optional int64 nowIntegral = 3;
+    optional int32 combo = 4;
+    repeated MsgFlowerCotData cotData = 5;
+}
+
+message FlowerResetReq_38833 {
+    optional int32 activityId = 1;
+}
+
+message FlowerResetResp_38833 {
+    optional int32 ret = 1;
+    optional MsgFlowerData flowerData = 2;
+}
+
+message FlowerCreatePushResp_38834 {
+    optional MsgFlower flower = 1;
+}
+
+message FlowerUseItemReq_38835 {
+    optional int32 type = 1;
+    optional int64 key = 2;
+    optional int32 activityId = 3;
+}
+
+message FlowerUseItemResp_38835 {
+    optional int32 ret = 1;
+    optional MsgFlowerData flowerData = 2;
+    optional int32 type = 3;
+    optional int64 key = 4;
+}

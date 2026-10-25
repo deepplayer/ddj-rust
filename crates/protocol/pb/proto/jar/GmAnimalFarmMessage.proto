@@ -1,0 +1,146 @@
+syntax = "proto2";
+
+package bf.messages.game.GmAnimalFarmMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgAnimalFarmTemplateData {
+    repeated MsgAnimalFarmRewardDb taskDb = 1;
+    repeated MsgAnimalFirstRewardDb stageStarDb = 2;
+}
+
+message MsgAnimalFarmRewardDb {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 onlyId = 3;
+    optional int32 awardType = 4;
+    optional int32 distance = 5;
+    optional string reward = 6;
+}
+
+message MsgAnimalFirstRewardDb {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 onlyId = 3;
+    optional string condition = 4;
+    optional string sreward = 6;
+}
+
+message MsgAnimalFarmPlayerData {
+    repeated MsgAnimalFarmStage stages = 1;
+    repeated int32 gainTaskIds = 2;
+    optional MsgAnimalFarmGameData gameData = 4;
+}
+
+message MsgAnimalFarmStage {
+    optional int32 stageId = 1;
+    optional int32 star = 2;
+}
+
+message MsgAnimalFarmGameData {
+    optional int32 stageId = 1;
+    optional int32 moveStep = 2;
+    repeated MsgAnimalFarmGrid grids = 3;
+    optional bool complete = 4;
+    optional bool dead = 5;
+}
+
+message MsgAnimalFarmGrid {
+    optional int32 pos = 1;
+    optional int32 ground = 2;
+    optional int32 animal = 3;
+    optional bool suit = 4;
+    optional bool stolen = 5;
+}
+
+message MsgAnimalMoveEffect {
+    repeated MsgAnimalFarmGrid bornAnimals = 1;
+    repeated MsgAnimalFarmGrid stolenGrids = 2;
+    optional int32 pos = 3;
+}
+
+message MsgAnimalFarmSettle {
+    optional int32 moveStep = 2;
+    optional int32 star = 3;
+    optional bool newRecord = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 5;
+    repeated MsgAnimalFarmStage stages = 6;
+    optional int32 rewardStatus = 7;
+}
+
+message AnimalFarmStartReq_33641 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 stageId = 3;
+}
+
+message AnimalFarmStartResp_33641 {
+    required int32 ret = 1;
+    optional MsgAnimalFarmGameData gameData = 2;
+}
+
+message AnimalMoveReq_33642 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 choosePos = 3;
+    repeated int32 routes = 4;
+}
+
+message AnimalMoveResp_33642 {
+    required int32 ret = 1;
+    optional MsgAnimalFarmGameData gameData = 2;
+    optional MsgAnimalMoveEffect moveEffect = 3;
+}
+
+message AnimalFarmEndReq_33643 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message AnimalFarmEndResp_33643 {
+    required int32 ret = 1;
+    optional MsgAnimalFarmSettle settle = 2;
+}
+
+message AnimalFarmUseItemEndReq_33644 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message AnimalFarmUseItemEndResp_33644 {
+    required int32 ret = 1;
+    optional MsgAnimalFarmSettle settle = 2;
+}
+
+message AnimalFarmTaskReq_33645 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 taskId = 3;
+}
+
+message AnimalFarmTaskResp_33645 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 activityType = 3;
+    repeated int32 gainTaskIds = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 5;
+}
+
+message AnimalFarmCloseReq_33646 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message AnimalFarmCloseResp_33646 {
+    required int32 ret = 1;
+}
+
+message AnimalFarmResetReq_33647 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message AnimalFarmResetResp_33647 {
+    required int32 ret = 1;
+    optional MsgAnimalFarmGameData gameData = 2;
+}

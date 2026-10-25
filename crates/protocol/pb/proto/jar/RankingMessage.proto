@@ -1,0 +1,481 @@
+syntax = "proto2";
+
+package bf.messages.game.RankingMessage;
+
+import "CommonMsgMessage.proto";
+import "FamilyMessage.proto";
+
+message MsgRankingEntryData {
+    optional string key = 1;
+    optional string keyName = 2;
+    repeated string varStr = 3;
+    optional int32 rank = 4;
+    optional int32 sex = 11;
+    optional int32 lv = 12;
+    optional int32 vipLv = 13;
+    repeated int32 fashionIds = 14;
+    optional string speed = 15;
+    optional bf.messages.game.CommonMsgMessage.MsgAddress address = 16;
+    optional int32 serverId = 17;
+    optional int32 npcSex = 18;
+    optional string familyName = 20;
+    optional int32 familyLv = 21;
+    optional int32 familyIco = 22;
+    optional string patriarchName = 23;
+    optional int32 familyMember = 24;
+    optional int32 ableJoin = 25;
+    optional string familySpeed = 26;
+    optional int32 memberNum = 27;
+    optional string leaderName = 28;
+    optional string leaderPlayerId = 29;
+    optional int32 talentId = 41;
+    optional bytes data = 42;
+}
+
+message MsgRankingData {
+    optional RankingGetParam getParam = 1;
+    repeated MsgRankingEntryData msgRankingEntryDatas = 2;
+    optional int32 index = 3;
+    optional bool worship = 4;
+    repeated string varStr = 5;
+}
+
+message MsgOperateRankHistory {
+    optional int32 typeRanking = 1;
+    optional string key = 2;
+    optional int32 rank = 3;
+}
+
+message RankingGetParam {
+    optional int32 type = 1;
+    optional int32 activityId = 2;
+    optional int64 extId = 3;
+    optional int32 serverId = 4;
+}
+
+message CrossRankNotifyMsg {
+    optional string activityName = 1;
+    optional int32 activityType = 2;
+    optional int32 activityId = 3;
+    optional int32 rank = 4;
+    optional string name = 5;
+    optional int64 fromTime = 6;
+    optional bytes data = 7;
+    optional int32 templateId = 8;
+    optional int32 serverId = 9;
+    optional int32 icon = 10;
+}
+
+message MsgRankingGame2Cross {
+    optional string key = 1;
+    optional string value = 2;
+    optional int64 rankTime = 3;
+    optional int32 lv = 4;
+    optional int32 talentId = 5;
+}
+
+message MsgRankIndex {
+    optional int32 rankType = 1;
+    optional int32 index = 2;
+}
+
+message MsgGmActivity {
+    optional int32 actId = 1;
+    optional int32 actType = 2;
+    optional int32 actGroup = 3;
+}
+
+message MsgRankingDataGame2Cross {
+    optional int32 type = 1;
+    optional int32 activityId = 2;
+    optional int32 groupId = 3;
+    optional int64 extId = 4;
+    repeated MsgRankingGame2Cross infos = 5;
+}
+
+message MsgGetRankIndexParam {
+    optional int32 rankType = 1;
+    optional string key = 2;
+    optional int64 extId = 3;
+    optional int32 activityId = 4;
+    optional int32 activityType = 5;
+    optional int32 serverId = 6;
+}
+
+message MsgRankIndexResponse {
+    optional MsgGetRankIndexParam param = 1;
+    optional int32 rank = 2;
+}
+
+message RankingGetReq_12001 {
+    optional RankingGetParam params = 1;
+}
+
+message RankingGetResp_12001 {
+    required int32 ret = 1;
+    optional MsgRankingData msgRankingDatas = 2;
+}
+
+message RankingWorshipReq_12002 {
+    optional int32 type = 1;
+}
+
+message RankingWorshipResp_12002 {
+    required int32 ret = 1;
+    optional int32 worshipId = 2;
+    optional int32 type = 3;
+}
+
+message CrossRankingGetReq_12003 {
+    optional int32 type = 1;
+    optional string entryKey = 2;
+    optional int32 activityId = 3;
+    optional int32 activityGroup = 4;
+    optional int64 extId = 5;
+}
+
+message CrossRankingGetResp_12003 {
+    required int32 ret = 1;
+    optional MsgRankingData msgRankingData = 2;
+}
+
+message CrossRankingUpdateReq_12004 {
+    optional int32 type = 1;
+    optional string key = 3;
+    optional string initValue = 4;
+    optional string addValue = 5;
+    optional int32 activityId = 7;
+    optional int64 extId = 9;
+    optional int32 serverId = 10;
+}
+
+message CrossRankingUpdateResp_12004 {
+    required int32 ret = 1;
+}
+
+message CrossRankStatusReq_12005 {
+    optional int32 type = 1;
+    optional int32 activityId = 2;
+    optional int32 activityGroup = 3;
+    optional int64 extId = 4;
+}
+
+message CrossRankStatusResp_12005 {
+    optional int32 type = 1;
+    optional int32 actId = 2;
+    optional int32 status = 3;
+    repeated MsgOperateRankHistory msgOperateRankHistory = 4;
+}
+
+message CrossRankOfServerReq_12006 {
+    optional int32 type = 1;
+    optional int32 activityId = 2;
+    optional int32 activityGroup = 3;
+    optional int64 extId = 4;
+}
+
+message CrossRankOfServerResp_12006 {
+    required int32 ret = 1;
+    optional MsgRankingData msgRankingData = 2;
+}
+
+message CrossRankNotifyReq_12007 {
+    repeated CrossRankNotifyMsg crossRankNotifys = 1;
+}
+
+message CrossRankNotifyResp_12007 {
+    required int32 ret = 1;
+}
+
+message CrossRankingUpdateToGameReq_12008 {
+    optional int32 type = 1;
+    optional string key = 3;
+    optional string value = 5;
+    optional int32 activityId = 7;
+    optional int32 activityGroup = 8;
+    optional int64 extId = 9;
+}
+
+message CrossRankingUpdateToGameResp_12008 {
+    required int32 ret = 1;
+}
+
+message GameServerCrossIdChangeReq_12009 {
+    optional int32 type = 1;
+    optional int32 gameServerId = 2;
+    optional int32 groupId = 3;
+    optional int32 groupIdOld = 4;
+}
+
+message GameServerCrossIdChangeResp_12009 {
+    optional int32 ret = 1;
+}
+
+message RankingGetWithoutEntryDataReq_12010 {
+    repeated RankingGetParam params = 1;
+}
+
+message RankingGetWithoutEntryDataResp_12010 {
+    required int32 ret = 1;
+    repeated MsgRankingData msgRankingDatas = 2;
+}
+
+message PushRankingGame2CrossReq_12011 {
+    optional int32 gameServerId = 1;
+    optional int32 rankingType = 2;
+    optional int32 groupId = 3;
+    optional int64 extId = 4;
+    repeated MsgRankingGame2Cross rankInfos = 5;
+}
+
+message ChangeUnionCsRemoteReq_12012 {
+    optional MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional bool isAdd = 4;
+    optional bool isDismiss = 5;
+}
+
+message CrossRankingUpdateToCrossReq_12013 {
+    optional int32 type = 1;
+    optional int32 activityId = 2;
+    optional int64 extId = 3;
+    optional int32 serverId = 4;
+    repeated MsgRankingGame2Cross entrys = 21;
+    optional MsgRankingGame2Cross topEntry = 22;
+}
+
+message CrossRankingUpdateToCrossResp_12013 {
+    optional int32 ret = 1;
+}
+
+message CrossRankingSyncToCrossReq_12014 {
+    optional int32 actType = 1;
+    optional int32 activityId = 2;
+    optional int32 serverId = 3;
+}
+
+message CrossRankingSyncToCrossResp_12014 {
+    optional int32 ret = 1;
+}
+
+message CrossRankingRemoveReq_12015 {
+    optional int32 type = 1;
+    optional int32 activityId = 2;
+    optional int64 extId = 3;
+    optional int32 serverId = 4;
+    repeated MsgRankingGame2Cross entrys = 21;
+    optional MsgRankingGame2Cross topEntry = 22;
+}
+
+message CrossRankingRemoveResp_12015 {
+    optional int32 ret = 1;
+}
+
+message CrossPurposeRankingSyncToCrossReq_12016 {
+    optional int32 actType = 1;
+    optional int32 activityId = 2;
+    optional int32 serverId = 3;
+}
+
+message CrossPurposeRankingSyncToCrossResp_12016 {
+    optional int32 ret = 1;
+}
+
+message MsgSkinRankingEntrySimpleData {
+    optional int32 skinId = 1;
+    optional string playerName = 2;
+    optional int32 serverId = 3;
+    optional string playerId = 4;
+    optional int32 skinAwake = 5;
+}
+
+message MsgSkinRankingEntryDetailData {
+    optional int32 skinId = 1;
+    optional string playerId = 2;
+    optional string playerName = 3;
+    optional int32 serverId = 4;
+    optional int32 sex = 5;
+    optional int32 lv = 6;
+    optional int32 vipLv = 7;
+    repeated int32 fashionIds = 8;
+    optional bf.messages.game.CommonMsgMessage.MsgAddress address = 9;
+    optional int32 npcSex = 10;
+    optional int32 talentDegree = 21;
+    optional int32 talentSkinLv = 22;
+    optional int32 talentSkillLv = 23;
+    optional int32 petGrowth = 25;
+    optional int32 petIntimacy = 26;
+}
+
+message MsgSkinRankingAllFirstDataReq_12021 {
+    optional int32 skinType = 1;
+}
+
+message MsgSkinRankingAllFirstDataResp_12021 {
+    optional int32 ret = 1;
+    optional bool isCross = 2;
+    repeated MsgSkinRankingEntrySimpleData infos = 3;
+}
+
+message MsgSkinRankingFirstDetailDataReq_12022 {
+    optional int32 skinType = 1;
+    optional int32 skinId = 2;
+}
+
+message MsgSkinRankingFirstDetailDataResp_12022 {
+    optional int32 ret = 1;
+    optional MsgSkinRankingEntryDetailData info = 2;
+}
+
+message CrossSkinRankingUpdateReq_12025 {
+    optional int32 type = 1;
+    optional string key = 2;
+    optional string addValue = 3;
+    optional int32 activityId = 4;
+    optional int32 activityGroup = 5;
+    optional int64 extId = 6;
+    optional int32 serverId = 7;
+}
+
+message PushSkinRankingDataGame2CrossReq_12026 {
+    optional int32 gameServerId = 1;
+    optional int32 groupId = 2;
+    repeated MsgRankingDataGame2Cross rankInfos = 3;
+}
+
+message CrossSkinRankingAllFirstDataReq_12027 {
+    optional int32 skinType = 1;
+    optional int32 groupId = 2;
+}
+
+message CrossSkinRankingAllFirstDataResp_12027 {
+    optional int32 ret = 1;
+    repeated MsgSkinRankingEntrySimpleData infos = 2;
+}
+
+message CrossSkinRankingFirstDetailDataReq_12028 {
+    optional int32 skinType = 1;
+    optional int32 skinId = 2;
+    optional int32 groupId = 3;
+}
+
+message CrossSkinRankingFirstDetailDataResp_12028 {
+    optional int32 ret = 1;
+    optional MsgSkinRankingEntryDetailData info = 2;
+}
+
+message CrossCommonRankUpdateReq_12029 {
+    optional int32 type = 1;
+    optional string key = 2;
+    optional string addValue = 3;
+    optional int32 serverId = 4;
+    optional int32 groupId = 5;
+    optional int64 extId = 6;
+}
+
+message CrossRankingGetWithoutEntryDataReq_12030 {
+    optional int32 type = 1;
+    optional string entryKey = 2;
+    optional int32 activityId = 3;
+    optional int32 activityGroup = 4;
+    optional int64 extId = 5;
+}
+
+message CrossRankingGetWithoutEntryDataResp_12030 {
+    required int32 ret = 1;
+    optional MsgRankingData msgRankingData = 2;
+}
+
+message CrossSingleTalentRankingUpdateToCrossReq_12031 {
+    optional int32 talentId = 1;
+    optional int32 serverId = 2;
+    optional int32 groupId = 3;
+    repeated MsgRankingGame2Cross entrys = 4;
+}
+
+message CrossSingleTalentRankingUpdateToCrossResp_12031 {
+    optional int32 ret = 1;
+}
+
+message CrossGetRankingsReq_12032 {
+    repeated MsgGetRankIndexParam params = 1;
+}
+
+message CrossGetRankingsResp_12032 {
+    required int32 ret = 1;
+    repeated MsgRankIndexResponse ranks = 2;
+}
+
+message GetMixTalentRankReq_12033 {
+    optional int32 groupId = 1;
+    optional int32 talentId = 2;
+}
+
+message GetMixTalentRankResp_12033 {
+    required int32 ret = 1;
+    repeated MsgRankingEntryData entries = 2;
+}
+
+message MsgRankReduceInfo {
+    optional int32 activityId = 1;
+    optional string activityName = 2;
+    optional int32 typeId = 3;
+    optional int32 oldRank = 4;
+    optional int32 newRank = 5;
+}
+
+message WestJourneyRankingUpdateToCrossReq_12034 {
+    optional int32 activityId = 1;
+    optional int32 serverId = 2;
+    optional int32 groupId = 3;
+    repeated MsgRankingGame2Cross entrys = 4;
+}
+
+message MsgWestJourneyRankDefeat {
+    optional string playerId = 1;
+    optional int32 rankIndex = 2;
+    optional int32 defeat = 3;
+    optional int32 actId = 4;
+    optional string familyScore = 5;
+    optional int32 familyIndex = 6;
+}
+
+message WestJourneyRankingUpdateToCrossResp_12034 {
+    optional int32 ret = 1;
+    repeated MsgWestJourneyRankDefeat defeat = 2;
+}
+
+message CrossRankingSyncToCrossReq_12035 {
+    optional int32 actType = 1;
+    optional int32 activityId = 2;
+    optional int32 serverId = 3;
+}
+
+message CrossRankingSyncToCrossResp_12035 {
+    optional int32 ret = 1;
+}
+
+message PlayerLivelyRankReq_12036 {
+    optional string playerId = 1;
+    optional int32 croupId = 2;
+}
+
+message PlayerLivelyRankResp_12036 {
+    optional int32 rank = 1;
+}
+
+message CheckTransferServerReq_12037 {
+    optional string playerId = 1;
+}
+
+message CheckTransferServerResp_12037 {
+    optional int32 ret = 1;
+    optional int32 rank = 2;
+    optional int64 vipExp = 3;
+}
+
+message MsgRemoveRaningEntryReq_12038 {
+    optional string playerId = 1;
+    optional int32 groupId = 2;
+}

@@ -1,0 +1,102 @@
+syntax = "proto2";
+
+package bf.messages.game.AccountRoomMessage;
+
+message MsgAccountRoomData {
+    optional int32 openId = 1;
+    repeated int32 teamTalentIds = 2;
+    repeated MsgAccountRoomTalentData msgAccountRoomTalentData = 3;
+    repeated MsgARCloseFriendSeat seats = 5;
+    optional bool canOneKeyClose = 6;
+    repeated MsgAccountFriendTeam friendTeam = 7;
+}
+
+message MsgAccountRoomTalentData {
+    optional int32 id = 1;
+    optional int32 talentId = 2;
+    optional int64 time = 3;
+}
+
+message MsgAccountRoomResult {
+    optional int32 talentId = 1;
+    optional int32 exp = 2;
+    optional int32 multiple = 3;
+}
+
+message MsgARCloseFriendSeat {
+    optional int32 closeLv = 1;
+    optional string playerName = 2;
+    optional string friendId = 3;
+    optional MsgAccountRoomTalentData talentData = 4;
+}
+
+message MsgAccountFriendTeam {
+    optional string friendId = 1;
+    optional int32 talentId = 2;
+}
+
+message AccountRoomOpenReq_14001 {
+}
+
+message AccountRoomOpenResp_14001 {
+    required int32 ret = 1;
+    optional int32 openId = 2;
+}
+
+message AccountRoomDispatchReq_14002 {
+    repeated MsgAccountRoomTalentData datas = 1;
+}
+
+message AccountRoomDispatchResp_14002 {
+    required int32 ret = 1;
+    repeated MsgAccountRoomTalentData datas = 2;
+}
+
+message AccountRoomSaveTeamReq_14003 {
+    repeated int32 tempTalentIds = 1;
+}
+
+message AccountRoomSaveTeamResp_14003 {
+    required int32 ret = 1;
+}
+
+message AccountRoomReceivingReq_14004 {
+    repeated int32 id = 1;
+}
+
+message AccountRoomReceivingResp_14004 {
+    required int32 ret = 1;
+    repeated MsgAccountRoomResult msgAccountRoomResult = 2;
+}
+
+message AccountRoomCloseFriendSeatUpdateResp_14005 {
+    repeated MsgARCloseFriendSeat seats = 1;
+    optional bool canOneKeyClose = 2;
+}
+
+message AccountRoomSaveFriendTeamReq_14006 {
+    repeated MsgAccountFriendTeam team = 1;
+}
+
+message AccountRoomSaveFriendTeamResp_14006 {
+    required int32 ret = 1;
+}
+
+message AccountRoomDispatchFriendReq_14007 {
+    repeated MsgARCloseFriendSeat seats = 1;
+}
+
+message AccountRoomDispatchFriendResp_14007 {
+    required int32 ret = 1;
+    repeated MsgARCloseFriendSeat seats = 2;
+}
+
+message AccountRoomReceiveFriendReq_14008 {
+    repeated int32 id = 1;
+}
+
+message AccountRoomReceiveFriendResp_14008 {
+    required int32 ret = 1;
+    repeated MsgAccountRoomResult msgAccountRoomResult = 2;
+    repeated MsgARCloseFriendSeat seats = 3;
+}

@@ -1,0 +1,508 @@
+syntax = "proto2";
+
+package bf.messages.game.FriendMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgFriendElement {
+    optional string playerId = 1;
+    optional string name = 2;
+    repeated int32 fashionIds = 3;
+    optional int32 sex = 4;
+    optional int64 lv = 5;
+    optional bool online = 6;
+    optional int64 offlineTime = 7;
+    optional int32 vipLv = 8;
+    optional string family = 9;
+    optional string talentAbility = 10;
+    optional string buildingAbility = 11;
+    optional bf.messages.game.CommonMsgMessage.MsgAddress address = 12;
+    optional int32 familyIco = 13;
+    optional string money = 14;
+    optional int32 star = 15;
+    optional int32 serverId = 16;
+    optional MsgCloseFriendElement closeFriendData = 17;
+    optional int32 npcSex = 18;
+    optional int32 type = 99;
+}
+
+message MsgApplysElement {
+    optional MsgFriendElement msgFriendElement = 1;
+    optional int64 time = 2;
+}
+
+message MsgCloseFriendPopup {
+    optional string friendId = 1;
+    optional int32 popupType = 2;
+}
+
+message MsgFriendData {
+    repeated MsgApplysElement applys = 1;
+    optional bool isAllow = 2;
+    repeated string applyId = 3;
+    repeated MsgFriendElement frists = 4;
+    repeated MsgFriendElement blacks = 5;
+    repeated MsgApplysElement closeApplies = 6;
+    optional MsgCloseFriendSelfData selfData = 7;
+    repeated string updateApplies = 8;
+}
+
+message MsgCloseFriendElement {
+    optional int64 friendshipPoint = 1;
+    optional int32 friendType = 2;
+    optional int32 friendStatus = 3;
+    optional int64 breakTime = 4;
+    repeated MsgCloseFriendLimit friendLimit = 5;
+    optional int32 background = 6;
+}
+
+message MsgCloseFriendLimit {
+    optional int32 friendType = 1;
+    optional bool limit = 2;
+}
+
+message MsgCloseFriendSeatNum {
+    optional int32 closeType = 1;
+    optional int32 num = 2;
+}
+
+message MsgCloseFriendSelfData {
+    repeated MsgCloseFriendSeatNum seatNum = 1;
+    repeated int32 gainRewardIds = 2;
+    repeated MsgCloseFriendPopup popups = 3;
+}
+
+message MsgCloseFriendChatState {
+    optional string inviteId = 1;
+    optional string playerId = 2;
+    optional int32 status = 3;
+    optional int32 friendType = 4;
+}
+
+message MsgFriendTransferModify {
+    optional string toPlayerId = 1;
+    optional string oldFromPlayerId = 2;
+    optional string newFromPlayerId = 3;
+}
+
+message MsgCloseFriendTransferModify {
+    optional string toPlayerId = 1;
+    optional string oldFromPlayerId = 2;
+    optional string newFromPlayerId = 3;
+}
+
+message FriendSearchReq_21001 {
+    optional string str = 2;
+}
+
+message FriendSearchResp_21001 {
+    required int32 ret = 1;
+    repeated MsgFriendElement msgFriendElement = 2;
+}
+
+message FriendAllowApplyReq_21002 {
+    optional bool isAllow = 1;
+}
+
+message FriendAllowApplyResp_21002 {
+    required int32 ret = 1;
+}
+
+message FriendApplyReq_21003 {
+    optional string playerId = 1;
+}
+
+message FriendApplyResp_21003 {
+    required int32 ret = 1;
+}
+
+message FriendApplyHandleReq_21004 {
+    repeated string playerId = 1;
+    optional bool bor = 2;
+}
+
+message FriendApplyHandleResp_21004 {
+    required int32 ret = 1;
+}
+
+message FriendRemoveReq_21005 {
+    optional string playerId = 1;
+}
+
+message FriendRemoveResp_21005 {
+    required int32 ret = 1;
+}
+
+message FriendBlackHandleReq_21006 {
+    optional string playerId = 1;
+    optional bool isAdd = 2;
+}
+
+message FriendBlackHandleResp_21006 {
+    required int32 ret = 1;
+}
+
+message FriendGetReq_21007 {
+}
+
+message FriendGetResp_21007 {
+    required int32 ret = 1;
+    repeated MsgFriendElement friends = 2;
+}
+
+message FriendBlackGetReq_21008 {
+}
+
+message FriendBlackGetResp_21008 {
+    required int32 ret = 1;
+    repeated MsgFriendElement blacklists = 2;
+}
+
+message FriendSynToElementResp_21009 {
+    optional MsgFriendElement msgFriendElement = 1;
+}
+
+message FriendSynApplysResp_21010 {
+    optional MsgApplysElement applys = 1;
+}
+
+message FriendApplysRefuseResp_21011 {
+    optional string playerId = 1;
+}
+
+message FriendStarReq_21014 {
+    optional string playerId = 1;
+    optional int32 star = 2;
+}
+
+message FriendStarResp_21014 {
+    optional int32 ret = 1;
+}
+
+message crossServerBlackFriendHandleReq_21012 {
+    optional string playerId = 1;
+    optional bool isAdd = 2;
+}
+
+message crossServerBlackFriendHandleResp_21012 {
+    required int32 ret = 1;
+    optional MsgFriendElement blacklists = 2;
+}
+
+message crossServerBlackFriendGetResp_21013 {
+    required int32 ret = 1;
+    repeated MsgFriendElement blacklists = 2;
+}
+
+message BlackFriendQuery_21019 {
+    optional string beBlacklistPlayer = 1;
+    optional string initiator = 2;
+}
+
+message BlackFriendQueryBack_21019 {
+    required int32 ret = 1;
+    optional bool blacklisted = 2;
+}
+
+message BlackFriendSync_21020 {
+    optional string beBlacklistPlayer = 1;
+    optional string initiator = 2;
+    optional bool blacklisted = 3;
+}
+
+message CloseFriendApplyReq_21021 {
+    optional string friendPlayerId = 1;
+    optional int32 friendType = 2;
+}
+
+message CloseFriendApplyResp_21021 {
+    required int32 ret = 1;
+}
+
+message CloseFriendHandleApplyReq_21022 {
+    repeated string playerId = 1;
+    optional bool allow = 2;
+    optional int32 friendType = 3;
+}
+
+message CloseFriendHandleApplyResp_21022 {
+    required int32 ret = 1;
+}
+
+message CloseFriendBreakReq_21023 {
+    optional string friendPlayerId = 1;
+}
+
+message CloseFriendBreakResp_21023 {
+    required int32 ret = 1;
+    optional string friendPlayerId = 2;
+}
+
+message CloseFriendBreakCancelReq_21024 {
+    optional string friendPlayerId = 1;
+}
+
+message CloseFriendBreakCancelResp_21024 {
+    required int32 ret = 1;
+}
+
+message CloseFriendChatStateReq_21025 {
+    repeated string inviteIds = 1;
+}
+
+message CloseFriendChatStateResp_21025 {
+    required int32 ret = 1;
+    repeated MsgCloseFriendChatState states = 2;
+}
+
+message CloseFriendSeatAddReq_21026 {
+    optional int32 friendType = 1;
+}
+
+message CloseFriendSeatAddResp_21026 {
+    required int32 ret = 1;
+}
+
+message CloseFriendSyncSelfDataResp_21027 {
+    optional MsgCloseFriendSelfData selfData = 1;
+}
+
+message CloseFriendSyncApplyResp_21028 {
+    optional MsgApplysElement friendPlayerId = 1;
+}
+
+message CloseFriendSyncApplyRefuseResp_21029 {
+    optional string playerId = 1;
+}
+
+message CloseFriendChangeFriendTypeReq_21030 {
+    optional string friendId = 1;
+    optional int32 changeFriendType = 2;
+}
+
+message CloseFriendChangeFriendTypeResp_21030 {
+    required int32 ret = 1;
+}
+
+message CloseFriendUpdateReq_21031 {
+    optional string friendId = 1;
+}
+
+message CloseFriendUpdateResp_21031 {
+    required int32 ret = 1;
+}
+
+message CloseFriendHandleUpdateReq_21032 {
+    optional string friendId = 1;
+    optional bool allow = 2;
+}
+
+message CloseFriendHandleUpdateResp_21032 {
+    required int32 ret = 1;
+}
+
+message CloseFriendSyncApplyResp_21033 {
+    optional string friendId = 1;
+}
+
+message CloseFriendPopupReadReq_21034 {
+}
+
+message CloseFriendPopupReadResp_21034 {
+    required int32 ret = 1;
+}
+
+message CloseFriendSetBgReq_21035 {
+    optional string friendId = 1;
+    optional int32 fashionId = 2;
+}
+
+message CloseFriendSetBgResp_21035 {
+    required int32 ret = 1;
+    optional string friendId = 2;
+    optional int32 fashionId = 3;
+}
+
+message MsgFriendPoint {
+    optional string friendId = 1;
+    optional int64 point = 2;
+}
+
+message FriendCrossApplySSReq_21501 {
+    optional string applyPlayerId = 1;
+    optional string friendId = 2;
+}
+
+message FriendCrossApplySSResp_21501 {
+    required int32 ret = 1;
+}
+
+message FriendCrossAgreeApplySSReq_21502 {
+    optional string toPlayerId = 1;
+    optional string fromPlayerId = 2;
+}
+
+message FriendCrossAgreeApplySSResp_21502 {
+    required int32 ret = 1;
+}
+
+message FriendCrossRefuseApplySSReq_21503 {
+    optional string toPlayerId = 1;
+    optional string fromPlayerId = 2;
+}
+
+message FriendCrossRefuseApplySSResp_21503 {
+    required int32 ret = 1;
+}
+
+message FriendCrossRemoveSSReq_21504 {
+    optional string toPlayerId = 1;
+    optional string fromPlayerId = 2;
+}
+
+message FriendCrossRemoveSSResp_21504 {
+    required int32 ret = 1;
+}
+
+message FriendCrossGiftSSReq_21505 {
+    optional string fromPlayerId = 1;
+    optional string toPlayerId = 2;
+    optional int64 addFriendPoint = 3;
+}
+
+message FriendCrossGiftSSResp_21505 {
+    required int32 ret = 1;
+    optional int64 syncPoint = 2;
+}
+
+message FriendCloseApplySSReq_21506 {
+    optional string fromPlayerId = 1;
+    optional string toPlayerId = 2;
+    optional int32 friendType = 3;
+    optional bool beChangeType = 4;
+}
+
+message FriendCloseApplySSResp_21506 {
+    required int32 ret = 1;
+}
+
+message FriendCloseLimitSSReq_21507 {
+    optional string friendId = 1;
+}
+
+message FriendCloseLimitSSResp_21507 {
+    required int32 ret = 1;
+    optional string friendId = 2;
+    repeated MsgCloseFriendLimit friendLimits = 3;
+}
+
+message FriendCloseAgreeSSReq_21508 {
+    optional string fromPlayerId = 1;
+    optional string toPlayerId = 2;
+}
+
+message FriendCloseAgreeSSResp_21508 {
+    required int32 ret = 1;
+}
+
+message FriendCloseRefuseSSReq_21509 {
+    optional string fromPlayerId = 1;
+    optional string toPlayerId = 2;
+}
+
+message FriendCloseRefuseSSResp_21509 {
+    required int32 ret = 1;
+}
+
+message FriendCloseChatStateSSReq_21510 {
+    optional string playerId = 1;
+    repeated int32 inviteIds = 2;
+}
+
+message FriendCloseChatStateSSResp_21510 {
+    required int32 ret = 1;
+    repeated MsgCloseFriendChatState states = 2;
+}
+
+message FriendClosePromoteSSReq_21511 {
+    optional string fromPlayerId = 1;
+    optional string toPlayerId = 2;
+}
+
+message FriendClosePromoteSSResp_21511 {
+    required int32 ret = 1;
+}
+
+message FriendClosePromoteAgreeSSReq_21512 {
+    optional string fromPlayerId = 1;
+    optional string toPlayerId = 2;
+}
+
+message FriendClosePromoteAgreeSSResp_21512 {
+    required int32 ret = 1;
+}
+
+message FriendClosePromoteRefuseSSReq_21513 {
+    optional string fromPlayerId = 1;
+    optional string toPlayerId = 2;
+    optional bool refused = 3;
+}
+
+message FriendClosePromoteRefuseSSResp_21513 {
+    required int32 ret = 1;
+}
+
+message FriendCloseFriendSetBreakSSReq_21514 {
+    optional string fromPlayerId = 1;
+    optional string toPlayerId = 2;
+}
+
+message FriendCloseFriendSetBreakSSResp_21514 {
+    required int32 ret = 1;
+}
+
+message FriendCloseFriendBreakFinallySSReq_21515 {
+    optional string fromPlayerId = 1;
+    optional string toPlayerId = 2;
+    optional int64 breakTime = 3;
+}
+
+message FriendCloseFriendBreakFinallySSResp_21515 {
+    required int32 ret = 1;
+}
+
+message FriendCrossTransferModifySSReq_21516 {
+    repeated MsgFriendTransferModify modifies = 1;
+}
+
+message FriendCrossTransferModifySSResp_21516 {
+    required int32 ret = 1;
+}
+
+message FriendCloseCrossTransferModifySSReq_21517 {
+    repeated MsgCloseFriendTransferModify modifies = 1;
+}
+
+message FriendCloseCrossTransferModifySSResp_21517 {
+    required int32 ret = 1;
+}
+
+message FriendCloseFriendPointsGetSSReq_21518 {
+    optional string fromPlayerId = 1;
+    repeated string toPlayerIds = 2;
+}
+
+message FriendCloseFriendPointsGetSSResp_21518 {
+    required int32 ret = 1;
+    repeated MsgFriendPoint friendPoints = 2;
+}
+
+message FriendCloseFriendPointSyncSSReq_21519 {
+    optional string fromPlayerId = 1;
+    optional string toPlayerId = 2;
+    optional int64 friendPoint = 3;
+}
+
+message FriendCloseFriendPointSyncSSResp_21519 {
+    required int32 ret = 1;
+}

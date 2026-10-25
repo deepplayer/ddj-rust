@@ -1,0 +1,924 @@
+syntax = "proto2";
+
+package bf.messages.game.FeastMessage;
+
+import "CommonMsgMessage.proto";
+import "FriendMessage.proto";
+
+message MsgFeastInfo {
+    optional int64 id = 1;
+    optional int32 type = 2;
+    optional int64 endTime = 3;
+    optional int32 popularity = 4;
+    repeated MsgGuestInfo seatInfos = 5;
+    optional int32 seatNow = 7;
+    optional int32 seatMax = 8;
+    optional MsgSnatchPlayerInfo host = 9;
+    optional int64 shareCD = 10;
+    optional MsgSnatchPlayerInfo host2 = 11;
+    optional int32 guestStatus = 12;
+    optional bool switchStatus = 13;
+    optional string crossFeastId = 14;
+}
+
+message MsgGuestInfo {
+    optional MsgSnatchPlayerInfo playerInfo = 1;
+    optional int32 seatId = 2;
+    optional int64 enterTime = 3;
+    optional int32 seatType = 4;
+    optional int64 protectTime = 5;
+    optional bool isSnatch = 6;
+    optional int32 feastBuff = 7;
+    optional bool systemProtect = 8;
+}
+
+message MsgSnatchPlayerInfo {
+    optional string playerId = 1;
+    optional int32 sex = 2;
+    optional int32 vip = 3;
+    optional string name = 4;
+    optional string moneyPower = 5;
+    optional int32 totalScore = 6;
+    repeated int32 scoreList = 7;
+    repeated int32 fashionIds = 8;
+    optional int64 guestEnterTime = 9;
+    optional string familyName = 10;
+    optional int32 familyIcon = 11;
+    optional bf.messages.game.CommonMsgMessage.MsgAddress address = 12;
+    optional int64 familyId = 13;
+    optional int32 serverId = 14;
+    optional int32 npcSex = 15;
+}
+
+message MsgFeastLog {
+    optional MsgSnatchPlayerInfo infoMe = 1;
+    optional MsgSnatchPlayerInfo infoOther = 2;
+    optional MsgSnatchPlayerInfo infoOwner = 3;
+    optional MsgSnatchPlayerInfo infoLucky = 4;
+    optional int64 keepTime = 5;
+    optional int32 feastType = 6;
+    optional int32 feastState = 7;
+    optional bool isWin = 10;
+    optional int32 score = 11;
+    optional int64 feastId = 12;
+    optional int64 logTime = 13;
+    optional bool isRead = 14;
+    optional int32 popularity = 16;
+    optional int32 seatNormalNum = 17;
+    optional int32 seatVipNum = 18;
+    optional int32 usedNormalSeatNum = 19;
+    optional int32 usedVipSeatNum = 20;
+    optional MsgSnatchPlayerInfo infoOwner2 = 21;
+    optional string crossFeastId = 22;
+}
+
+message MsgFeastBroadCostInfo {
+    optional int32 templateId = 1;
+    optional int64 time = 2;
+    repeated string paramList = 4;
+}
+
+message MsgFeastBriefInfo {
+    optional string feastId = 1;
+    optional bool isEnd = 2;
+    optional int32 guestNum = 3;
+    optional int32 seatNum = 4;
+    optional string host = 5;
+    optional int32 feastType = 6;
+}
+
+message MsgInviteInfo {
+    optional string playerId = 1;
+    optional int32 sex = 2;
+    optional int32 vip = 3;
+    optional string name = 4;
+    optional string moneyPower = 5;
+    optional int32 npcSex = 6;
+    repeated int32 fashionIds = 8;
+    optional string familyName = 10;
+    optional int32 familyIcon = 11;
+    optional bool online = 12;
+    optional int64 logoutTime = 13;
+    optional int32 serverId = 14;
+}
+
+message MsgInviteStatus {
+    optional string messageId = 1;
+    optional int32 status = 2;
+    optional int64 overTime = 3;
+    optional int32 feastType = 4;
+    optional string hostId = 5;
+}
+
+message SynchronousFeastResp_25100 {
+    optional MsgFeastInfo feastInfo = 1;
+}
+
+message CreateFeastReq_25001 {
+    optional int32 type = 1;
+    optional bool sendToFamily = 2;
+    optional bool sendToWorld = 3;
+}
+
+message CreateFeastResp_25001 {
+    required int32 ret = 1;
+    optional MsgFeastInfo feastInfo = 2;
+    repeated MsgFeastBroadCostInfo broadInfo = 3;
+}
+
+message intoGuestHallReq_25002 {
+    optional int32 position = 1;
+    optional bool luxury = 2;
+}
+
+message intoGuestHallResp_25002 {
+    required int32 ret = 1;
+    repeated MsgFeastInfo feastList = 2;
+    optional int32 position = 3;
+    optional int32 totalNum = 4;
+}
+
+message OpenFeastReq_25003 {
+    optional int64 feastId = 1;
+}
+
+message OpenFeastResp_25003 {
+    required int32 ret = 1;
+    optional MsgFeastInfo feastInfo = 2;
+    repeated MsgFeastBroadCostInfo broadInfo = 3;
+}
+
+message SearchFeastReq_25004 {
+    optional string playerId = 1;
+}
+
+message SearchFeastResp_25004 {
+    required int32 ret = 1;
+    optional MsgFeastInfo feastInfo = 2;
+}
+
+message enterFeastReq_25005 {
+    optional int64 feastId = 1;
+    optional int32 seatId = 2;
+}
+
+message enterFeastResp_25005 {
+    required int32 ret = 1;
+}
+
+message expandFeastSeatReq_25006 {
+    optional int64 feastId = 1;
+    optional int32 seatType = 2;
+    optional int32 num = 3;
+    optional int32 seatNum = 4;
+}
+
+message expandFeastSeatResp_25006 {
+    required int32 ret = 1;
+}
+
+message snatchFeastSeatReq_25007 {
+    optional int64 feastId = 1;
+    optional int32 seatId = 3;
+    optional string playerId = 4;
+}
+
+message snatchFeastSeatResp_25007 {
+    required int32 ret = 1;
+    optional MsgSnatchPlayerInfo infoMe = 2;
+    optional MsgSnatchPlayerInfo infoOther = 3;
+    optional bool isWin = 8;
+    optional MsgGuestInfo seatInfo = 5;
+}
+
+message getInviteListReq_25008 {
+}
+
+message getInviteListResp_25008 {
+    required int32 ret = 1;
+    repeated string invites = 2;
+    repeated string seatPlayers = 3;
+}
+
+message invateGuestReq_25009 {
+    optional string guestId = 1;
+}
+
+message invateGuestResp_25009 {
+    required int32 ret = 1;
+    optional bool sitDown = 2;
+}
+
+message OpenFeastReq_25010 {
+}
+
+message OpenFeastResp_25010 {
+    required int32 ret = 1;
+    optional MsgFeastLog myFeastLog = 2;
+    optional MsgFeastInfo feastInfo = 3;
+    repeated MsgFeastBroadCostInfo broadInfo = 4;
+    optional bool isMerry = 5;
+    optional int32 inviteStatus = 6;
+    optional int64 overTime = 7;
+    optional bool switchStatus = 8;
+}
+
+message OpenFeastLogReq_25011 {
+}
+
+message OpenFeastLogResp_25011 {
+    required int32 ret = 1;
+    repeated MsgFeastLog logInfo = 2;
+    optional bool isPush = 3;
+}
+
+message PushFeastRedPointResp_25012 {
+    optional bool myFeastFinish = 2;
+    optional bool otherFeastFinish = 3;
+    optional bool beAttact = 4;
+    optional bool haveApplication = 5;
+    optional bool blockInvite = 6;
+    optional bool myFeastCrossFinish = 7;
+    optional bool otherFeastCrossFinish = 8;
+    optional bool beAttackFeastCross = 9;
+}
+
+message OutFeastLogReq_25013 {
+    optional int64 feastId = 1;
+}
+
+message OutFeastLogResp_25013 {
+    required int32 ret = 1;
+}
+
+message ReadFeastLogReq_25014 {
+}
+
+message ReadFeastLogResp_25014 {
+    required int32 ret = 1;
+}
+
+message SynchronousFeastBroadCostInfoResp_25015 {
+    optional MsgFeastBroadCostInfo feastBroadCostInfo = 1;
+}
+
+message getFeastBriefInfoReq_25016 {
+    repeated string feastIds = 1;
+}
+
+message getFeastBriefInfoResp_25016 {
+    required int32 ret = 1;
+    repeated MsgFeastBriefInfo info = 2;
+}
+
+message getFeastBriefInfoReq_25017 {
+}
+
+message getFeastBriefInfoResp_25017 {
+    required int32 ret = 1;
+    repeated MsgFeastLog logInfo = 2;
+}
+
+message MessageShareFeastReq_25018 {
+    optional bool sendToFamily = 2;
+    optional bool sendToWorld = 3;
+}
+
+message MessageShareFeastResp_25018 {
+    required int32 ret = 1;
+    optional int64 shareCD = 2;
+}
+
+message MessageOpenSpecifiedInviteReq_25019 {
+}
+
+message MessageOpenSpecifiedInviteResp_25019 {
+    required int32 ret = 1;
+    repeated MsgInviteInfo infos = 2;
+    optional int32 numOnline = 3;
+    optional int32 numTotal = 4;
+}
+
+message MessageSpecifiedInviteReq_25020 {
+    optional string playerId = 1;
+    optional bool sendToFamily = 2;
+    optional bool sendToWorld = 3;
+}
+
+message MessageSpecifiedInviteResp_25020 {
+    required int32 ret = 1;
+    optional int64 overTime = 2;
+}
+
+message MessageBroadInviteReq_25021 {
+    optional bool sendToFamily = 1;
+    optional bool sendToWorld = 2;
+}
+
+message MessageBroadInviteResp_25021 {
+    required int32 ret = 1;
+    optional int64 overTime = 2;
+}
+
+message MessageCancelInviteReq_25022 {
+}
+
+message MessageCancelInviteResp_25022 {
+    required int32 ret = 1;
+}
+
+message MessageSystemInviteReq_25023 {
+}
+
+message MessageSystemInviteResp_25023 {
+    required int32 ret = 1;
+    repeated MsgInviteInfo infos = 2;
+}
+
+message MessageAcceptInviteReq_25024 {
+    optional string playerId = 1;
+    optional int64 messageId = 2;
+}
+
+message MessageAcceptInviteResp_25024 {
+    required int32 ret = 1;
+    optional MsgFeastInfo feastInfo = 2;
+    repeated MsgFeastBroadCostInfo broadInfo = 3;
+}
+
+message MessagePushAcceptInviteResp_25025 {
+    optional MsgFeastInfo feastInfo = 1;
+    repeated MsgFeastBroadCostInfo broadInfo = 2;
+}
+
+message MessagePushInviteStatusResp_25026 {
+    optional MsgInviteStatus status = 1;
+}
+
+message MessageGetInviteReq_25027 {
+    repeated string messageIds = 1;
+}
+
+message MessageGetInviteResp_25027 {
+    required int32 ret = 1;
+    repeated MsgInviteStatus inviteStatus = 2;
+    optional int64 feastOverTime = 3;
+    optional int64 inviteOverTime = 4;
+}
+
+message MessageRefuseInviteReq_25028 {
+    optional string playerId = 1;
+    optional int64 messageId = 2;
+}
+
+message MessageRefuseInviteResp_25028 {
+    required int32 ret = 1;
+}
+
+message MessageGuestApplyReq_25029 {
+    optional int64 feastId = 1;
+}
+
+message MessageGuestApplyResp_25029 {
+    required int32 ret = 1;
+}
+
+message MessageMasterOpenApplicationReq_25030 {
+}
+
+message MessageMasterOpenApplicationResp_25030 {
+    required int32 ret = 1;
+    repeated bf.messages.game.FriendMessage.MsgFriendElement applyers = 2;
+}
+
+message MessageMasterAccepApplicationReq_25031 {
+    repeated string playerIds = 1;
+    optional bool accept = 2;
+}
+
+message MessageMasterAccepApplicationResp_25031 {
+    required int32 ret = 1;
+}
+
+message MessageMasterSwitchSetReq_25032 {
+    optional int64 feastId = 1;
+    optional bool status = 2;
+}
+
+message MessageMasterSwitchSetResp_25032 {
+    required int32 ret = 1;
+}
+
+message MessageOpenApplicationReq_25033 {
+}
+
+message MessageOpenApplicationResp_25033 {
+    required int32 ret = 1;
+    repeated MsgApplication applicationInfo = 2;
+    optional bool isPush = 3;
+}
+
+message MessageComfirmApplicationReq_25034 {
+    optional int64 onlyId = 1;
+}
+
+message MessageComfirmApplicationResp_25034 {
+    optional int32 ret = 1;
+}
+
+message MsgApplication {
+    optional int64 feastId = 1;
+    optional int32 type = 2;
+    optional bool result = 3;
+    optional bf.messages.game.FriendMessage.MsgFriendElement masterInfo = 4;
+    optional int64 onlyId = 5;
+}
+
+message MessageChangeSwitchReq_25035 {
+    optional int64 feastId = 1;
+}
+
+message MessageChangeSwitchResp_25035 {
+    optional int32 ret = 1;
+    optional bool status = 2;
+}
+
+message FeastChangeBlockStateReq_25036 {
+}
+
+message FeastChangeBlockStateResp_25036 {
+    required int32 ret = 1;
+    optional bool blockInvite = 2;
+}
+
+message MsgFeastCrossSimple {
+    optional string crossFeastId = 1;
+    optional string host = 2;
+    optional string hostName = 3;
+    optional int64 endTime = 4;
+    optional int32 seatNow = 5;
+    optional int32 seatMax = 6;
+    optional bool seated = 7;
+    optional string host2 = 8;
+    optional string hostName2 = 9;
+    optional int32 feastType = 10;
+}
+
+message MsgFeastCrossDetail {
+    optional MsgFeastCrossSimple simple = 1;
+    repeated string seatPlayers = 2;
+}
+
+message FeastCrossHallReq_25101 {
+    optional int32 page = 1;
+    optional bool luxury = 2;
+}
+
+message FeastCrossHallResp_25101 {
+    required int32 ret = 1;
+    repeated MsgFeastCrossSimple feasts = 2;
+    optional int32 total = 3;
+    optional int32 pages = 4;
+    optional int32 curPage = 5;
+}
+
+message FeastCrossIntoReq_25102 {
+    optional string host = 1;
+}
+
+message FeastCrossIntoResp_25102 {
+    required int32 ret = 1;
+    optional MsgFeastInfo feastInfo = 2;
+    repeated MsgFeastBroadCostInfo broadInfo = 3;
+}
+
+message FeastCrossOutReq_25103 {
+    optional string host = 1;
+}
+
+message FeastCrossOutResp_25103 {
+    required int32 ret = 1;
+}
+
+message FeastCrossCreateReq_25104 {
+    optional int32 type = 1;
+    optional bool sendToFamily = 2;
+    optional bool sendToWorld = 3;
+}
+
+message FeastCrossCreateResp_25104 {
+    required int32 ret = 1;
+    optional MsgFeastInfo feastInfo = 2;
+    repeated MsgFeastBroadCostInfo broadInfo = 3;
+}
+
+message FeastCrossExpandSeatsReq_25105 {
+    optional int32 seatType = 2;
+    optional int32 num = 3;
+}
+
+message FeastCrossExpandSeatsResp_25105 {
+    required int32 ret = 1;
+}
+
+message FeastCrossSitDownReq_25106 {
+    optional string host = 1;
+    optional int32 seatId = 2;
+}
+
+message FeastCrossSitDownResp_25106 {
+    required int32 ret = 1;
+}
+
+message FeastCrossSnatchReq_25107 {
+    optional string host = 1;
+    optional int32 seatId = 2;
+    optional string targetPlayerId = 3;
+}
+
+message FeastCrossSnatchResp_25107 {
+    required int32 ret = 1;
+    optional MsgSnatchPlayerInfo infoMe = 2;
+    optional MsgSnatchPlayerInfo infoOther = 3;
+    optional bool isWin = 8;
+}
+
+message FeastCrossInviteListReq_25108 {
+}
+
+message FeastCrossInviteListResp_25108 {
+    required int32 ret = 1;
+    repeated string invites = 2;
+    repeated string seatPlayers = 3;
+}
+
+message FeastCrossInviteReq_25109 {
+    optional string guestId = 1;
+}
+
+message FeastCrossInviteResp_25109 {
+    required int32 ret = 1;
+    optional bool sitDown = 2;
+}
+
+message FeastCrossLogReq_25110 {
+}
+
+message FeastCrossLogResp_25110 {
+    required int32 ret = 1;
+    repeated MsgFeastLog logInfo = 2;
+    optional bool isPush = 3;
+}
+
+message FeastCrossLogReadReq_25111 {
+}
+
+message FeastCrossLogReadResp_25111 {
+    required int32 ret = 1;
+}
+
+message FeastCrossOpenSelfReq_25112 {
+}
+
+message FeastCrossOpenSelfResp_25112 {
+    required int32 ret = 1;
+    optional MsgFeastLog myFeastLog = 2;
+    optional MsgFeastInfo feastInfo = 3;
+    repeated MsgFeastBroadCostInfo broadInfo = 4;
+    optional bool isMerry = 5;
+    optional int32 inviteStatus = 6;
+    optional int64 overTime = 7;
+}
+
+message FeastCrossJoinReq_25113 {
+}
+
+message FeastCrossJoinResp_25113 {
+    required int32 ret = 1;
+    repeated MsgFeastLog logInfo = 2;
+}
+
+message FeastCrossShareReq_25114 {
+    optional bool sendToFamily = 1;
+    optional bool sendToWorld = 2;
+}
+
+message FeastCrossShareResp_25114 {
+    required int32 ret = 1;
+    optional int64 shareCD = 2;
+}
+
+message FeastCrossFreeSwitchReq_25116 {
+}
+
+message FeastCrossFreeSwitchResp_25116 {
+    required int32 ret = 1;
+    optional bool switchStatus = 2;
+}
+
+message FeastInLawsListReq_25117 {
+}
+
+message FeastInLawsListResp_25117 {
+    required int32 ret = 1;
+    repeated MsgInviteInfo infos = 2;
+    optional int32 numOnline = 3;
+    optional int32 numTotal = 4;
+}
+
+message FeastInLawsInviteReq_25118 {
+    optional string otherPlayerId = 1;
+    optional bool sendToFamily = 2;
+    optional bool sendToWorld = 3;
+}
+
+message FeastInLawsInviteResp_25118 {
+    required int32 ret = 1;
+    optional int64 overTime = 2;
+    optional string otherPlayerId = 3;
+}
+
+message FeastInLawsPublishReq_25119 {
+    optional bool sendToFamily = 1;
+    optional bool sendToWorld = 2;
+}
+
+message FeastInLawsPublishResp_25119 {
+    required int32 ret = 1;
+    optional int64 overTime = 2;
+}
+
+message FeastInLawsCancelReq_25120 {
+}
+
+message FeastInLawsCancelResp_25120 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources res = 2;
+}
+
+message FeastInLawsMatchReq_25121 {
+}
+
+message FeastInLawsMatchResp_25121 {
+    required int32 ret = 1;
+    repeated MsgInviteInfo infos = 2;
+}
+
+message FeastInLawsAcceptReq_25122 {
+    optional string otherPlayerId = 1;
+}
+
+message FeastInLawsAcceptResp_25122 {
+    required int32 ret = 1;
+    optional MsgFeastInfo feastInfo = 2;
+    repeated MsgFeastBroadCostInfo broadInfo = 3;
+}
+
+message FeastInLawsRefuseReq_25125 {
+    optional string otherPlayerId = 1;
+}
+
+message FeastInLawsRefuseResp_25125 {
+    required int32 ret = 1;
+}
+
+message PushFeastCrossResp_25200 {
+    required int32 ret = 1;
+    optional MsgFeastInfo feastInfo = 2;
+    repeated MsgFeastBroadCostInfo broadInfo = 3;
+}
+
+message MsgForFeastLog {
+    optional string playerId = 1;
+    optional MsgFeastLog feastLog = 2;
+}
+
+message MsgForInviteInLawsCross {
+    optional MsgInviteStatus status = 1;
+    optional string toPlayerId = 2;
+}
+
+message FeastCrossSyncGC_25501 {
+    optional MsgFeastCrossDetail feast = 1;
+    optional bool remove = 2;
+    optional int32 groupId = 3;
+}
+
+message FeastCrossSyncCG_25501 {
+    required int32 ret = 1;
+}
+
+message FeastCrossPageQueryGC_25502 {
+    optional string playerId = 1;
+    optional int32 page = 2;
+    optional int32 groupId = 3;
+    optional bool luxury = 4;
+}
+
+message FeastCrossSyncAllGC_25503 {
+    repeated MsgFeastCrossDetail feasts = 1;
+    optional int32 groupId = 2;
+}
+
+message FeastCrossBriefGC_25504 {
+    repeated string crossFeastIds = 1;
+    optional int32 groupId = 2;
+}
+
+message FeastCrossBriefCG_25504 {
+    repeated MsgFeastBriefInfo briefs = 1;
+}
+
+message FeastCrossInviteSyncGC_25505 {
+    repeated MsgForInviteInLawsCross invites = 1;
+    optional int32 groupId = 2;
+    optional bool remove = 3;
+}
+
+message FeastCrossMatchInviteGC_25506 {
+    repeated string playerIds = 1;
+    optional int32 groupId = 2;
+}
+
+message FeastCrossMatchInviteCG_25506 {
+    required int32 ret = 1;
+    repeated string matchInvitePlayerIds = 2;
+}
+
+message FeastCrossInviteStatusGC_25507 {
+    repeated int64 ids = 1;
+    optional int32 groupId = 2;
+}
+
+message FeastCrossInviteStatusCG_25507 {
+    required int32 ret = 1;
+    repeated MsgInviteStatus invites = 2;
+}
+
+message FeastCrossGetReqGG_25521 {
+    optional string hostId = 1;
+    optional string playerId = 2;
+    optional bool enter = 3;
+}
+
+message FeastCrossGetRespGG_25521 {
+    optional MsgFeastInfo feast = 1;
+    repeated MsgFeastBroadCostInfo broadInfo = 2;
+}
+
+message FeastCrossOutRoomGG_25522 {
+    optional string hostId = 1;
+    optional string playerId = 2;
+}
+
+message FeastCrossSitReqGG_25523 {
+    optional string otherPlayerId = 1;
+    optional string hostId = 2;
+    optional int32 seatId = 3;
+    optional string otherPlayerName = 4;
+}
+
+message FeastCrossSitRespGG_25523 {
+    required int32 ret = 1;
+    optional string crossFeastId = 2;
+    optional int32 feastType = 3;
+    optional bool freeEnter = 4;
+}
+
+message FeastCrossFeastEndGG_25524 {
+    repeated MsgForFeastLog feastLogs = 1;
+}
+
+message FeastCrossSnatchReqGG_25525 {
+    optional string selfId = 1;
+    optional string hostId = 2;
+    optional int32 seatId = 3;
+    optional string targetPlayerId = 4;
+    optional MsgSnatchPlayerInfo attacker = 5;
+}
+
+message FeastCrossSnatchRespGG_25525 {
+    required int32 ret = 1;
+    optional bool win = 2;
+    optional MsgSnatchPlayerInfo attacker = 3;
+    optional MsgSnatchPlayerInfo defender = 4;
+    optional MsgFeastLog attackLog = 5;
+}
+
+message FeastCrossBeAttackedGG_25526 {
+    optional MsgForFeastLog feastLog = 1;
+}
+
+message FeastCrossGetInviteBlockReqGG_25527 {
+    optional string playerId = 1;
+}
+
+message FeastCrossGetInviteBlockRespGG_25527 {
+    optional bool inviteBlock = 1;
+}
+
+message FeastCrossUseProtectItemReqGG_25529 {
+    optional string selfId = 1;
+    optional string hostId = 2;
+    optional int32 seatId = 3;
+    optional int64 addProtectTime = 4;
+    optional int64 itemAddTime = 5;
+}
+
+message FeastCrossUseProtectItemRespGG_25529 {
+    required int32 ret = 1;
+    optional string crossFeastId = 2;
+    optional string hostId1 = 3;
+    optional string hostId2 = 4;
+    optional int32 feastType = 5;
+}
+
+message FeastCrossInviteInLawsReqGG_25530 {
+    optional string fromPlayerId = 1;
+    optional string toPlayerId = 2;
+}
+
+message FeastCrossInviteInLawsRespGG_25530 {
+    required int32 ret = 1;
+}
+
+message FeastCrossAcceptReqGG_25531 {
+    optional string fromPlayerId = 1;
+    optional string toPlayerId = 2;
+}
+
+message FeastCrossAcceptRespGG_25531 {
+    required int32 ret = 1;
+    optional MsgFeastInfo feastInfo = 2;
+    repeated MsgFeastBroadCostInfo broadInfo = 3;
+}
+
+message FeastCrossRefuseReqGG_25532 {
+    optional string fromPlayerId = 1;
+    optional string toPlayerId = 2;
+}
+
+message FeastCrossRefuseRespGG_25532 {
+    required int32 ret = 1;
+}
+
+message FeastCrossAddSeatReqGG_25533 {
+    optional string anotherHost = 1;
+    optional int32 seatType = 2;
+    optional int32 num = 3;
+}
+
+message FeastCrossAddSeatRespGG_25533 {
+    required int32 ret = 1;
+    optional string crossFeastId = 2;
+    optional int32 feastType = 3;
+    optional bool freeEnterSwitch = 4;
+    optional int32 normalSeatSize = 5;
+    optional int32 vipSeatSize = 6;
+}
+
+message FeastCrossInvitesReqGG_25534 {
+    optional string anotherHost = 1;
+}
+
+message FeastCrossInvitesRespGG_25534 {
+    required int32 ret = 1;
+    repeated string invites = 2;
+    repeated string guestPlayerIds = 3;
+}
+
+message FeastCrossInviteGuestReqGG_25535 {
+    optional string anotherHost = 1;
+    optional string guestId = 2;
+}
+
+message FeastCrossInviteGuestRespGG_25535 {
+    required int32 ret = 1;
+    optional bool sitDown = 2;
+    optional bool firstInvite = 3;
+    optional int32 seatedPlayerNum = 4;
+    optional int32 seatMax = 5;
+    optional int32 feastType = 6;
+}
+
+message FeastCrossShareInLawsReqGG_25536 {
+    optional string playerId = 1;
+    optional string hostId = 2;
+}
+
+message FeastCrossShareInLawsRespGG_25536 {
+    required int32 ret = 1;
+    optional int64 shareCD = 2;
+    optional int32 seatedPlayerNum = 4;
+    optional int32 seatMax = 5;
+    optional int32 feastType = 6;
+}
+
+message FeastCrossSwitchInLawsReqGG_25537 {
+    optional string hostId = 1;
+}
+
+message FeastCrossSwitchInLawsRespGG_25537 {
+    required int32 ret = 1;
+    optional bool switchStatus = 2;
+}

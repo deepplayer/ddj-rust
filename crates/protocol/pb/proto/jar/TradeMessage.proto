@@ -1,0 +1,61 @@
+syntax = "proto2";
+
+package bf.messages.game.TradeMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgTrader {
+    optional int32 id = 1;
+    optional int64 nextTradeTime = 2;
+    optional int32 leftTimes = 3;
+    optional string money = 4;
+}
+
+message MsgTraderResp_19001 {
+    optional MsgTrader msgTrader = 1;
+}
+
+message MsgTradeByItemReq_19002 {
+    optional int32 id = 1;
+    optional int32 num = 2;
+}
+
+message MsgTradeByItemResp_19002 {
+    required int32 ret = 1;
+    optional int32 id = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources cost = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewardPond = 5;
+}
+
+message MsgTradeReq_19003 {
+    optional int32 id = 1;
+    optional int32 all = 2;
+}
+
+message MsgTradeResp_19003 {
+    required int32 ret = 1;
+    optional int32 id = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources cost = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewardPond = 5;
+    optional int32 all = 6;
+}
+
+message MsgTradeDataReq_19004 {
+}
+
+message MsgTradeDataResp_19004 {
+    required int32 ret = 1;
+    repeated MsgTrader msgTrader = 2;
+}
+
+message MsgTradeAllReq_19005 {
+}
+
+message MsgTradeAllResp_19005 {
+    required int32 ret = 1;
+    repeated int32 ids = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources cost = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 4;
+}

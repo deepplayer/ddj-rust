@@ -1,0 +1,106 @@
+syntax = "proto2";
+
+package bf.messages.game.ShopMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgCommodityBuyData {
+    optional int32 id = 2;
+    optional int32 buyCot = 3;
+}
+
+message MsgShopData {
+    optional int32 shopId = 1;
+    optional int32 refreshCot = 2;
+    repeated MsgCommodityData msgCommodityData = 3;
+}
+
+message MsgCommodityData {
+    optional int32 commodityId = 1;
+    optional int32 discount = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgResources price = 3;
+}
+
+message MsgShopOneKeyExcludes {
+    optional int32 shopId = 1;
+    repeated int32 excludeShopDbIds = 2;
+}
+
+message MsgSynShopData {
+    repeated MsgShopData msgShopData = 1;
+    repeated MsgCommodityBuyData buyData = 2;
+    repeated MsgShopOneKeyExcludes oneKeyExcludes = 3;
+    repeated MsgHouseKeeperBuy msgBuy = 4;
+}
+
+message MsgHouseKeeperBuy {
+    required int32 shopType = 1;
+    repeated MsgBuyCnt msgBuyCnt = 2;
+}
+
+message MsgBuyCnt {
+    optional int32 id = 1;
+    optional int32 buyCnt = 2;
+}
+
+message ShopBuyCommodityReq_18001 {
+    optional int32 id = 1;
+    optional int32 num = 2;
+}
+
+message ShopBuyCommodityResp_18001 {
+    required int32 ret = 1;
+}
+
+message ShopGetReq_18002 {
+}
+
+message ShopGetResp_18002 {
+    required int32 ret = 1;
+    repeated MsgCommodityBuyData buyData = 2;
+}
+
+message ShopViewReq_18003 {
+    optional int32 shopId = 1;
+}
+
+message ShopViewResp_18003 {
+    required int32 ret = 1;
+    optional MsgShopData msgShopData = 2;
+}
+
+message ShopRefreshReq_18004 {
+    optional int32 shopId = 1;
+}
+
+message ShopRefreshResp_18004 {
+    required int32 ret = 1;
+    optional MsgShopData msgShopData = 2;
+}
+
+message OneKeyBuyReq_18005 {
+    optional int32 shopType = 1;
+}
+
+message OneKeyBuyResp_18005 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources itemGet = 2;
+}
+
+message OneKeyExcludeReq_18006 {
+    optional int32 shopType = 1;
+    repeated int32 shopDbId = 2;
+}
+
+message OneKeyExcludeResp_18006 {
+    required int32 ret = 1;
+    optional MsgShopOneKeyExcludes exclude = 2;
+}
+
+message SetAutoBuyReq_18007 {
+    required MsgHouseKeeperBuy msgBuy = 1;
+}
+
+message SetAutoBuyResp_18007 {
+    required int32 ret = 1;
+}

@@ -1,0 +1,2614 @@
+syntax = "proto2";
+
+package bf.messages.game.GmActivityMessage;
+
+import "CommonMsgMessage.proto";
+import "GmActivityCommonMessage.proto";
+import "RankingMessage.proto";
+import "ItemMessage.proto";
+import "PlayerMessage.proto";
+import "GmActivityEliminationMessage.proto";
+import "BridgeActivityMessage.proto";
+import "GmActivityJeryMessage.proto";
+import "LimitRedeemActivityMessage.proto";
+import "ArcheryActivityMessage.proto";
+import "GluttonyFeastActMessage.proto";
+import "FishingActivityMessage.proto";
+import "GmActivity2Message.proto";
+import "FootballActMessage.proto";
+import "MoonGoingActivityMessage.proto";
+import "ActivityTrapMessage.proto";
+import "ActivityMiniGameMessage.proto";
+import "GmToyHouseMessage.proto";
+import "GmAnimalFarmMessage.proto";
+import "GmTetrisFortressMessage.proto";
+import "GmSnowBallFightMessage.proto";
+import "ActivityNianbeastMessage.proto";
+import "GmCrazyFishMessage.proto";
+
+message MsgGmActivityTemplateData {
+    optional int32 activityId = 4;
+    optional int32 activityType = 5;
+    optional string name = 6;
+    optional string description = 7;
+    optional int64 startShowTime = 8;
+    optional int64 endShowTime = 9;
+    optional int64 startTime = 10;
+    optional int64 endTime = 11;
+    optional string commonData = 12;
+    optional bool switchStatus = 13;
+    repeated int32 serverIdList = 14;
+    optional bytes data = 99;
+}
+
+message MsgGmActivityPlayerData {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional bytes data = 3;
+}
+
+message MsgGmActivity {
+    optional int32 actId = 1;
+    optional int32 actType = 2;
+    optional int32 actGroup = 3;
+}
+
+message GmActivityTemplateResp_31001 {
+    repeated MsgGmActivityTemplateData msgGmActivityTemplateData = 1;
+    repeated bf.messages.game.GmActivityCommonMessage.MsgGmActivityShopTemplateData msgGmActivityShopTemplateData = 2;
+    repeated bf.messages.game.GmActivityCommonMessage.MsgGmActivityTaskTemplateData msgGmActivityTaskTemplateData = 3;
+}
+
+message GmActivityPlayerDataResp_31002 {
+    repeated MsgGmActivityPlayerData msgGmActivityPlayerData = 1;
+    optional bf.messages.game.GmActivityCommonMessage.MsgActivityShopPlayerData msgActivityShopPlayerData = 2;
+    repeated bf.messages.game.GmActivityCommonMessage.MsgActivityTaskPlayerData msgActivityTaskPlayerData = 3;
+}
+
+message GmActivityGetPlayerDataReq_31003 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message GmActivityGetPlayerDataResp_31003 {
+    required int32 ret = 1;
+    optional MsgGmActivityPlayerData msgGmActivityPlayerData = 2;
+}
+
+message GmActivityGetPlayerDatasReq_31004 {
+    optional int32 activityType = 1;
+}
+
+message GmActivityGetPlayerDatasResp_31004 {
+    required int32 ret = 1;
+    repeated MsgGmActivityPlayerData msgGmActivityPlayerData = 2;
+}
+
+message GmActivityPlayerDatasResp_31005 {
+    optional MsgGmActivityPlayerData msgGmActivityPlayerData = 1;
+}
+
+message GmActivityDeleteResp_31006 {
+    repeated MsgDeleteKey deleteActivity = 1;
+}
+
+message MsgDeleteKey {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message GmActivityRedDotResp_31007 {
+    required int32 ret = 1;
+    optional int32 activityType = 2;
+    optional int32 activityId = 3;
+    optional bytes data = 4;
+}
+
+message GmActivityGetServerIdsReq_31008 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message GmActivityGetServerIdsResp_31008 {
+    required int32 ret = 1;
+    repeated int32 serverIdList = 2;
+}
+
+message MsgRedDotData71 {
+    optional bool redTeamReward = 1;
+    optional bool redShareEvent = 2;
+}
+
+message MsgGmActivityPushGiftTemplateData {
+}
+
+message MsgGmActivityPushGiftPlayerData {
+    optional int64 surplusTime = 1;
+    optional int32 buyCot = 2;
+    optional bool click = 3;
+}
+
+message GmActivityClickPushGiftReq_31101 {
+    optional int32 activityId = 1;
+}
+
+message GmActivityClickPushGiftResp_31101 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+}
+
+message MsgNewGmActivityPushGiftTemplateData {
+    repeated MsgNewGmNewActivityPushGiftDbTemplateData giftData = 1;
+}
+
+message MsgNewGmActivityPushGiftPlayerData {
+    optional int64 surplusTime = 1;
+    repeated MsgNewBuyCotData buyCotData = 2;
+    optional bool click = 3;
+}
+
+message MsgNewBuyCotData {
+    optional int32 gradeId = 1;
+    optional int32 buyCot = 2;
+}
+
+message MsgNewGmNewActivityPushGiftDbTemplateData {
+    optional int32 actId = 1;
+    optional int32 gradeId = 2;
+    optional string name = 3;
+    optional string des = 4;
+    optional string show = 5;
+    optional int32 scale = 6;
+    optional int32 shift = 7;
+    optional int32 shiftx = 16;
+    optional int32 purchase = 8;
+    optional int32 rmb = 9;
+    optional int32 discount = 10;
+    optional string reward = 11;
+    optional int32 vipExp = 12;
+    optional string voucher = 13;
+    optional int32 overseasPayId = 14;
+    optional int32 giftType = 15;
+}
+
+message GmNewActivityClickPushGiftReq_31102 {
+    optional int32 activityId = 1;
+}
+
+message GmNewActivityClickPushGiftResp_31102 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+}
+
+message MsgLimitTimeGiftTemplateData {
+    repeated MsgNewGmNewActivityPushGiftDbTemplateData giftData = 1;
+}
+
+message MsgLimitTimeGiftPlayerData {
+    repeated MsgLimitTimeGiftData gifts = 1;
+}
+
+message MsgLimitTimeGiftData {
+    optional int32 gradeId = 1;
+    optional int32 buyNum = 2;
+    optional int64 startTime = 4;
+    optional int64 endTime = 3;
+}
+
+message MsgClientItemNotEnoughReq_31191 {
+    optional int32 type = 1;
+}
+
+message MsgClientItemNotEnoughResp_31191 {
+    required int32 ret = 1;
+}
+
+message MsgRankData {
+    repeated MsgRank msgRank = 1;
+    repeated MsgNewGmNewActivityPushGiftDbTemplateData giftData = 2;
+}
+
+message MsgRank {
+    optional int32 activityId = 1;
+    optional string remarks = 2;
+    optional int32 rankIntervalBegin = 3;
+    optional int32 rankIntervalEnd = 4;
+    optional int32 rewardType = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources specialReward = 6;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 7;
+    optional int32 rankType = 8;
+    optional int32 grade = 11;
+    optional int32 group = 12;
+}
+
+message MsgPlayerRankListData {
+    repeated int32 updateFieldsList = 99;
+    optional string topId = 1;
+    optional int32 topServerId = 2;
+    optional string topName = 3;
+    optional int32 topFamilyIco = 4;
+    optional string topValue = 5;
+    optional int32 topSex = 6;
+    repeated int32 topFashionIds = 7;
+    optional string selfValue = 8;
+    optional int32 selfRank = 9;
+    optional int32 getRankReward = 10;
+    optional string familyMemberValue = 11;
+    optional int32 getServerReward = 13;
+    optional int32 isJoin = 14;
+    optional int32 selfServerRank = 15;
+    optional int32 topNpcSex = 16;
+    optional MsgNewGmActivityPushGiftPlayerData giftData = 21;
+}
+
+message GmActivityRankListRankRewardReq_31202 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 rankType = 3;
+    optional int64 extId = 4;
+}
+
+message GmActivityRankListRankRewardResp_31202 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message MsgPlayerRankListDataResp_31203 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional MsgPlayerRankListData msgPlayerRankListData = 3;
+}
+
+message GmActivityRankListClickPushGiftReq_31204 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message GmActivityRankListClickPushGiftResp_31204 {
+    required int32 ret = 1;
+    optional int32 activityType = 2;
+    optional int32 activityId = 3;
+}
+
+message GmActivityRankListGiftPushResp_31205 {
+    required int32 ret = 1;
+    optional int32 activityType = 2;
+    optional int32 activityId = 3;
+    optional MsgNewGmActivityPushGiftPlayerData giftData = 21;
+}
+
+message MsgServerValue {
+    optional int32 serverId = 1;
+    optional string value = 2;
+    optional int32 rank = 3;
+    optional bf.messages.game.PlayerMessage.MsgOtherPlayer player = 4;
+}
+
+message MsgCrossRanklistInfoReq_31211 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message MsgCrossRanklistInfoResp_31211 {
+    required int32 ret = 1;
+    repeated MsgServerValue msgServerValues = 2;
+    repeated bf.messages.game.RankingMessage.MsgRankingEntryData entryData = 3;
+    optional int32 index = 4;
+    repeated string varStr = 5;
+    optional int32 isJoin = 6;
+    optional int32 topServerId = 7;
+    optional int32 activityType = 8;
+    optional int32 activityId = 9;
+}
+
+message MsgGainServerRewardReq_31212 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message MsgGainServerRewardResp_31212 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResourcesExt = 3;
+}
+
+message MsgCrossRanklistInfoG2CReq_31221 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 serverId = 3;
+    optional string playerId = 4;
+}
+
+message MsgCrossRankListServerRankReq_31222 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 serverId = 3;
+}
+
+message MsgCrossRankListServerRankResp_31222 {
+    optional int32 ret = 1;
+    optional int32 rank = 2;
+    optional int32 isAllGsSync = 3;
+}
+
+message MsgCrossRankIndexReq_31223 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional string playerId = 3;
+    optional int32 serverId = 4;
+    optional int32 rankingType = 5;
+    optional int32 extId = 6;
+    optional int64 familyId = 7;
+}
+
+message MsgCrossRankIndexResp_31223 {
+    required int32 ret = 1;
+    optional int32 index = 2;
+    optional int32 isAllGsSync = 3;
+}
+
+message MsgPlayerRankListDataReq_31224 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 rankType = 3;
+    optional int32 serverId = 4;
+    optional string key = 5;
+    optional int64 familyId = 6;
+}
+
+message MsgPlayerRankListDataResp_31224 {
+    required int32 ret = 1;
+    optional MsgPlayerRankListData msgPlayerRankListData = 2;
+}
+
+message MsgCrossRanklistInfoG2CReq_31225 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 serverId = 3;
+}
+
+message MsgCrossRanklistInfoResp_31225 {
+    required int32 ret = 1;
+    repeated MsgServerValue msgServerValues = 2;
+    repeated bf.messages.game.RankingMessage.MsgRankingEntryData entryData = 3;
+}
+
+message MsgCrossRankListReq_31226 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 serverId = 3;
+}
+
+message MsgCrossRankListResp_31226 {
+    required int32 ret = 1;
+    optional int32 version = 2;
+}
+
+message MsgBuyLimitTemplateData {
+    repeated MsgBuyLimitDb msgBuyLimitDb = 1;
+}
+
+message MsgBuyLimitDb {
+    optional int32 activityId = 1;
+    optional int32 giftId = 2;
+    optional int32 tab = 3;
+    optional int32 limitType = 4;
+    optional int32 limitNum = 5;
+    optional int32 rmb = 6;
+    optional string voucher = 7;
+    optional string reward = 8;
+    optional int32 vipExp = 9;
+    optional string name = 10;
+    optional int32 discount = 11;
+    optional int32 overseasPayId = 12;
+}
+
+message MsgPlayerBuyLimitData {
+    repeated MsgBuyLimitGiftData msgBuyLimitGiftData = 1;
+}
+
+message MsgBuyLimitGiftData {
+    optional int32 giftId = 1;
+    optional int32 buyCot = 2;
+}
+
+message MsgBuyLimitFreeReq_31301 {
+    optional int32 activityId = 1;
+    optional int32 giftId = 2;
+}
+
+message MsgBuyLimitFreeResp_31301 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message MsgPayTemplateData {
+    repeated MsgPayAwardDb msgPayAwardDb = 1;
+}
+
+message MsgPayAwardDb {
+    optional int32 activityId = 1;
+    optional int32 onlyId = 2;
+    optional int32 payType = 3;
+    optional int32 payDay = 4;
+    optional int32 payValue = 5;
+    optional string reward = 6;
+    optional int32 showNeedPay = 7;
+}
+
+message MsgPlayerPayData {
+    optional int32 everydayPay = 1;
+    optional int32 cumulativePay = 2;
+    optional int32 dayPay = 3;
+    repeated int32 drawOnlyId = 4;
+}
+
+message MsgPayDrawReq_31401 {
+    optional int32 activityId = 1;
+    optional int32 onlyId = 2;
+}
+
+message MsgPayDrawResp_31401 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message MsgPlayerPayDataNotifyResp_31402 {
+    optional int32 everydayPay = 1;
+    optional int32 cumulativePay = 2;
+    optional int32 dayPay = 3;
+}
+
+message MsgQuestionnaireTemplateData {
+    optional int32 titleId = 1;
+    optional string title = 2;
+    optional int32 titleType = 3;
+    optional string answerOptions = 4;
+    optional int32 mostOptions = 5;
+    optional int32 necessary = 6;
+    optional string answerLength = 7;
+    optional int32 order = 8;
+}
+
+message MsgQuestionnaireAllTitleTemplateData {
+    repeated MsgQuestionnaireTemplateData titleData = 1;
+}
+
+message MsgQuestionnairePlayerData {
+    optional bool complete = 1;
+    optional bool rewarded = 2;
+    repeated MsgQuestionnaireTemplateData titleData = 3;
+}
+
+message MsgAnswerData {
+    optional int32 titleId = 1;
+    repeated string answer = 2;
+}
+
+message CompleteQuestionnaireReq_31501 {
+    optional int32 activityId = 1;
+    optional int32 costTime = 2;
+    repeated MsgAnswerData answerData = 3;
+}
+
+message CompleteQuestionnaireResp_31501 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+}
+
+message QuestionnaireGiftGetReq_31502 {
+    optional int32 activityId = 1;
+}
+
+message QuestionnaireGiftGetResp_31502 {
+    required int32 ret = 1;
+    optional int32 activityId = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 4;
+}
+
+message QuestionnaireStartReq_31503 {
+    optional int32 activityId = 1;
+}
+
+message QuestionnaireStartResp_31503 {
+    required int32 ret = 1;
+}
+
+message MsgFamilyPayTemplateData {
+    repeated MsgFamilyPayDb msgFamilypayDb = 1;
+}
+
+message MsgFamilyPayDb {
+    optional int64 dbId = 1;
+    optional int32 actId = 2;
+    optional int32 onlyId = 3;
+    optional int32 payMan = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 6;
+}
+
+message MsgFamilyPayDrawReq_31601 {
+    optional int64 familyId = 1;
+    optional int32 activityId = 2;
+    optional int32 onlyId = 3;
+}
+
+message MsgFamilyPayDrawResp_31601 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message MsgFamilyTakeAwardData {
+    optional int32 allPayNum = 1;
+    repeated MsgTakeAwardData takeAwardData = 2;
+    optional int32 originalNum = 3;
+    optional int32 limitTakeNum = 4;
+}
+
+message MsgTakeAwardData {
+    optional int32 tookNum = 1;
+    optional int32 takeStatus = 2;
+    optional int32 onlyId = 3;
+    optional int32 activityId = 4;
+}
+
+message MsgFamilyPayMember {
+    optional string playerId = 1;
+    optional int32 chargeNum = 2;
+    optional int64 chargeTime = 3;
+}
+
+message MsgQueryChargePlayerListReq_31602 {
+    optional int32 activityId = 1;
+}
+
+message MsgQueryChargePlayerListResp_31602 {
+    required int32 ret = 1;
+    repeated MsgFamilyPayMember member = 2;
+}
+
+message MsgCarnivalData {
+    repeated MsgRank msgRank = 1;
+}
+
+message MsgCarnivalPlayerRankData {
+    repeated CarnivalRankState carnivalRankState = 1;
+}
+
+message CarnivalRankState {
+    optional int32 rankType = 1;
+    optional int32 state = 2;
+}
+
+message MsgRankAwardState {
+    optional int32 rankType = 1;
+    optional int64 extId = 2;
+    optional int32 state = 3;
+}
+
+message MsgCrossCarnivalTask {
+    optional int32 actId = 1;
+    optional int32 taskId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+}
+
+message MsgCrossCarnivalPay {
+    optional int32 actId = 1;
+    optional int32 onlyId = 2;
+    optional int32 payValue = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 4;
+}
+
+message MsgCrossCarnivalData {
+    repeated MsgRank msgRank = 1;
+    repeated MsgCrossCarnivalTask msgCrossCarnivalTask = 2;
+    repeated MsgCrossCarnivalPay msgCrossCarnivalPay = 3;
+}
+
+message MsgCrossCarnivalEntrance {
+    repeated CarnivalRankState carnivalRankState = 1;
+    optional bool isTask = 2;
+    optional bool isPay = 3;
+}
+
+message MsgChessActivity {
+    repeated MsgRank msgRank = 1;
+}
+
+message MsgChessEntrance {
+    optional int32 stage = 1;
+    optional int64 endTime = 2;
+    optional int64 teamId = 3;
+    optional int32 playerRank = 4;
+    optional int32 teamRank = 5;
+    repeated CarnivalRankState chessRankState = 6;
+    optional bool isTargetRedDot = 7;
+    optional int64 createTimeColdTime = 8;
+    optional bool isInvite = 9;
+}
+
+message MsgCrossChessActivity {
+    repeated MsgRank msgRank = 1;
+    repeated MsgCrossChessEvent MsgEvent = 2;
+}
+
+message MsgCrossChessEvent {
+    optional int32 actId = 1;
+    optional int32 eventId = 2;
+    optional int32 eventType = 3;
+    optional string score = 4;
+    optional string chessManual = 5;
+    optional int32 rewardNum = 6;
+    optional string must = 7;
+    optional string random = 8;
+    optional string decay = 9;
+}
+
+message MsgTerracottaActivity {
+    repeated MsgRank msgRank = 1;
+    repeated MsgTerracottaEvent MsgEvent = 2;
+}
+
+message MsgTerracottaEvent {
+    optional int32 actId = 1;
+    optional int32 eventId = 2;
+    optional string score = 3;
+    optional string specialScore = 4;
+    optional int32 rewardNum = 5;
+    optional string specialReward = 6;
+    optional string must = 7;
+    optional string random = 8;
+}
+
+message MsgTerracottaEntrance {
+    optional int32 stage = 1;
+    optional int64 endTime = 2;
+    optional int32 playerRank = 3;
+    optional int32 familyRank = 4;
+    repeated CarnivalRankState terracottaRankState = 5;
+    optional bool isSignUp = 6;
+    optional int32 signUpRank = 7;
+    optional bool isRead = 8;
+    optional bool isBoss = 9;
+    optional bool isTreasure = 10;
+}
+
+message MsgSilkFightPlayerRankData {
+    optional int32 rank = 1;
+    optional int64 score = 2;
+    repeated int32 drawType = 3;
+    optional int32 familyRank = 4;
+    optional bool isJoin = 5;
+    optional int32 job = 6;
+    optional int64 familyId = 7;
+}
+
+message MsgDrawReward {
+    optional int32 actId = 1;
+    optional int32 taskId = 2;
+    optional int32 exchangeNum = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources exchangeItem = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 5;
+}
+
+message MsgDrawTask {
+    optional int32 actId = 1;
+    optional int32 taskId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+}
+
+message MsgDrawPay {
+    optional int32 actId = 1;
+    optional int32 onlyId = 2;
+    optional int32 payValue = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 4;
+}
+
+message MsgDrawLotteryActivity {
+    repeated MsgRank msgRank = 1;
+    repeated MsgDrawReward msgDrawReward = 2;
+    repeated MsgDrawTask msgDrawTask = 3;
+    repeated MsgDrawPay msgDrawPay = 4;
+}
+
+message MsgDrawLotteryEntrance {
+    repeated CarnivalRankState rankState = 1;
+    repeated int32 isReward = 2;
+    optional int32 rank = 3;
+    optional string score = 4;
+}
+
+message MsgDebateActivity {
+    repeated MsgDebateTurn msgDebateTurn = 1;
+    repeated MsgRank msgRank = 2;
+}
+
+message MsgDebateTurn {
+    optional int32 actId = 1;
+    optional int32 turnId = 2;
+    optional int32 stageType = 3;
+    optional int32 start = 4;
+    optional int32 end = 5;
+    optional int32 integral = 6;
+    optional int32 survival = 7;
+}
+
+message MsgDebateRank {
+    optional int32 pRank = 1;
+    optional string pScore = 2;
+    optional int32 pState = 3;
+    optional int32 fRank = 4;
+    optional string fScore = 5;
+    optional int32 fState = 6;
+}
+
+message MsgDebateEntrance {
+    optional int32 turnId = 1;
+    optional int32 stageType = 2;
+    optional int64 endTime = 3;
+    optional int32 restPeople = 4;
+    repeated CarnivalRankState debateRankState = 5;
+    optional bool isSignUp = 6;
+    optional int32 signUpRank = 7;
+    optional bool isMaxEnergy = 8;
+    optional bool isDeploy = 9;
+    optional bool isDefence = 10;
+    repeated int32 talentId = 11;
+    optional MsgDebateRank msgDebateRank = 12;
+}
+
+message MsgWesternRegionsActivity {
+    repeated MsgWesternRegionsPass msgWesternRegionsPass = 1;
+    repeated MsgRank msgRank = 2;
+    repeated MsgWesternRegionsRecharge msgWesternRegionsRecharge = 3;
+    repeated MsgWesternRegionsEvent msgWesternRegionsEvent = 4;
+}
+
+message MsgWesternRegionsPass {
+    optional int32 actId = 1;
+    optional int32 passType = 2;
+    optional int32 lv = 3;
+    optional int32 lvLock = 4;
+    optional int32 integral = 5;
+    optional string reward1 = 6;
+    optional string reward2 = 7;
+}
+
+message MsgWesternRegionsRecharge {
+    optional int32 actId = 1;
+    optional int32 giftId = 2;
+    optional int32 giftType = 3;
+    optional int32 payType = 4;
+    optional int32 rmb = 5;
+    optional string originalPrice = 6;
+    optional string price = 7;
+    optional int32 discount = 8;
+    optional int32 overseasPayId = 9;
+    optional int32 vipExp = 10;
+    optional string voucher = 11;
+    optional int32 passType = 12;
+    optional string name = 13;
+    optional string name2 = 14;
+    optional string reward = 15;
+    optional string familyReward = 16;
+}
+
+message MsgWesternRegionsEvent {
+    optional int32 actId = 1;
+    optional int32 eventId = 2;
+    optional int32 eventType = 3;
+    optional string rewardView = 4;
+    optional string reward1 = 5;
+    optional string reward2 = 6;
+}
+
+message MsgWesternRegionsEntrance {
+    optional int32 stageType = 1;
+    optional int64 endTime = 2;
+    optional bool isSignUp = 3;
+    optional bool isEnergy = 4;
+    optional bool isFreeCnt = 5;
+    optional bool isMarkNpc = 6;
+    optional bool isMarkLuBan = 7;
+    optional bool isGift = 8;
+    optional bool isPassAward = 9;
+    optional bool isFamilyPassAward = 10;
+    optional int32 rank = 11;
+    optional string reputation = 12;
+    repeated CarnivalRankState regionsRankState = 13;
+    optional bool isAutoReceive = 14;
+}
+
+message MsgSkyLanternTaskReward {
+    optional int32 actId = 1;
+    optional int32 onlyId = 2;
+    optional int32 skylantern = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 4;
+}
+
+message MsgSkyLanternActivity {
+    repeated MsgRank msgRank = 1;
+    repeated MsgSkyLanternTaskReward msgSkyLanternTaskReward = 2;
+}
+
+message MsgSkyLanternEntrance {
+    repeated CarnivalRankState lanternRankState = 1;
+    optional bool isTaskAward = 2;
+    optional bool isMaxEnergy = 3;
+    optional bool isLuckyDog = 4;
+}
+
+message MsgMysteryActivity {
+    repeated MsgRank msgRank = 1;
+    repeated MsgMysteryImage msgMysteryImage = 2;
+    repeated MsgMysteryAchievement msgMysteryAchievement = 3;
+    repeated MsgMysteryEvent msgMysteryEvent = 4;
+    repeated MsgMysteryPass msgMysteryPass = 5;
+    repeated MsgMysteryRankList msgMysteryRankList = 6;
+    repeated MsgMysteryRecharge msgMysteryRecharge = 7;
+}
+
+message MsgMysteryImage {
+    optional int32 actId = 1;
+    optional int32 imageId = 2;
+    optional int32 imageSort = 3;
+    optional int32 condition = 4;
+    optional int32 param = 5;
+    optional int32 effect = 6;
+    optional int32 effectValue = 7;
+}
+
+message MsgMysteryAchievement {
+    optional int32 actId = 1;
+    optional int32 achievementId = 2;
+    optional int32 typeId = 3;
+    optional int32 value = 4;
+    optional string reward = 5;
+}
+
+message MsgMysteryEvent {
+    optional int32 actId = 1;
+    optional int32 eventId = 2;
+    optional string discovererReward = 3;
+    optional string eventCost = 4;
+    optional string eventReward1point = 5;
+    optional string eventReward1item = 6;
+    optional string eventReward2point = 7;
+    optional string eventReward2item = 8;
+}
+
+message MsgMysteryPass {
+    optional int32 actId = 1;
+    optional int32 lv = 2;
+    optional int32 integral = 3;
+    optional string reward1 = 4;
+    optional string reward2 = 5;
+}
+
+message MsgMysteryRankList {
+    optional int32 actId = 1;
+    optional string rankInterval = 2;
+    optional int32 rankType = 3;
+    optional string reward1 = 4;
+    optional string reward2 = 5;
+}
+
+message MsgMysteryRecharge {
+    optional int32 actId = 1;
+    optional int32 giftId = 2;
+    optional int32 giftType = 3;
+    optional int32 payType = 4;
+    optional int32 rmb = 5;
+    optional string originalPrice = 6;
+    optional string price = 7;
+    optional int32 discount = 8;
+    optional int32 overseasPayId = 9;
+    optional int32 vipExp = 10;
+    optional string voucher = 11;
+    optional string name = 12;
+    optional string name2 = 13;
+    optional int32 image = 14;
+    optional string reward = 15;
+    optional string familyReward = 16;
+}
+
+message MsgMysteryEntrance {
+    optional bool isMaxEnergy = 1;
+    optional bool isFreeCnt = 2;
+    optional bool isGoNextFloor = 3;
+    repeated CarnivalRankState regionsRankState = 4;
+    optional bool isPalaceSettle = 5;
+    optional bool isArrest = 6;
+    optional bool isGoBack = 7;
+    optional bool isPassAward = 8;
+    repeated int32 isAchievement = 9;
+    optional int32 playerRank = 10;
+    optional int32 familyRank = 11;
+    optional bool isGift = 12;
+    optional bool isEquip = 13;
+    optional bool isBranch = 14;
+    optional bool isHelp = 15;
+    optional bool isAutoReceive = 16;
+}
+
+message MsgMohistActivity {
+    repeated MsgRank msgRank = 1;
+    repeated MsgMohistAchievement msgMohistAchievement = 2;
+    repeated MsgMohistEvent msgMohistEvent = 3;
+    repeated MsgMohistRecharge msgMohistRecharge = 4;
+}
+
+message MsgMohistAchievement {
+    optional int32 actId = 1;
+    optional int32 typeId = 2;
+    optional int32 achievementId = 3;
+    optional int32 value = 4;
+    optional string reward = 5;
+}
+
+message MsgMohistEvent {
+    optional int32 actId = 1;
+    optional int32 eventId = 2;
+    optional int32 eventType = 3;
+    optional string actItemReward1 = 4;
+    optional string actItemReward2 = 5;
+    optional string itemReward1 = 6;
+    optional string itemReward2 = 7;
+    optional string itemReward3 = 8;
+}
+
+message MsgMohistRecharge {
+    optional int32 actId = 1;
+    optional int32 giftId = 2;
+    optional int32 giftType = 3;
+    optional string originalPrice = 4;
+    optional string price = 5;
+    optional int32 discount = 6;
+    optional int32 rmb = 7;
+    optional int32 overseasPayId = 8;
+    optional int32 vipExp = 9;
+    optional string voucher = 10;
+    optional int32 purchase = 11;
+    optional string name = 12;
+    optional string name2 = 13;
+    optional int32 image = 14;
+    optional string des = 15;
+    optional int32 talent = 16;
+    optional string reward = 17;
+    optional string familyReward = 18;
+}
+
+message MsgMohistEntrance {
+    optional bool isMaxEnergy = 1;
+    optional bool isShop = 2;
+    optional bool isGift = 3;
+    optional bool isTreasure = 4;
+    repeated int32 isAchievement = 5;
+    optional bool isBuild = 6;
+    repeated CarnivalRankState mohistRankState = 7;
+    optional int32 playerRank = 8;
+    optional int32 familyRank = 9;
+    optional string parts = 10;
+    optional string coin = 11;
+}
+
+message MsgNadamActivity {
+    repeated MsgRank msgRank = 1;
+    repeated MsgNadamTime msgNadamTime = 2;
+    repeated MsgNadamGamble msgNadamGamble = 3;
+}
+
+message MsgNadamTime {
+    optional int32 actId = 1;
+    optional int32 onlyId = 2;
+    optional int32 timeType = 3;
+    optional int32 beginTime = 4;
+    optional int32 endTime = 5;
+    optional int32 typeParam = 6;
+    optional string rankListParam = 7;
+    optional string shopTab = 8;
+}
+
+message MsgNadamGamble {
+    optional int32 actId = 1;
+    optional int32 gambleId = 2;
+    optional string gambleReward = 3;
+    optional int32 hot = 4;
+}
+
+message MsgNadamEntrance {
+    optional bool isSignUp = 1;
+    optional bool isDeploy = 2;
+    optional bool isDeployPromotion = 3;
+    optional bool isGuess = 4;
+    optional bool isGuessAward = 5;
+    optional bool isMaxEnergy = 6;
+    repeated CarnivalRankState nadamRankState = 7;
+}
+
+message MsgBlackFoxActivity {
+    repeated MsgRank msgRank = 1;
+    repeated MsgBlackFoxImage msgImage = 2;
+    repeated MsgMohistAchievement msgAchievement = 3;
+    repeated MsgBlackFoxEvent msgEvent = 4;
+    repeated MsgBlackFoxOuterReward msgOuter = 5;
+}
+
+message MsgBlackFoxImage {
+    optional int32 actId = 1;
+    optional int32 imageId = 2;
+    optional int32 condition = 3;
+    optional int32 param = 4;
+    optional int32 effect = 5;
+}
+
+message MsgBlackFoxEvent {
+    optional int32 actId = 1;
+    optional int32 eventId = 2;
+    optional int32 eventType = 3;
+    optional string rewardView = 4;
+}
+
+message MsgBlackFoxOuterReward {
+    optional int32 actId = 1;
+    optional string mileage = 2;
+    optional string reward = 3;
+}
+
+message MsgBlackFoxEntrance {
+    optional bool isMaxEnergy = 1;
+    repeated int32 achievementType = 2;
+    optional bool isPassThrough = 3;
+    repeated CarnivalRankState foxRankState = 4;
+}
+
+message MsgRebornActivity {
+    repeated MsgRebornInfo msgInfo = 1;
+    repeated MsgRebornRecharge msgRecharge = 2;
+}
+
+message MsgRebornInfo {
+    optional int32 actId = 1;
+    optional int32 level = 2;
+    optional string levelName = 3;
+    optional string itemId = 4;
+    optional int32 serverMax = 5;
+}
+
+message MsgRebornRecharge {
+    optional int32 actId = 1;
+    optional int32 giftId = 2;
+    optional string name = 3;
+    optional int32 purchase = 4;
+    optional int32 rmb = 5;
+    optional int32 overseasPayId = 6;
+    optional int32 vipExp = 7;
+    optional string voucher = 8;
+    optional string reward = 9;
+}
+
+message MsgRebornEntrance {
+    optional bool isJudge = 1;
+    optional bool isReborn = 2;
+    optional bool isBuy = 3;
+}
+
+message MsgCardHouseActivity {
+    repeated MsgCardHouseReward msgReward = 1;
+    repeated MsgCardHouseTitleReward msgTitle = 2;
+}
+
+message MsgCardHouseReward {
+    optional int32 actId = 1;
+    optional int32 taskId = 2;
+    optional int32 mode = 3;
+    optional int32 param1 = 4;
+    optional string reward = 5;
+}
+
+message MsgCardHouseTitleReward {
+    optional int32 actId = 1;
+    optional int32 taskId = 2;
+    optional string reward = 3;
+}
+
+message MsgCardHouseEntrance {
+    optional bool isTicket = 1;
+    optional bool isTaskReward = 2;
+    optional bool isBattle = 3;
+    optional bool isLevelUp = 4;
+    optional bool isGaming = 5;
+}
+
+message MsgSilkFightPlayAllTemplateData {
+    repeated MsgRank msgRank = 1;
+}
+
+message MsgPurposePlayAllTemplateData {
+    repeated MsgRank msgRank = 1;
+    repeated bf.messages.game.BridgeActivityMessage.MsgBridgeRewardDb msgBridgeRewardDb = 2;
+    optional bf.messages.game.GmActivityJeryMessage.MsgParkourTemplateData msgParkourTemplateData = 3;
+    optional MsgFlipTemplateData msgFlipTemplateData = 4;
+    optional bf.messages.game.GmActivityJeryMessage.MsgHuoJiTemplateData msgHuoJiTemplateData = 5;
+    optional bf.messages.game.GmActivityJeryMessage.MsgJumpHappyTemplateData msgJumpHappyTemplateData = 6;
+    optional bf.messages.game.FishingActivityMessage.MsgFishingTemplateData msgFishingTemplateData = 8;
+    optional bf.messages.game.FootballActMessage.MsgFootballTemplateData msgFootballTemplateData = 9;
+    optional bf.messages.game.GmActivityJeryMessage.MsgChineseChessTemplateData msgChineseChessTemplateData = 10;
+    optional bf.messages.game.GmActivityJeryMessage.MsgGarlandTemplateData msgGarlandTemplateData = 11;
+    optional bf.messages.game.ActivityTrapMessage.MsgTrapTemplateData msgTrapTemplateData = 12;
+    optional bf.messages.game.GmActivityJeryMessage.MsgAHundredFamilyFeastTemplateData msgAHundredFamilyFeastTemplateData = 13;
+    optional bf.messages.game.GmActivity2Message.MsgSlideyTemplate msgSlideyTemplateData = 14;
+    optional bf.messages.game.ActivityMiniGameMessage.MsgFlowerTemplateData msgFlowerTemplateData = 15;
+    optional bf.messages.game.GmActivityJeryMessage.MsgWinmineTemplateData msgWinmineTemplateData = 16;
+    optional bf.messages.game.GmToyHouseMessage.MsgToyHouseTemplateData msgToyHouseTemplateData = 17;
+    optional bf.messages.game.GmActivity2Message.MsgDragonTemplate msgDragonTemplateData = 18;
+    optional bf.messages.game.GmActivity2Message.MsgFireworksTemplate msgFireworksTemplateData = 19;
+    optional bf.messages.game.GmActivity2Message.MsgTetrisTemplate msgTetrisTemplateData = 20;
+    optional bf.messages.game.GmAnimalFarmMessage.MsgAnimalFarmTemplateData msgAnimalFarmTemplateData = 21;
+    optional bf.messages.game.GmTetrisFortressMessage.MsgTetrisFortressTemplateData msgTetrisFortressTemplateData = 22;
+    optional bf.messages.game.GmSnowBallFightMessage.MsgSnowBallActivity msgSnowBallTemplateData = 23;
+    optional bf.messages.game.ActivityNianbeastMessage.MsgNianbeastTemplateData msgNianbeastTemplateData = 24;
+    optional bf.messages.game.GmCrazyFishMessage.MsgCrazyFishActivity msgCrazyFishTemplateData = 25;
+}
+
+message MsgPurposePlayPlayerData {
+    optional int64 integral = 1;
+    repeated int32 drawType = 2;
+    repeated MsgPurposePlayRankIndexData msgPurposePlayRankIndexData = 3;
+    optional MsgPlayGemPlayerData msgPlayGemPlayerData = 4;
+    optional bool join = 5;
+    optional PlayBeadEnterGameData beadEnterGameData = 6;
+    optional bf.messages.game.GmActivityEliminationMessage.MsgEliminationPlayerData msgEliminationPlayerData = 7;
+    optional MsgPetActivityPlayerData msgPetActivityPlayerData = 8;
+    optional bf.messages.game.BridgeActivityMessage.MsgBridgePlayerData msgBridgePlayerData = 9;
+    optional bf.messages.game.GmActivityJeryMessage.MsgParkourPlayerData msgParkourPlayerData = 10;
+    optional MsgFlipPlayerData msgFlipPlayerData = 11;
+    optional bf.messages.game.ArcheryActivityMessage.MsgArcheryPlayerData archeryPlayerData = 12;
+    optional bf.messages.game.GmActivityJeryMessage.MsgHuoJiPlayerData msgHuoJiPlayerData = 13;
+    optional bf.messages.game.GmActivityJeryMessage.MsgJumpHappyPlayerData msgJumpHappyPlayerData = 14;
+    optional bf.messages.game.GluttonyFeastActMessage.MsgGluttonyPlayerData gluttonyPlayerData = 15;
+    optional bf.messages.game.GmActivity2Message.MsgAnglingPlayerData anglingPlayerData = 16;
+    optional bf.messages.game.FishingActivityMessage.MsgFishingPlayerData fishingPlayerData = 17;
+    optional bf.messages.game.FootballActMessage.MsgFootballPlayerData footballPlayerData = 18;
+    optional bf.messages.game.GmActivityJeryMessage.MsgCandyRomancePlayerData candyRomancePlayerData = 19;
+    optional bf.messages.game.GmActivityJeryMessage.MsgChineseChessPlayerData chineseChessPlayerData = 20;
+    optional bf.messages.game.GmActivityJeryMessage.MsgGarlandPlayerData garlandPlayerData = 21;
+    optional bf.messages.game.MoonGoingActivityMessage.MsgMoonGoingPlayerData moonGoingPlayerData = 22;
+    optional bf.messages.game.ActivityTrapMessage.MsgTrapPlayerData trapPlayerData = 23;
+    optional bf.messages.game.GmActivityJeryMessage.MsgAHundredFamilyFeastPlayerData aHundredFamilyFeastPlayerData = 24;
+    optional bf.messages.game.ActivityMiniGameMessage.MsgFlowerData flowerData = 25;
+    optional bf.messages.game.GmActivity2Message.MsgSlideyPlayerData slideyData = 26;
+    optional bf.messages.game.GmActivityJeryMessage.MsgWinminePlayerData winminePlayerData = 27;
+    optional bf.messages.game.GluttonyFeastActMessage.MsgGluttonyEliminatePlayerData gluttony2PlayerData = 28;
+    optional bf.messages.game.GmToyHouseMessage.MsgToyHousePlayerData toyHousePlayerData = 29;
+    optional bf.messages.game.GmActivity2Message.MsgDragonPlayerData msgDragonPlayerData = 30;
+    optional bf.messages.game.GmActivity2Message.MsgFireworksPlayerData msgFireworksPlayerData = 31;
+    optional bf.messages.game.GmActivity2Message.MsgTetrisPlayerData msgTetrisPlayerData = 32;
+    optional bf.messages.game.GmAnimalFarmMessage.MsgAnimalFarmPlayerData msgAnimalFarmPlayerData = 33;
+    optional bf.messages.game.GmTetrisFortressMessage.MsgTetrisFortressPlayerData msgTetrisFortressPlayerData = 34;
+    optional bf.messages.game.GmSnowBallFightMessage.MsgSnowBallEntrance msgSnowBallFightPlayerData = 35;
+    optional bf.messages.game.ActivityNianbeastMessage.MsgNianbeastPlayerData msgNianbeastPlayerData = 36;
+    optional bf.messages.game.GmCrazyFishMessage.MsgCrazyFishEntrance msgCrazyFishPlayerData = 37;
+}
+
+message MsgPurposePlayRankIndexData {
+    optional int32 rankType = 1;
+    optional int32 index = 2;
+}
+
+message MsgPurposeTransformItem {
+    required int32 templateId = 1;
+    required int64 num = 2;
+    required int64 score = 3;
+}
+
+message MsgPurposePlayRankDrawReq_32001 {
+    optional int32 activityId = 1;
+    optional int32 rankType = 2;
+    optional int32 activityType = 3;
+}
+
+message MsgPurposePlayRankDrawResp_32001 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 rankType = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 4;
+    optional int32 activityType = 5;
+}
+
+message MsgIntegralChangeResp_32002 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int64 integral = 3;
+    optional int32 index = 4;
+    optional int32 activityType = 5;
+    optional int32 rankingType = 6;
+}
+
+message MsgPurposePlayGetRankIndexReq_32003 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message MsgPurposePlayGetRankIndexResp_32003 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 index = 3;
+    optional int32 activityType = 4;
+}
+
+message MsgPurposeTransformItemReq_32004 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message MsgPurposeTransformItemResp_32004 {
+    required int32 ret = 1;
+    repeated MsgPurposeTransformItem item = 2;
+}
+
+message MsgTopIntegralChangeResp_32005 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int64 integral = 3;
+    optional int32 index = 4;
+    optional int32 activityType = 5;
+}
+
+message MsgPlayGemPlayerData {
+    optional int64 gemExp = 2;
+    optional MsgPlayGemTalentAptitudeSkillData MsgPlayGemTalentAptitudeSkillData = 3;
+    repeated MsgPlayGemcompoundData msgPlayGemcompoundData = 4;
+    repeated int32 achievementId = 5;
+    repeated MsgPlayGemData msgPlayGemData = 1;
+    optional int64 nowIntegral = 6;
+    optional int32 multiple = 7;
+}
+
+message MsgPlayGemGridData {
+    optional int32 x = 1;
+    optional int32 y = 2;
+}
+
+message MsgPlayGemData {
+    optional MsgPlayGemGridData msgPlayGemGridData = 1;
+    optional int32 gemId = 2;
+}
+
+message MsgPlayGemTalentAptitudeSkillData {
+    optional int32 talentId = 1;
+    optional int32 aptitudeSkill = 2;
+}
+
+message MsgPlayGemTalentAptitudeSkillUpLvData {
+    optional int32 aptitudeSkillLv = 1;
+    optional int64 gemExp = 2;
+}
+
+message MsgPlayGemcompoundData {
+    optional int32 gemId = 1;
+    optional int32 cot = 2;
+}
+
+message PlayGemOperateReq_32011 {
+    optional int32 activityId = 1;
+    optional int32 direction = 2;
+    optional int32 activityType = 3;
+}
+
+message PlayGemOperateResp_32011 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 direction = 3;
+    repeated MsgPlayGemData msgPlayGemData = 4;
+    optional int64 gemExp = 5;
+    repeated MsgPlayGemcompoundData msgPlayGemcompoundData = 6;
+    repeated int32 achievementId = 7;
+    optional MsgPlayGemTalentAptitudeSkillUpLvData msgPlayGemTalentAptitudeSkillUpLvData = 8;
+    optional int64 nowIntegral = 9;
+    optional int32 activityType = 10;
+}
+
+message PlayGemSelectTalentReq_32012 {
+    optional int32 activityId = 1;
+    optional MsgPlayGemTalentAptitudeSkillData MsgPlayGemTalentAptitudeSkillData = 2;
+    optional int32 activityType = 3;
+}
+
+message PlayGemSelectTalentResp_32012 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional MsgPlayGemTalentAptitudeSkillData MsgPlayGemTalentAptitudeSkillData = 3;
+    optional MsgPlayGemTalentAptitudeSkillUpLvData msgPlayGemTalentAptitudeSkillUpLvData = 4;
+    optional int32 activityType = 5;
+}
+
+message PlayGemDrawTidyReq_32014 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message PlayGemDrawTidyResp_32014 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    repeated MsgPlayGemData msgPlayGemData = 3;
+    optional int32 activityType = 4;
+}
+
+message PlayGemDrawAgainStartReq_32015 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message PlayGemDrawAgainStartResp_32015 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    repeated MsgPlayGemData msgPlayGemData = 3;
+    optional int64 nowIntegral = 4;
+    optional int32 activityType = 5;
+}
+
+message PlayGemSwitchoverReq_32016 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message PlayGemSwitchoverResp_32016 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    repeated MsgPlayGemData msgPlayGemData = 3;
+    optional int64 nowIntegral = 4;
+    optional int32 multiple = 5;
+    optional int32 activityType = 6;
+}
+
+message MsgPetActivityPlayerData {
+    optional int32 petId = 1;
+    optional int32 progress = 2;
+    optional int32 rewardGiftNum = 3;
+    optional int32 skewerNum = 4;
+    optional int32 madeDishNum = 5;
+    optional MsgPetActivitySkewerData skewerData = 6;
+}
+
+message MsgPetActivitySkewerData {
+    optional int32 chooseId = 1;
+    repeated int32 foodIds = 2;
+    optional int32 insertCount = 3;
+    optional int32 score = 4;
+    optional bool isDouble = 5;
+    optional bool isBuff = 6;
+}
+
+message MsgPetChooseReq_32101 {
+    optional int32 activityId = 1;
+    optional int32 petId = 2;
+}
+
+message MsgPetChooseResp_32101 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 petId = 3;
+}
+
+message MsgPetFeedReq_32102 {
+    optional int32 activityId = 1;
+    optional int32 type = 2;
+}
+
+message MsgPetFeedResp_32102 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 type = 3;
+    optional int32 progress = 4;
+    optional int32 rewardGiftNum = 5;
+    optional int32 skewerNum = 6;
+    optional int32 madeDishNum = 7;
+}
+
+message MsgPetGetRewardReq_32103 {
+    optional int32 activityId = 1;
+}
+
+message MsgPetGetRewardResp_32103 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+    optional int32 rewardGiftNum = 4;
+}
+
+message MsgPetSkewerChooseItemReq_32104 {
+    optional int32 activityId = 1;
+    optional int32 foodId = 2;
+}
+
+message MsgPetSkewerChooseItemResp_32104 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 foodId = 3;
+}
+
+message MsgPetSkewerInsertReq_32105 {
+    optional int32 activityId = 1;
+    optional bool isSuccess = 2;
+    optional int32 foodId = 3;
+}
+
+message MsgPetSkewerInsertResp_32105 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional bool isSuccess = 3;
+    optional int32 foodId = 4;
+    optional int32 addScore = 5;
+    optional bool skewerIsDouble = 6;
+    optional int32 extraScore = 7;
+}
+
+message MsgPetSkewerCompleteReq_32106 {
+    optional int32 activityId = 1;
+}
+
+message MsgPetSkewerCompleteResp_32106 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 assessId = 3;
+    optional int32 score = 4;
+    optional int32 insertCount = 5;
+    optional int32 extraScore = 6;
+    optional bool isBuff = 7;
+}
+
+message MsgPetMadeDishReq_32107 {
+    optional int32 activityId = 1;
+    optional int32 foodId = 2;
+}
+
+message MsgPetMadeDishResp_32107 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+}
+
+message MsgFlipTemplateData {
+    repeated MsgFlipRewardTemplateData rewards = 1;
+}
+
+message MsgFlipRewardTemplateData {
+    optional int32 checkpointId = 1;
+    optional string reward = 2;
+    optional string reward1 = 3;
+    optional string reward2 = 4;
+    optional string reward3 = 5;
+}
+
+message MsgFlipPlayerData {
+    optional int32 unlockLevel = 1;
+    repeated int32 passTime = 2;
+    optional MsgFlipGameData gameData = 3;
+}
+
+message MsgFlipGameData {
+    optional int32 level = 1;
+    repeated bool isEliminate = 2;
+    optional int64 surplusTime = 3;
+    optional int64 itemSurplusTime = 4;
+    optional int32 useItemCount = 5;
+}
+
+message MsgFlipCell {
+    optional int32 cardId = 1;
+    optional bool needSwap = 2;
+}
+
+message MsgStartGameReq_32121 {
+    optional int32 activityId = 1;
+    optional int32 level = 2;
+}
+
+message MsgStartGameResp_32121 {
+    required int32 ret = 1;
+    optional MsgFlipGameData gameData = 2;
+}
+
+message MsgOpenCellReq_32122 {
+    optional int32 activityId = 1;
+    optional int32 posA = 2;
+    optional int32 posB = 3;
+}
+
+message MsgOpenCellResp_32122 {
+    required int32 ret = 1;
+    optional MsgFlipCell cellA = 2;
+    optional MsgFlipCell cellB = 3;
+    optional bool isEliminate = 4;
+    optional bool isTriggerSwap = 5;
+    optional int32 swapPosA = 6;
+    optional int32 swapPosB = 7;
+    optional int32 posA = 8;
+    optional int32 posB = 9;
+}
+
+message MsgEndGameReq_32123 {
+    optional int32 activityId = 1;
+}
+
+message MsgEndGameResp_32123 {
+    required int32 ret = 1;
+    optional int32 passTime = 2;
+    optional bool newRecord = 3;
+    optional int32 rewardType = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 5;
+    optional int32 integral = 6;
+    optional int32 unlockLevel = 7;
+}
+
+message MsgUseItemReq_32125 {
+    optional int32 activityId = 1;
+}
+
+message MsgUseItemResp_32125 {
+    required int32 ret = 1;
+    optional int64 itemSurplusTime = 2;
+}
+
+message MsgBeadBallData {
+    optional int32 x = 1;
+    optional int32 y = 2;
+    optional int32 color = 3;
+    optional int32 bagId = 4;
+    optional int32 num = 5;
+}
+
+message MsgBeadBagData {
+    optional int32 location = 1;
+    optional int32 score = 2;
+}
+
+message PlayBeadEnterGameData {
+    optional int32 personId = 2;
+    optional int32 boxeNum = 4;
+    optional PlayBeadBoardData boardData = 5;
+}
+
+message PlayBeadSelectPersonReq_32201 {
+    optional int32 activityId = 1;
+    optional int32 personId = 2;
+    optional int32 activityType = 3;
+}
+
+message PlayBeadSelectPersonResp_32201 {
+    required int32 ret = 1;
+}
+
+message PlayBeadGivePresentReq_32202 {
+    optional int32 activityId = 1;
+    optional int32 itemId = 2;
+    optional int32 activityType = 3;
+    optional int32 num = 4;
+}
+
+message PlayBeadGivePresentResp_32202 {
+    required int32 ret = 1;
+    optional int32 intimacy = 3;
+    optional int32 boxes = 4;
+}
+
+message PlayBeadInitGameReq_32203 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message PlayBeadInitGameResp_32203 {
+    required int32 ret = 1;
+    optional PlayBeadBoardData boardData = 2;
+}
+
+message PlayBeadBoardData {
+    repeated MsgBeadBallData ballData = 1;
+    repeated MsgBeadBagData bagData = 2;
+    optional int32 ball = 3;
+    optional int32 score = 4;
+    repeated MsgBeadBallData ballFall = 5;
+    optional bool isItem = 6;
+    repeated GetItemData itemDatas = 7;
+    repeated MsgBeadBallData ballnew = 8;
+    optional bool isDouble = 9;
+    optional int32 rankNum = 10;
+    optional int32 rankValue = 11;
+    optional string randomCode = 12;
+    optional int32 rate = 13;
+}
+
+message GetItemData {
+    optional int32 type = 1;
+    repeated bf.messages.game.ItemMessage.MsgItemData msgItemData = 2;
+}
+
+message PlayBeadShootReq_32204 {
+    optional int32 activityId = 1;
+    optional MsgBeadBallData ball = 2;
+    optional string encryData = 3;
+    optional int32 activityType = 4;
+}
+
+message PlayBeadShootResp_32204 {
+    required int32 ret = 1;
+    optional PlayBeadBoardData boardData = 2;
+}
+
+message PlayBeadShootItemReq_32205 {
+    optional int32 activityId = 1;
+    repeated MsgBeadBallData ball = 2;
+    optional string encryData = 3;
+    optional int32 activityType = 4;
+}
+
+message PlayBeadShootItemResp_32205 {
+    required int32 ret = 1;
+    optional PlayBeadBoardData boardData = 2;
+}
+
+message PlayBeadOpenBoxReq_32206 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message PlayBeadOpenBoxResp_32206 {
+    required int32 ret = 1;
+    repeated bf.messages.game.ItemMessage.MsgItemData msgItemData = 2;
+}
+
+message PlayBeadChoiceRateReq_32207 {
+    optional int32 activityId = 1;
+    optional int32 rate = 2;
+    optional int32 activityType = 3;
+}
+
+message PlayBeadChoiceRateResp_32207 {
+    required int32 ret = 1;
+    optional PlayBeadBoardData boardData = 2;
+}
+
+message MsgTreasureLineRewardDb {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 lineId = 3;
+    optional string reward1 = 4;
+    optional string reward2 = 5;
+}
+
+message MsgTreasureRewardShowDb {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 mapId = 3;
+    optional string dropShowReward = 4;
+    optional string boxShowReward = 5;
+}
+
+message MsgTreasureMapTemplateData {
+    repeated MsgTreasureLineRewardDb lineRewards = 1;
+    repeated MsgTreasureRewardShowDb showRewards = 2;
+}
+
+message MsgMapGridData {
+    optional int32 x = 1;
+    optional int32 y = 2;
+    optional bool state = 3;
+    optional int32 flag = 4;
+}
+
+message MsgMapLineRewardState {
+    optional int32 lineId = 1;
+    optional int32 state = 2;
+}
+
+message MsgTreasureTrove {
+    optional int64 id = 1;
+    optional int64 openableTime = 2;
+    optional int64 lastInvitedTime = 5;
+    optional int32 mapType = 6;
+    repeated MsgInvitationPlayer helpPlayers = 7;
+    optional int32 state = 8;
+}
+
+message MsgPlayerTreasureMap {
+    repeated MsgMapGridData msgMapGridData = 1;
+    repeated MsgMapLineRewardState msgMapLineRewardStates = 2;
+    optional int32 curMapId = 3;
+    optional int32 mapRewardState = 4;
+    optional bool doubleBuff = 6;
+    repeated MsgTreasureTrove msgTreasureTroves = 7;
+}
+
+message MsgPlayerTreasureMapData {
+    optional MsgPlayerTreasureMap firstMap = 1;
+    optional MsgPlayerTreasureMap secondMap = 2;
+}
+
+message MsgTreasureMapDecryptResult {
+    optional MsgMapGridData msgMapGridData = 1;
+    repeated MsgMapLineRewardState msgMapLineRewardStates = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+    optional MsgTreasureTrove msgTreasureTroves = 4;
+    optional bool obtainDoubleBuff = 5;
+    optional bool useDoubleBuff = 6;
+    optional int32 mapType = 7;
+    optional int32 mapRewardState = 8;
+}
+
+message MsgInvitationPlayer {
+    optional string name = 1;
+    optional string money = 2;
+    optional string family = 3;
+    optional int32 vipLv = 4;
+    repeated int32 fashionIds = 5;
+    optional int32 sex = 6;
+    optional string playerId = 7;
+    optional int32 familyIco = 8;
+    optional int32 npcSex = 9;
+}
+
+message MsgBroadcast {
+    optional int32 templateId = 1;
+    repeated string paramList = 2;
+}
+
+message TreasureMapFreeDecryptReq_32301 {
+    required int32 activityId = 1;
+    optional int32 mapType = 2;
+}
+
+message TreasureMapFreeDecryptResp_32301 {
+    required int32 ret = 1;
+    optional MsgTreasureMapDecryptResult msgTreasureMapDecryptResult = 2;
+}
+
+message TreasureMapItemDecryptReq_32302 {
+    required int32 activityId = 1;
+    optional int32 mapType = 2;
+    optional int32 num = 3;
+}
+
+message TreasureMapItemDecryptResp_32302 {
+    required int32 ret = 1;
+    optional int32 num = 2;
+    repeated MsgTreasureMapDecryptResult msgTreasureMapDecryptResult = 3;
+}
+
+message TreasureMapLineRewardReq_32303 {
+    required int32 activityId = 1;
+    optional int32 lineId = 2;
+    optional int32 mapType = 3;
+}
+
+message TreasureMapLineRewardResp_32303 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+    optional int32 lineId = 3;
+    optional int32 mapType = 4;
+}
+
+message TreasureMapCompleteRewardReq_32304 {
+    required int32 activityId = 1;
+    required int32 index = 2;
+    optional int32 mapType = 3;
+}
+
+message TreasureMapCompleteRewardResp_32304 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+    optional int32 mapType = 3;
+}
+
+message TreasureMapTroveReq_32305 {
+    required int32 activityId = 1;
+    required int64 id = 2;
+}
+
+message TreasureMapTroveResp_32305 {
+    required int32 ret = 1;
+    required int64 id = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+    optional MsgTreasureTrove msgTreasureTrove = 4;
+    optional int32 mapType = 5;
+}
+
+message TreasureMapTroveInviteReq_32306 {
+    required int32 activityId = 1;
+    required int64 id = 2;
+}
+
+message TreasureMapTroveInviteResp_32306 {
+    required int32 ret = 1;
+    required int64 id = 2;
+    optional int32 mapType = 3;
+}
+
+message TreasureMapTroveHelpReq_32307 {
+    required int32 activityId = 1;
+}
+
+message TreasureMapTroveHelpResp_32307 {
+    required int32 ret = 1;
+    repeated int64 troveIds = 2;
+}
+
+message TreasureMapTroveReceivedInvitationResp_32308 {
+    required MsgTreasureTrove msgTreasureTrove = 1;
+    required MsgInvitationPlayer msgInvitationPlayer = 2;
+}
+
+message TreasureMapTroveSomeoneHelpResp_32309 {
+    required int64 id = 1;
+    required MsgInvitationPlayer msgInvitationPlayer = 2;
+    optional int64 openableTime = 3;
+    optional int32 mapType = 4;
+}
+
+message TreasureMapBroadcastResp_32310 {
+    required MsgBroadcast msgBroadcast = 1;
+}
+
+message TreasureOpenNextMapReq_32311 {
+    required int32 activityId = 1;
+    required int32 mapType = 2;
+}
+
+message TreasureOpenNextMapResp_32311 {
+    required int32 ret = 1;
+    optional int32 mapType = 2;
+    optional MsgPlayerTreasureMap mapData = 4;
+}
+
+message MsgTalentExchangeReq_32400 {
+    optional int32 activityId = 1;
+    optional int32 id = 2;
+}
+
+message MsgTalentExchangeResp_32400 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 id = 3;
+}
+
+message MsgSkinShopAllData {
+    repeated MsgSkinShop shopData = 1;
+    repeated MsgSkinShopPlayerBuy buyData = 2;
+}
+
+message MsgSkinShop {
+    optional int32 type = 1;
+    repeated MsgSkinShopCommodity commoditys = 2;
+    optional int64 nextRefreshTime = 3;
+}
+
+message MsgSkinShopCommodity {
+    optional int32 commodityId = 1;
+}
+
+message MsgSkinShopPlayerBuy {
+    optional int32 commodityId = 1;
+    optional int32 buyCount = 2;
+}
+
+message MsgSkinShopBuyReq_32701 {
+    optional int32 activityId = 1;
+    optional int32 commodityId = 2;
+}
+
+message MsgSkinShopBuyResp_32701 {
+    required int32 ret = 1;
+}
+
+message MsgScrollAllTemplateData {
+    repeated MsgScrollRechargeData msgScrollRechargeData = 1;
+    repeated MsgScrollRewardData msgScrollRewardData = 2;
+}
+
+message MsgScrollPlayerData {
+    repeated int32 giftId = 1;
+    repeated MsgScrollDrawData msgScrollDrawData = 2;
+}
+
+message MsgScrollDrawData {
+    optional int32 day = 1;
+    optional bool type1 = 2;
+    optional bool type2 = 3;
+    optional bool type3 = 4;
+}
+
+message MsgScrollRechargeData {
+    optional int32 activityId = 1;
+    optional int32 giftId = 2;
+    optional int32 rmb = 3;
+    optional int32 overseasPayId = 4;
+    optional int32 vipExp = 5;
+    optional string voucher = 6;
+    optional string name = 7;
+    optional string reward = 9;
+}
+
+message MsgScrollRewardData {
+    optional int32 activityId = 1;
+    optional int32 day = 2;
+    optional string taskId = 3;
+    optional string reward1 = 4;
+    optional string reward2 = 5;
+    optional string reward3 = 6;
+}
+
+message MsgScrollDrawReq_33001 {
+    optional int32 activityId = 1;
+    optional int32 giftId = 2;
+    optional int32 day = 3;
+}
+
+message MsgScrollDrawResp_33001 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 giftId = 3;
+    optional int32 day = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 5;
+}
+
+message MsgPassAllTemplateData {
+    optional MsgPassRechargeData rechargeData = 1;
+    repeated MsgPassRewardData rewardData = 2;
+}
+
+message MsgPassPlayerData {
+    optional int32 curLv = 1;
+    optional int32 curExp = 2;
+    optional bool isBuy = 3;
+    repeated MsgPassGainData gainData = 4;
+    optional int64 hideTime = 5;
+}
+
+message MsgPassGainData {
+    optional int32 lv = 1;
+    optional bool gainFree = 2;
+    optional bool gainPay = 3;
+}
+
+message MsgPassRechargeData {
+    optional int32 rmb = 3;
+    optional int32 overseasPayId = 4;
+    optional int32 vipExp = 5;
+    optional string voucher = 6;
+    optional string name = 7;
+    optional string taskReward = 8;
+    optional string freeReward = 9;
+    optional string reward = 10;
+    optional string giftReward = 11;
+}
+
+message MsgPassRewardData {
+    optional int32 lv = 2;
+    optional int32 integral = 3;
+    optional string reward1 = 4;
+    optional string reward2 = 5;
+    optional string tag = 6;
+}
+
+message MsgPassGainRewardReq_33011 {
+    optional int32 activityId = 1;
+    optional int32 lv = 2;
+}
+
+message MsgPassGainRewardResp_33011 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+}
+
+message MsgPassBuyIntegralReq_33012 {
+    optional int32 activityId = 1;
+    optional int32 integral = 2;
+}
+
+message MsgPassBuyIntegralResp_33012 {
+    required int32 ret = 1;
+}
+
+message MsgPassHideWindowReq_33013 {
+    optional int32 activityId = 1;
+}
+
+message MsgPassHideWindowResp_33013 {
+    required int32 ret = 1;
+    optional int64 hideTime = 2;
+}
+
+message MsgFestival {
+    optional int32 activityId = 1;
+    optional string door = 2;
+    optional string name = 3;
+    optional int32 bigType = 4;
+    optional int32 smallType = 5;
+    optional string doorId = 6;
+    optional int32 jumpTo = 7;
+    optional string titleId = 8;
+    optional string titleId1 = 9;
+}
+
+message MsgFestivalData {
+    repeated MsgFestival data = 1;
+}
+
+message MsgBlessingTemplate {
+    optional int32 activityId = 1;
+    optional int32 giftId = 2;
+    optional int32 rmb = 3;
+    optional string voucher = 4;
+    optional string reward1 = 5;
+    optional string reward2 = 6;
+    optional int32 vipExp = 7;
+    optional string name = 8;
+    optional int32 discount = 9;
+    optional int32 overseasPayId = 10;
+    optional string roundsTime = 11;
+    optional int32 limitNum = 12;
+    optional string winNum = 13;
+}
+
+message MsgBlessingTemplateList {
+    repeated MsgBlessingTemplate msgBlessingTemplate = 1;
+}
+
+message MsgRewardPlayer {
+    optional int32 serverId = 1;
+    optional string playerId = 2;
+    optional string playerName = 3;
+}
+
+message MsgBlessing {
+    repeated int32 updateFieldsList = 99;
+    optional int32 giftId = 1;
+    optional int32 buyTime = 2;
+    optional int32 joinPlayerNum = 3;
+    repeated MsgRewardPlayer rewardPlayer = 4;
+    optional int32 gained = 5;
+    optional int32 activityId = 6;
+}
+
+message MsgBlessingList {
+    repeated MsgBlessing msgBlessing = 1;
+}
+
+message MsgPlayerJoinInfo {
+    optional string playerId = 1;
+    optional int32 buyTimes = 2;
+}
+
+message MsgBlessingListReq_33021 {
+    optional int32 activityId = 1;
+}
+
+message MsgBlessingListResp_33021 {
+    optional int32 ret = 1;
+    optional MsgBlessingList msgBlessingList = 2;
+}
+
+message MsgGainReq_33022 {
+    optional int32 activityId = 1;
+    optional int32 giftId = 2;
+}
+
+message MsgGainResp_33022 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+}
+
+message MsgBlessngResp_33023 {
+    optional MsgBlessing msgBlessing = 1;
+}
+
+message MsgUpdateJoinNumReq_33024 {
+    optional int32 activityId = 1;
+    optional int32 giftId = 2;
+    optional int32 serverId = 3;
+    optional int32 joinNum = 4;
+}
+
+message MsgBlessingCommonReq_33025 {
+    optional int32 activityId = 1;
+    optional int32 serverId = 2;
+}
+
+message MsgBlessingCommonResp_33025 {
+    optional MsgBlessingList msgBlessingList = 1;
+}
+
+message MsgBlessingRewardCheckReq_33026 {
+    optional int32 activityId = 1;
+    optional int32 giftId = 2;
+    optional int32 serverId = 3;
+    optional string playerId = 4;
+}
+
+message MsgBlessingRewardCheckResp_33026 {
+    optional int32 ret = 1;
+    optional int32 valid = 2;
+}
+
+message MsgJoinPlayerReq_33027 {
+    optional int32 activityId = 1;
+    optional int32 giftId = 2;
+}
+
+message MsgJoinPlayerResp_33027 {
+    repeated MsgPlayerJoinInfo playerJoins = 1;
+}
+
+message MsgPlayerWinRewardReq_33028 {
+    optional int32 activityId = 1;
+    optional int32 serverId = 2;
+    optional string playerId = 3;
+}
+
+message MsgPlayerWinRewardResp_33028 {
+    repeated int32 giftId = 1;
+}
+
+message MsgRewardNotifyReq_33029 {
+    optional int32 activityId = 1;
+    optional int32 giftId = 2;
+}
+
+message MsgGroupBuyTemplate {
+    optional int32 activityId = 1;
+    optional int32 giftId = 2;
+    optional int32 limitType = 3;
+    optional int32 limitNum = 4;
+    optional int32 rmb = 5;
+    optional int32 overseasPayId = 6;
+    optional int32 vipExp = 7;
+    optional string voucher = 8;
+    optional int32 discount = 9;
+    optional string name = 10;
+    optional string reward = 11;
+    optional int32 robotSwitch = 12;
+    optional int32 specialSwitch = 13;
+    optional int32 res = 14;
+}
+
+message MsgGroupBuyRewardTemplate {
+    optional int32 activityId = 1;
+    optional int32 onlyId = 2;
+    optional int32 giftId = 3;
+    optional int32 buyNum = 4;
+    optional string reward = 5;
+}
+
+message MsgGroupBuyTemplateList {
+    repeated MsgGroupBuyTemplate msgGroupBuyTemplate = 1;
+    repeated MsgGroupBuyRewardTemplate msgGroupBuyRewardTemplate = 2;
+    repeated bf.messages.game.LimitRedeemActivityMessage.MsgLimitRedeemRewardDb redeemReward = 3;
+}
+
+message MsgGroupBuyGift {
+    repeated int32 updateFieldsList = 99;
+    optional int32 giftId = 1;
+    optional int64 buyTime = 2;
+    optional int32 selfBuyTimes = 3;
+    optional int32 totalBuyTimes = 4;
+    repeated int32 onlyIds = 5;
+}
+
+message MsgGroupBuyExchange {
+    optional int32 onlyId = 1;
+    optional int64 exchangeTime = 2;
+    optional int32 exchangeTimes = 3;
+}
+
+message MsgGroupBuyReq_33031 {
+    optional int32 actId = 1;
+}
+
+message MsgGroupBuyResp_33031 {
+    optional int32 ret = 1;
+    optional int32 actId = 2;
+    repeated MsgGroupBuyGift gifts = 3;
+    repeated MsgGroupBuyExchange exchanges = 4;
+}
+
+message MsgGroupBuyGainReq_33032 {
+    optional int32 actId = 1;
+    optional int32 giftId = 2;
+}
+
+message MsgGroupBuyGainResp_33032 {
+    optional int32 ret = 1;
+    optional int32 actId = 2;
+    optional int32 giftId = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 5;
+}
+
+message MsgGroupBuyGiftPushResp_33033 {
+    optional int32 actId = 1;
+    optional MsgGroupBuyGift msgGift = 2;
+}
+
+message MsgGroupBuyExchangeReq_33035 {
+    optional int32 actId = 1;
+    optional int32 onlyId = 2;
+    optional int32 num = 3;
+}
+
+message MsgGroupBuyExchangeResp_33035 {
+    optional int32 ret = 1;
+    optional int32 actId = 2;
+    optional int32 onlyId = 3;
+    optional MsgGroupBuyExchange msgExchange = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 5;
+}
+
+message MsgGroupBuyCrossSyncReq_33036 {
+    optional int32 serverId = 1;
+    optional int32 actId = 2;
+    repeated MsgGroupBuyGift gifts = 3;
+}
+
+message MsgGroupBuyCrossSyncResp_33036 {
+    optional int32 ret = 1;
+}
+
+message MsgGroupBuyCrossSyncReq_33037 {
+    optional int32 actId = 1;
+    repeated MsgGroupBuyGift gifts = 2;
+}
+
+message MsgGroupBuyCrossSyncResp_33037 {
+    optional int32 ret = 1;
+}
+
+message MsgMountHuaPlayerData {
+    optional int32 layer = 1;
+    repeated MsgMountHuaDrawReward drawRewards = 2;
+}
+
+message MsgMountHuaDrawReward {
+    optional int32 layer = 1;
+    repeated int32 indexes = 2;
+}
+
+message MsgMountHuaAllTemplate {
+    repeated MsgMountHuaDbTemplate template = 1;
+}
+
+message MsgMountHuaDbTemplate {
+    optional int32 actId = 1;
+    optional int32 type = 2;
+    optional int32 layers = 5;
+    optional string consume = 6;
+    optional string reward = 7;
+}
+
+message MountHuaDrawItemReq_37381 {
+    optional int32 activityId = 1;
+}
+
+message MountHuaDrawItemResp_37381 {
+    optional int32 ret = 1;
+    optional int32 activityId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 3;
+    optional int32 index = 4;
+    optional MsgMountHuaPlayerData playerData = 5;
+    optional int32 itemType = 6;
+    optional int32 layer = 7;
+    optional bf.messages.game.CommonMsgMessage.MsgResources coreResource = 8;
+}
+
+message MsgSignAllTemplate {
+    repeated MsgSignDbTemplate rwd = 1;
+}
+
+message MsgSignDbTemplate {
+    optional int32 actId = 1;
+    optional int32 onlyId = 2;
+    optional int32 day = 3;
+    optional string reward = 4;
+}
+
+message MsgPlaySignInfo {
+    optional int32 actId = 1;
+    optional int32 day = 2;
+    repeated int32 rwdDay = 3;
+    optional int64 overSignTime = 4;
+}
+
+message MsgSignSignReq_37701 {
+    optional int32 actId = 1;
+    optional int32 onlyId = 2;
+}
+
+message MsgSignSignResp_37701 {
+    required int32 ret = 1;
+    optional int32 onlyId = 2;
+    optional MsgPlaySignInfo info = 3;
+}
+
+message MsgWaterPlayerInfo {
+    optional int32 activityId = 1;
+    optional int32 luckNum = 5;
+}
+
+message MsgWaterDrawItemReq_37721 {
+    optional int32 activityId = 1;
+    optional bool isTen = 2;
+}
+
+message MsgWaterDrawItemResp_37721 {
+    optional int32 ret = 1;
+    optional int32 activityId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 3;
+    optional bool isUpdate = 4;
+    optional int32 luckNum = 5;
+}
+
+message MsgDemonFoxBlindBoxAllTemplate {
+    repeated MsgDemonFoxBlindBoxDbTemplate info = 1;
+}
+
+message MsgDemonFoxBlindBoxDbTemplate {
+    optional int32 actId = 1;
+    optional int32 bigType = 2;
+    optional string name = 3;
+    optional int64 openTime = 4;
+    optional int64 overTime = 5;
+    optional string title = 6;
+    optional string img = 7;
+    optional string address = 8;
+    optional int32 add = 9;
+    optional string h5Main = 10;
+    optional string h5Ma = 11;
+    optional int32 switch = 12;
+    optional int32 maOpen = 13;
+    optional int32 tiktokOpen = 14;
+}
+
+message MsgCycleGiftAllTemplate {
+    repeated MsgCycleGiftDbTemplate cycleGiftDbs = 1;
+}
+
+message MsgCycleGiftDbTemplate {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 giftId = 3;
+    optional int32 limitType = 4;
+    optional int32 limitNum = 5;
+    optional int32 rmb = 6;
+    optional int32 overseasPayId = 7;
+    optional int32 vipExp = 8;
+    optional string voucher = 9;
+    optional string name = 10;
+    optional int32 discount = 11;
+    optional string reward = 12;
+}
+
+message MsgCycleGiftPlayerData {
+    repeated MsgCycleGiftBuyData cycleGifts = 1;
+}
+
+message MsgCycleGiftBuyData {
+    optional int32 giftId = 1;
+    optional int32 buyNum = 2;
+}
+
+message CycleGiftFreeReq_37901 {
+    optional int32 activityId = 1;
+    optional int32 giftId = 2;
+}
+
+message CycleGiftFreeResp_37901 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message MsgOnlineRewardAllTemplate {
+    repeated MsgOnlineRewardDb dbs = 1;
+}
+
+message MsgOnlineRewardDb {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 rewardId = 3;
+    optional string name = 4;
+    optional int32 time = 5;
+    optional string rewardList = 6;
+}
+
+message MsgOnlineRewardPlayerData {
+    repeated int32 receivedRewardIds = 1;
+    optional int64 onlineMillis = 2;
+    optional int64 hideTime = 3;
+}
+
+message MsgOnlineRewardResp_38051 {
+    required int32 ret = 1;
+    optional MsgOnlineRewardPlayerData playerData = 2;
+}
+
+message MsgOnlineRewardReceiveReq_38052 {
+    optional int32 activityId = 1;
+    repeated int32 rewardIds = 2;
+}
+
+message MsgOnlineRewardReceiveResp_38052 {
+    required int32 ret = 1;
+    optional MsgOnlineRewardPlayerData playerData = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+}
+
+message MsgGhostData {
+    repeated MsgRank msgRank = 1;
+    repeated MsgCrossCarnivalTask msgCrossCarnivalTask = 2;
+    repeated MsgCrossCarnivalPay msgCrossCarnivalPay = 3;
+    repeated int64 ghostValue = 4;
+    optional int32 win = 5;
+    repeated MsgRank msgSRank = 6;
+}
+
+message MsgGhostEntrance {
+    repeated CarnivalRankState chessRankState = 1;
+    optional bool isTask = 2;
+    optional bool isPay = 3;
+    optional int32 support = 4;
+}
+
+message MsgGetGhostDataReq_38101 {
+    required MsgGmActivity msgGmActivity = 1;
+}
+
+message MsgGetGhostDataResp_38101 {
+    required int32 ret = 1;
+    optional MsgGhostData data = 2;
+    optional MsgGhostEntrance playerData = 3;
+}
+
+message MsgGetGhostRewardReq_38102 {
+    optional int32 actId = 1;
+    optional int32 id = 2;
+    optional int32 type = 3;
+}
+
+message MsgGetGhostRewardResp_38102 {
+    required int32 ret = 1;
+    optional int32 id = 2;
+    optional int32 type = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 4;
+}
+
+message MsgGhostChoiceSupportReq_38103 {
+    optional int32 activityId = 1;
+    optional int32 support = 2;
+}
+
+message MsgGhostChoiceSupportResp_38103 {
+    required int32 ret = 1;
+    optional int32 support = 2;
+}
+
+message MsgGetGhostRankRewardReq_38104 {
+    required int32 actId = 1;
+    required int32 type = 2;
+}
+
+message MsgGetGhostRankRewardResp_38104 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message MsgActivityPayPlayerDataResp_38105 {
+    optional MsgGmActivity msgGmActivity = 2;
+    optional int32 charge = 3;
+    repeated int32 chargeTask = 4;
+}
+
+message getTopFiveReq_38106 {
+    required int32 actId = 1;
+}
+
+message getTopFiveResp_38106 {
+    required int32 ret = 1;
+    optional bf.messages.game.RankingMessage.MsgRankingData pRankingDatas = 2;
+}
+
+message NotifyPlayerOfflineCsRemote_37911 {
+    optional MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message EnterOrExitCsRemote_37912 {
+    required MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional bool isEnter = 3;
+}
+
+message LinkageDrawReq_38351 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+    optional int32 times = 3;
+}
+
+message LinkageDrawResp_38351 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 2;
+    optional int32 times = 3;
+}
+
+message MsgTreasureHuntTemplateData {
+    repeated MsgTreasureDrawDb drawDbs = 1;
+}
+
+message MsgTreasureDrawDb {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 tid = 3;
+    optional string reward = 4;
+    optional int32 sort = 5;
+    optional int32 isShow = 6;
+    optional int32 weight = 7;
+    optional int32 isLamp = 8;
+}
+
+message MsgTreasureDraw {
+    optional int32 treasureId = 1;
+    optional int32 type = 2;
+    optional int32 originTreasureId = 3;
+}
+
+message MsgTreasureHuntRecord {
+    optional int64 time = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources treasures = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources items = 3;
+}
+
+message MsgTreasureHuntLuckyRecord {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer luckyPlayer = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources items = 2;
+}
+
+message TreasureHuntDrawReq_38371 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 times = 3;
+}
+
+message TreasureHuntDrawResp_38371 {
+    required int32 ret = 1;
+    repeated MsgTreasureDraw drawResult = 2;
+    optional int32 realTimes = 3;
+}
+
+message TreasureHuntRecordsReq_38372 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 type = 3;
+}
+
+message TreasureHuntRecordsResp_38372 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+    repeated MsgTreasureHuntRecord selfRecords = 3;
+    repeated MsgTreasureHuntLuckyRecord luckyRecords = 4;
+}
+
+message TreasureHuntSyncLuckyRecordsGC_38381 {
+    optional string playerId = 1;
+    optional int64 time = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 3;
+    optional MsgGmActivity gmActivity = 4;
+}
+
+message TreasureHuntLuckyRecordsQueryGC_38382 {
+    required MsgGmActivity gmActivity = 1;
+}
+
+message TreasureHuntLuckyRecordsQueryCG_38382 {
+    repeated MsgTreasureHuntLuckyRecord records = 1;
+}
+
+message TreasureHuntLuckyDrawNotifyGG_38383 {
+    optional string playerName = 1;
+    optional int32 serverId = 2;
+    repeated int32 treasureItemId = 3;
+    optional MsgGmActivity gmActivity = 4;
+}

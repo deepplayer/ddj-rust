@@ -1,0 +1,82 @@
+syntax = "proto2";
+
+package bf.messages.game.GmAnnualMessage;
+
+import "CommonMsgMessage.proto";
+import "PlayerMessage.proto";
+
+message MsgAnnualPlayerData {
+    optional MsgAnnualPlayer info = 1;
+    optional MsgAnnualPower moneyPower = 2;
+    optional MsgAnnualTalent talent = 3;
+    optional MsgAnnualNpc npc = 4;
+    optional MsgAnnualChildren children = 5;
+    optional MsgAnnualPet pet = 6;
+    optional bool received = 7;
+    optional MsgAnnualFamily family = 8;
+}
+
+message MsgAnnualPlayer {
+    optional int64 createTime = 1;
+    optional int32 loginDays = 2;
+    optional int32 offlineDays = 3;
+}
+
+message MsgAnnualPower {
+    optional string maxMoneySpeed = 1;
+    optional string maxTotalMoney = 2;
+    optional int64 recruitWaiters = 3;
+}
+
+message MsgAnnualTalent {
+    optional int32 talentId = 1;
+    optional int32 lv = 2;
+    optional string money = 3;
+    optional int32 aptitude = 4;
+    optional int32 talentNum = 5;
+}
+
+message MsgAnnualNpc {
+    optional int32 npcId = 1;
+    optional int64 intimacy = 2;
+    optional int32 childrenNum = 3;
+    optional int32 npcNum = 4;
+}
+
+message MsgAnnualChildren {
+    optional int32 childrenNum = 1;
+    optional string firstChildName = 2;
+    optional string maxMoneyChildName = 3;
+    optional int64 firstMarriedTime = 4;
+    optional int32 marriedChildrenNum = 5;
+    repeated bf.messages.game.PlayerMessage.MsgOfflinePlayer inLaws = 6;
+}
+
+message MsgAnnualPet {
+    optional int32 petId = 1;
+    optional int32 star = 2;
+    optional int32 rateLv = 3;
+    optional int64 growth = 4;
+    optional int64 intimacy = 5;
+    optional int32 petNum = 6;
+}
+
+message MsgAnnualFamily {
+    optional string familyName = 1;
+    optional int64 joinTime = 2;
+    optional string contribution = 3;
+    optional int32 homelandLv = 4;
+    optional int64 bean = 5;
+    optional int64 beast = 6;
+}
+
+message AnnualReceiveRewardReq_34101 {
+    optional int32 activityId = 1;
+}
+
+message AnnualReceivedRewardResp_34101 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional bool received = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 4;
+}

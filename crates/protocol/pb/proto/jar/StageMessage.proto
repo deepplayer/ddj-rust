@@ -1,0 +1,110 @@
+syntax = "proto2";
+
+package bf.messages.game.StageMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgTalentStatus {
+    optional int32 talentId = 1;
+    optional int32 status = 2;
+}
+
+message MsgTalentStatusX {
+    optional int32 talentId = 1;
+    optional int32 status = 2;
+    optional int32 recoverTimes = 3;
+    optional int32 freeTimesLeft = 4;
+}
+
+message MsgStageProgressData {
+    optional int32 checkpointId = 1;
+    repeated MsgTalentStatus talentStatus = 2;
+    optional string hp = 3;
+    optional int32 npcPos = 4;
+    optional int32 oneKeyTimes = 5;
+}
+
+message MsgStageRewardData {
+    optional int32 chapterId = 1;
+}
+
+message MsgStageProgressRewardData {
+    optional int32 lv = 1;
+    optional int32 curProgress = 2;
+    optional int32 allProgress = 3;
+    optional bool canGainReward = 4;
+}
+
+message MsgTalentStatusResp_5001 {
+    optional MsgTalentStatus msgTalentStatus = 1;
+}
+
+message RecoverTalentStatusReq_5002 {
+    optional int32 talentId = 1;
+}
+
+message RecoverTalentStatusResp_5002 {
+    required int32 ret = 1;
+}
+
+message GainChapterRewardReq_5003 {
+    optional int32 chapterId = 1;
+}
+
+message GainChapterRewardResp_5003 {
+    required int32 ret = 1;
+    optional MsgStageRewardData MsgStageRewardData = 2;
+}
+
+message StageProgressReq_5004 {
+}
+
+message StageProgressResp_5004 {
+    required int32 ret = 1;
+    optional MsgStageProgressData msgStageProgressData = 2;
+}
+
+message StageSettleReq_5005 {
+    optional int32 type = 1;
+    optional int32 talentId = 4;
+}
+
+message StageSettleResp_5005 {
+    required int32 ret = 1;
+    optional string preMoney = 2;
+    optional string costMoney = 3;
+    optional int32 npcPos = 4;
+    optional string npcHp = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 6;
+    optional string talentMoney = 7;
+    optional int32 checkpointId = 8;
+    optional int32 oneKeyTimes = 9;
+    optional string damageHp = 10;
+    optional int32 damageNpcPos = 11;
+    optional bf.messages.game.CommonMsgMessage.MsgResources msgMiracle = 12;
+}
+
+message MsgStageRewardDataResp_5006 {
+    repeated MsgStageRewardData msgStageRewardData = 1;
+}
+
+message GainStageProgressRewardReq_5011 {
+}
+
+message GainStageProgressRewardResp_5011 {
+    required int32 ret = 1;
+    optional MsgStageProgressRewardData msgStageProgressRewardData = 2;
+}
+
+message StageProgressRewardUpdateResp_5012 {
+    optional MsgStageProgressRewardData msgStageProgressRewardData = 1;
+}
+
+message StageSmallGamesRwdReq_5013 {
+    optional int32 level = 1;
+}
+
+message StageSmallGamesRwdResp_5013 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 2;
+}

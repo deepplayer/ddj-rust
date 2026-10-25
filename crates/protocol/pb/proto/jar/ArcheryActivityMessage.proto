@@ -1,0 +1,229 @@
+syntax = "proto2";
+
+package bf.messages.game.ArcheryActivityMessage;
+
+import "CommonMsgMessage.proto";
+import "PlayerMessage.proto";
+
+message MsgArcheryPlayerData {
+    optional MsgArcheryData archeryData = 3;
+    optional int32 randomCode = 4;
+}
+
+message MsgArcheryData {
+    optional MsgArcheryCommonField commonFieldData = 1;
+    optional MsgArcheryRewardField rewardFieldData = 2;
+    optional int32 skillProgress = 3;
+    optional int32 skillNum = 4;
+    repeated MsgArcheryFieldIdAndNum rewardFields = 5;
+    optional int32 familyTroveStatus = 6;
+}
+
+message MsgArcheryFieldIdAndNum {
+    optional int32 fieldId = 1;
+    optional int32 num = 2;
+}
+
+message MsgArcheryTarget {
+    optional int32 seqId = 1;
+    optional int32 line = 2;
+    optional int32 hp = 3;
+    optional int32 targetId = 4;
+    optional string client = 5;
+}
+
+message MsgArcheryCommonField {
+    optional int32 fieldId = 1;
+    optional int32 spoilProgress = 2;
+    repeated MsgArcheryFieldIdAndNum spoils = 3;
+    optional int32 rateType = 4;
+    repeated MsgArcheryTarget targets = 5;
+    optional int32 goldProgress = 6;
+    optional int32 goldNum = 7;
+}
+
+message MsgArcheryRewardField {
+    optional int32 fieldId = 2;
+    optional int32 arrowNum = 3;
+    optional int32 spoilProgress = 4;
+    optional int32 spoilNum = 5;
+    repeated MsgArcheryTarget targets = 10;
+}
+
+message MsgArcherySpoils {
+    optional int32 fieldId = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 2;
+}
+
+message MsgArcheryFamilyTrove {
+    optional int64 uniqueId = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer owner = 2;
+    optional int64 createTime = 3;
+    optional int32 receiveNum = 4;
+    optional bool received = 5;
+}
+
+message MsgArcheryTargetPosition {
+    optional int32 seqId = 1;
+    optional string client = 2;
+}
+
+message MsgBowShotResult {
+    optional MsgArcheryTarget target = 1;
+    optional int32 damage = 2;
+    optional int32 addScore = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 4;
+    optional int32 addSpoilProgress = 5;
+    optional int32 addSkillProgress = 6;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources archeryBoxes = 7;
+}
+
+message ArcheryCreateTargetReq_37001 {
+    optional int32 activityId = 1;
+    optional string md5Sign = 2;
+    optional int32 activityType = 3;
+}
+
+message ArcheryCreateTargetResp_37001 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional MsgArcheryTarget target = 3;
+    optional bool inRewardField = 4;
+}
+
+message ArcheryTargetEscapeReq_37002 {
+    optional int32 activityId = 1;
+    optional int32 seqId = 2;
+    optional string md5Sign = 3;
+    optional int32 activityType = 4;
+}
+
+message ArcheryTargetEscapeResp_37002 {
+    required int32 ret = 1;
+    optional bool inRewardField = 2;
+}
+
+message ArcheryShootTargetReq_37003 {
+    optional int32 activityId = 1;
+    optional int32 seqId = 2;
+    optional int32 area = 3;
+    optional string md5Sign = 4;
+    optional int32 activityType = 5;
+}
+
+message ArcheryShootTargetResp_37003 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional MsgBowShotResult shotResult = 3;
+    optional int32 skillNum = 4;
+    optional MsgArcheryCommonField commonFieldData = 5;
+    optional MsgArcheryRewardField rewardFieldData = 6;
+    optional int32 skillProgress = 7;
+    optional int32 removeSeqId = 8;
+}
+
+message ArcheryOpenSpoilsReq_37004 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message ArcheryOpenSpoilsResp_37004 {
+    required int32 ret = 1;
+    repeated MsgArcherySpoils spoils = 2;
+    optional MsgArcheryCommonField commonFieldData = 3;
+    optional MsgArcheryRewardField rewardFieldData = 4;
+}
+
+message ArcheryUseFamilySkillReq_37005 {
+    optional int32 activityId = 1;
+    repeated int32 seqIds = 2;
+    optional int32 activityType = 3;
+}
+
+message ArcheryUseFamilySkillResp_37005 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    repeated MsgBowShotResult shotResult = 3;
+    optional int32 skillNum = 4;
+    optional MsgArcheryCommonField commonFieldData = 5;
+    optional MsgArcheryRewardField rewardFieldData = 6;
+    optional int32 skillProgress = 7;
+    repeated int32 removeSeqIds = 8;
+}
+
+message ArcheryFamilyTrovesReq_37006 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message ArcheryFamilyTrovesResp_37006 {
+    required int32 ret = 1;
+    repeated MsgArcheryFamilyTrove familyTroves = 2;
+}
+
+message ArcheryFamilyTroveReceiveReq_37007 {
+    optional int32 activityId = 1;
+    optional int64 uniqueId = 2;
+    optional string ownerPlayerId = 3;
+    optional int32 activityType = 4;
+}
+
+message ArcheryFamilyTroveReceiveResp_37007 {
+    required int32 ret = 1;
+    optional int64 uniqueId = 2;
+    optional int32 receiveNum = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 4;
+}
+
+message ArcheryEnterRewardFieldReq_37008 {
+    optional int32 activityId = 1;
+    optional int32 fieldId = 2;
+    optional int32 activityType = 3;
+}
+
+message ArcheryEnterRewardFieldResp_37008 {
+    required int32 ret = 1;
+    optional MsgArcheryData archeryData = 2;
+}
+
+message ArcheryTargetPositionReq_37009 {
+    optional int32 activityId = 1;
+    repeated MsgArcheryTargetPosition targetPositions = 2;
+    optional int32 activityType = 3;
+}
+
+message ArcheryTargetPositionResp_37009 {
+    required int32 ret = 1;
+    repeated MsgArcheryTarget targets = 2;
+    optional bool inRewardField = 3;
+}
+
+message ArcheryChangeRateTypeReq_37010 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message ArcheryChangeRateTypeResp_37010 {
+    optional int32 ret = 1;
+    optional MsgArcheryData archeryData = 2;
+}
+
+message ArcheryExitRewardFieldReq_37011 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message ArcheryExitRewardFieldResp_37011 {
+    required int32 ret = 1;
+    optional MsgArcheryData archeryData = 2;
+}
+
+message ArcheryCommonFieldUpgradeReq_37012 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message ArcheryCommonFieldUpgradeResp_37012 {
+    required int32 ret = 1;
+    optional MsgArcheryData archeryData = 2;
+}

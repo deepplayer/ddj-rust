@@ -1,0 +1,85 @@
+syntax = "proto2";
+
+package bf.messages.game.TaskMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgMissionData {
+    optional int32 templateId = 1;
+    optional string nowTargetNum = 2;
+    optional int32 status = 3;
+    optional int32 firstTemplateId = 4;
+}
+
+message MsgEverydayMissionData {
+    repeated MsgMissionData msgMissionData = 1;
+    repeated int32 boxId = 2;
+}
+
+message MsgMainAchievementMissionData {
+    repeated MsgMissionData msgMissionData = 1;
+}
+
+message MsgSevenDayMissionData {
+    repeated MsgMissionData msgMissionData = 1;
+}
+
+message MsgMoneySpeedMissionData {
+    repeated MsgMissionData msgMissionData = 1;
+    optional int64 moneySpeedAllRewardTime = 2;
+}
+
+message MsgComebackMissionData {
+    repeated MsgMissionData msgMissionData = 1;
+}
+
+message MsgAllMissionData {
+    optional MsgEverydayMissionData msgEverydayMissionData = 1;
+    optional MsgMainAchievementMissionData msgMainAchievementMissionData = 2;
+    optional MisssionSyncBoomInfoResp_9100 misssionSyncBoomInfoResp_9100 = 3;
+    optional MsgSevenDayMissionData msgSevenDayMissionData = 4;
+    optional MsgMoneySpeedMissionData msgMoneySpeedMissionData = 5;
+    optional MsgComebackMissionData msgComebackMissionData = 6;
+}
+
+message MissionDataUpdateResp_9001 {
+    repeated MsgMissionData msgMissionData = 1;
+}
+
+message MissionGetEverydayMissionReq_9003 {
+}
+
+message MissionGetEverydayMissionResp_9003 {
+    required int32 ret = 1;
+    optional MsgEverydayMissionData msgEverydayMissionData = 2;
+}
+
+message CommitMissionReq_9004 {
+    optional int32 missionTemplateId = 1;
+}
+
+message CommitMissionResp_9004 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message MissionDrawVitalityReq_9006 {
+    optional int32 boxId = 1;
+}
+
+message MissionDrawVitalityResp_9006 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message MisssionSyncBoomInfoResp_9100 {
+    optional int32 level = 1;
+    optional int32 points = 2;
+}
+
+message MissionBoomAwardReq_9101 {
+}
+
+message MissionBoomAwardResp_9101 {
+    required int32 ret = 1;
+}

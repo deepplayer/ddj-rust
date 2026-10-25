@@ -1,0 +1,692 @@
+syntax = "proto2";
+
+package bf.messages.game.ActivityCardHouseMessage;
+
+import "CommonMsgMessage.proto";
+import "GmActivityMessage.proto";
+import "PlayerMessage.proto";
+
+message MsgUnlockCard {
+    optional int32 cardId = 1;
+    optional int32 lv = 2;
+}
+
+message MsgCardSet {
+    optional int32 index = 1;
+    repeated int32 cardId = 2;
+    optional bool isUse = 3;
+}
+
+message MsgGameStart {
+    optional string playerId = 1;
+    optional MsgBattleResult msg = 2;
+    repeated int32 uniqueId = 3;
+    optional string enemyPlayerId = 4;
+}
+
+message MsgBattleRecord {
+    optional int32 tapeId = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgEnemy = 2;
+    optional bool isWin = 3;
+    optional int64 timeStamp = 4;
+}
+
+message MsgBattleField {
+    repeated MsgHand first = 1;
+    repeated MsgHand second = 2;
+    repeated MsgBoard msgBoard = 3;
+}
+
+message MsgHand {
+    optional int32 indexOfHand = 1;
+    optional MsgCard msgCard = 2;
+    repeated MsgEffect msgBuff = 3;
+}
+
+message MsgCard {
+    optional int32 uniqueId = 1;
+    repeated MsgDice msgDice = 2;
+}
+
+message MsgBoard {
+    optional int32 posId = 1;
+    optional MsgCardOfBoard msgCard = 2;
+}
+
+message MsgCardOfBoard {
+    optional MsgCard msgCard = 1;
+    optional bool isOffensive = 2;
+    repeated MsgEffect msgSkill = 3;
+    repeated MsgEffect msgBuff = 4;
+}
+
+message MsgEffect {
+    optional int32 templateId = 1;
+    optional int32 effectCnt = 2;
+}
+
+message MsgBattleResult {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgFirst = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgSecond = 2;
+    optional MsgBattleField initBattleField = 3;
+    repeated MsgBattleTurn msgBattleTurn = 4;
+    optional int64 startTime = 5;
+}
+
+message MsgBattleTurn {
+    required int32 round = 1;
+    repeated MsgWarSituation msgWar = 2;
+    optional int64 thinkingTime = 3;
+}
+
+message MsgWarSituation {
+    optional int32 type = 1;
+    optional bytes data = 2;
+}
+
+message MsgWarSituationType1 {
+    optional int32 indexOfHand = 1;
+    optional int32 posId = 2;
+    optional MsgCardOfBoard msgCard = 3;
+}
+
+message MsgWarSituationType2 {
+    repeated MsgBuffActive msgBuff = 1;
+}
+
+message MsgBuffActive {
+    optional MsgBuff msgBuff = 1;
+    optional MsgEffect msgCorrelation = 2;
+}
+
+message MsgWarSituationType3 {
+    optional int32 posId = 1;
+    optional int32 skillId = 2;
+    optional bytes data = 3;
+}
+
+message MsgTypeSkill12 {
+    repeated MsgPositionChange msgChange = 1;
+}
+
+message MsgPositionChange {
+    optional int32 formerPosId = 1;
+    optional int32 latterPosId = 2;
+}
+
+message MsgTypeSkill13 {
+    repeated MsgHand msgEnemy = 1;
+}
+
+message MsgTypeSkill21 {
+    optional int32 enemyPosId = 1;
+}
+
+message MsgTypeSkill33 {
+    optional int32 enemyPosId = 1;
+}
+
+message MsgWarSituationType4 {
+    repeated MsgFightSegmentation msgFightSegmentation = 1;
+}
+
+message MsgWarSituationType5 {
+    optional int32 posId = 1;
+}
+
+message MsgWarSituationType7 {
+    optional int32 posId = 1;
+    repeated int32 skillId = 2;
+}
+
+message MsgWarSituationType8 {
+    optional int32 posId = 1;
+    repeated MsgEffect msgBuff = 2;
+}
+
+message MsgFightSegmentation {
+    optional MsgDirection msgAtk = 1;
+    optional MsgDirection msgDef = 2;
+}
+
+message MsgDirection {
+    optional int32 posId = 1;
+    optional int32 direction = 2;
+}
+
+message MsgDice {
+    optional int32 direction = 1;
+    optional int32 dice = 2;
+}
+
+message MsgBuff {
+    optional int32 posId = 1;
+    optional int32 buffId = 2;
+}
+
+message MsgCompetitor {
+    optional string playerId = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgEnemy = 2;
+    optional bool isWin = 3;
+    optional bool isOffensive = 4;
+}
+
+message MsgNotify {
+    optional string enemyName = 1;
+    optional bool isWin = 2;
+    optional string score = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 4;
+}
+
+message MsgSettle {
+    optional int32 stageId = 1;
+    optional string score = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgTitle = 4;
+}
+
+message MsgSeat {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 1;
+    optional int32 title = 2;
+    optional bool isOwner = 3;
+    optional bool isReady = 4;
+}
+
+message MsgInviteHist {
+    optional string playerId = 1;
+    optional int64 endTime = 2;
+}
+
+message MsgCardHouseInvite {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 1;
+    optional int64 endTime = 2;
+}
+
+message GetPanelReq_28101 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetPanelResp_28101 {
+    required int32 ret = 1;
+    optional int32 stageId = 2;
+    optional string totalScore = 3;
+    optional bf.messages.game.CommonMsgMessage.MsgResources msgResources = 4;
+    optional MsgNotify msgNotify = 5;
+    optional bf.messages.game.CommonMsgMessage.MsgResources msgReturn = 6;
+}
+
+message GetCardSetReq_28102 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetCardSetResp_28102 {
+    required int32 ret = 1;
+    repeated MsgUnlockCard msgUnlock = 2;
+    repeated MsgCardSet msgCardSet = 3;
+}
+
+message ChangeCardSetReq_28103 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 index = 2;
+    repeated int32 cardId = 3;
+}
+
+message ChangeCardSetResp_28103 {
+    required int32 ret = 1;
+}
+
+message ChooseCardSetReq_28104 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 index = 2;
+    optional bool isUse = 3;
+}
+
+message ChooseCardSetResp_28104 {
+    required int32 ret = 1;
+}
+
+message LevelUpCardReq_28105 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 cardId = 2;
+    optional int32 lv = 3;
+}
+
+message LevelUpCardResp_28105 {
+    required int32 ret = 1;
+}
+
+message GetTaskListReq_28106 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetTaskListResp_28106 {
+    required int32 ret = 1;
+    repeated int32 templateId = 2;
+    optional int32 playCnt = 3;
+    optional int32 winCnt = 4;
+}
+
+message GetTaskAwardReq_28107 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 templateId = 2;
+    optional int32 type = 3;
+}
+
+message GetTaskAwardResp_28107 {
+    required int32 ret = 1;
+    repeated int32 templateId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+}
+
+message GetBattleRecordReq_28108 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetBattleRecordResp_28108 {
+    required int32 ret = 1;
+    repeated MsgBattleRecord msgRecord = 2;
+}
+
+message GetVideoTapeReq_28109 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 tapeId = 2;
+    required int64 timeStamp = 3;
+}
+
+message GetVideoTapeResp_28109 {
+    required int32 ret = 1;
+    optional MsgBattleResult msgBattleResult = 2;
+    repeated MsgBattleRecord msgRecord = 3;
+}
+
+message DoPracticeReq_28110 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message DoPracticeResp_28110 {
+    required int32 ret = 1;
+    optional int32 stageId = 2;
+    optional MsgBattleResult msgResult = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 4;
+}
+
+message PracticeReq_28111 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 indexOfHand = 2;
+    required int32 posId = 3;
+}
+
+message PracticeResp_28111 {
+    required int32 ret = 1;
+    repeated MsgBattleTurn msgBattleTurn = 2;
+    optional MsgSettle msgSettle = 3;
+}
+
+message StartMatchReq_28112 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message StartMatchResp_28112 {
+    required int32 ret = 1;
+}
+
+message CancelMatchReq_28113 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message CancelMatchResp_28113 {
+    required int32 ret = 1;
+}
+
+message NotifyGameStartResp_28114 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional MsgBattleResult msgBattleResult = 2;
+}
+
+message NotifyPlayResultResp_28115 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated MsgBattleTurn msgBattleTurn = 2;
+    optional MsgSettle msgSettle = 3;
+}
+
+message PutCardReq_28116 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 indexOfHand = 2;
+    required int32 posId = 3;
+}
+
+message PutCardResp_28116 {
+    required int32 ret = 1;
+    repeated MsgBattleTurn msgBattleTurn = 2;
+    optional MsgSettle msgSettle = 3;
+}
+
+message GetPlayRecordReq_28117 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 round = 2;
+}
+
+message GetPlayRecordResp_28117 {
+    required int32 ret = 1;
+    optional MsgBattleResult msgBattleResult = 2;
+}
+
+message ChatReq_28118 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 emoji = 2;
+}
+
+message ChatResp_28118 {
+    required int32 ret = 1;
+    optional string toPlayerId = 2;
+    optional int32 emoji = 3;
+}
+
+message StartMatchCsRemote_28119 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional int32 title = 3;
+    repeated int32 uniqueId = 4;
+}
+
+message StartMatchGsRemote_28119 {
+    required int32 ret = 1;
+}
+
+message CancelMatchCsRemote_28120 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message CancelMatchGsRemote_28120 {
+    required int32 ret = 1;
+}
+
+message NotifyPlayResultGsRemote_28121 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional string enemyPlayerName = 3;
+    repeated MsgBattleTurn msgBattleTurn = 4;
+    optional bool isComplete = 5;
+    optional bool isWin = 6;
+    repeated int32 uniqueId = 7;
+    optional string enemyPlayerId = 8;
+    optional bool isCrossPvp = 9;
+}
+
+message PutCardCsRemote_28122 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    required int32 indexOfHand = 3;
+    required int32 posId = 4;
+}
+
+message PutCardGsRemote_28122 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+    optional string playerId = 3;
+    repeated MsgBattleTurn msgBattleTurn = 4;
+    optional bool isComplete = 5;
+    optional bool isWin = 6;
+    repeated int32 uniqueId = 7;
+    optional string enemyPlayerId = 8;
+    optional bool isCrossPvp = 9;
+}
+
+message GetPlayRecordCsRemote_28123 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int32 round = 3;
+}
+
+message GetPlayRecordGsRemote_28123 {
+    optional string playerId = 1;
+    optional GetPlayRecordResp_28117 msg = 2;
+}
+
+message ChatCsRemote_28124 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int32 emoji = 3;
+}
+
+message ChatGsRemote_28124 {
+    required int32 ret = 1;
+    optional string toPlayerId = 2;
+    optional int32 emoji = 3;
+}
+
+message ForceStopGsRemote_28125 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated string playerId = 2;
+}
+
+message BatchNotifyGameStartGsRemote_28126 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated MsgGameStart msgStart = 2;
+}
+
+message NotifyBattleReportGsRemote_28127 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string initHand = 2;
+    optional string initBoard = 3;
+    optional string report = 4;
+    repeated MsgCompetitor msgCompetitor = 5;
+    optional int64 timeStamp = 6;
+}
+
+message CheckGamingCsRemote_28128 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message CheckGamingGsRemote_28128 {
+    required int32 ret = 1;
+    optional bool isGaming = 2;
+    optional int32 failCnt = 3;
+    optional bool isMatching = 4;
+}
+
+message CreateRoomReq_28129 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message CreateRoomResp_28129 {
+    required int32 ret = 1;
+    repeated MsgSeat msgSeat = 2;
+}
+
+message GetInviteColdTimeReq_28130 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetInviteColdTimeResp_28130 {
+    required int32 ret = 1;
+    repeated MsgInviteHist msgHist = 2;
+}
+
+message InviteReq_28131 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required string toPlayerId = 2;
+}
+
+message InviteResp_28131 {
+    required int32 ret = 1;
+    optional int64 timeStamp = 2;
+}
+
+message NotifyInvitationResp_28132 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message InviteOsRemote_28133 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required string playerId = 2;
+    optional string ownerPlayerId = 3;
+}
+
+message InviteGsRemote_28133 {
+    required int32 ret = 1;
+}
+
+message GetInviteReq_28134 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetInviteResp_28134 {
+    required int32 ret = 1;
+    repeated MsgCardHouseInvite msgInvite = 2;
+}
+
+message DealWithInviteReq_28135 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required string playerId = 2;
+}
+
+message DealWithInviteResp_28135 {
+    required int32 ret = 1;
+    repeated MsgSeat msgSeat = 2;
+}
+
+message AcceptOsRemote_28136 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional int32 title = 3;
+    optional string ownerPlayerId = 4;
+}
+
+message AcceptGsRemote_28136 {
+    required int32 ret = 1;
+    repeated MsgSeat msgSeat = 2;
+}
+
+message NotifyRoomResp_28137 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated MsgSeat msgSeat = 2;
+}
+
+message SetReadyReq_28138 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bool isReady = 2;
+}
+
+message SetReadyResp_28138 {
+    required int32 ret = 1;
+}
+
+message SetReadyOsRemote_28139 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bool isReady = 2;
+    optional string ownerPlayerId = 3;
+    optional string playerId = 4;
+}
+
+message SetReadyGsRemote_28139 {
+    required int32 ret = 1;
+}
+
+message QuitReq_28140 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message QuitResp_28140 {
+    required int32 ret = 1;
+}
+
+message QuitOsRemote_28141 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required string ownerPlayerId = 2;
+    required string playerId = 3;
+}
+
+message QuitGsRemote_28141 {
+    required int32 ret = 1;
+}
+
+message DismissRoomOsRemote_28142 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required string ownerPlayerId = 2;
+    required string playerId = 3;
+}
+
+message DismissRoomGsRemote_28142 {
+    required int32 ret = 1;
+}
+
+message StartFightReq_28143 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message StartFightResp_28143 {
+    required int32 ret = 1;
+}
+
+message GetOtherCardSetOsRemote_28144 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required string playerId = 2;
+}
+
+message GetOtherCardSetGsRemote_28144 {
+    required int32 ret = 1;
+    repeated int32 uniqueId = 2;
+}
+
+message ChatOsRemote_28145 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string ownerPlayerId = 2;
+    optional string playerId = 3;
+    optional int32 emoji = 4;
+    optional bool isSendOwner = 5;
+}
+
+message ChatGsRemote_28145 {
+    required int32 ret = 1;
+}
+
+message PutCardOsRemote_28146 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string ownerPlayerId = 2;
+    optional string playerId = 3;
+    required int32 indexOfHand = 4;
+    required int32 posId = 5;
+}
+
+message GetPlayRecordOsRemote_28147 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string ownerPlayerId = 2;
+    optional string playerId = 3;
+    optional int32 round = 4;
+}
+
+message CheckGamingOsRemote_28148 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string ownerPlayerId = 2;
+    optional string playerId = 3;
+}
+
+message CheckGamingGsRemote_28148 {
+    required int32 ret = 1;
+    optional bool isGaming = 2;
+}
+
+message StartPrivateGameOsRemote_28149 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional MsgBattleResult msg = 3;
+}
+
+message NotifyRoomOsRemote_28150 {
+    optional NotifyRoomResp_28137 msg = 1;
+    optional string playerId = 2;
+}
+
+message CheckRoomStateOsRemote_28151 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string ownerPlayerId = 2;
+    optional string playerId = 3;
+}
+
+message CheckRoomStateGsRemote_28151 {
+    required int32 ret = 1;
+}

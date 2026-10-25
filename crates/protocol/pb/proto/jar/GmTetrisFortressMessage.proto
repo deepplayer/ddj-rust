@@ -1,0 +1,293 @@
+syntax = "proto2";
+
+package bf.messages.game.GmTetrisFortressMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgTetrisFortressTemplateData {
+    repeated MsgTetrisFortressLevelRewardDb levelDbs = 1;
+    repeated MsgTetrisFortressAchieveRewardDb achieveDbs = 2;
+}
+
+message MsgTetrisFortressLevelRewardDb {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 checkpointId = 3;
+    optional string reward3 = 4;
+    optional string reward2 = 5;
+    optional string reward1 = 6;
+    optional string reward = 7;
+    optional string random = 8;
+    optional string reward4 = 9;
+}
+
+message MsgTetrisFortressAchieveRewardDb {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 taskId = 3;
+    optional int32 awardType = 4;
+    optional int32 integral = 5;
+    optional string reward = 6;
+}
+
+message MsgTetrisFortressPlayerData {
+    repeated MsgTetrisStage stages = 1;
+    repeated int32 gainTaskIds = 2;
+    repeated MsgTetrisSkill skills = 3;
+    optional int32 npcLv = 4;
+    optional int32 npcExp = 5;
+    optional MsgTetrisFortressGameData gameData = 6;
+}
+
+message MsgTetrisStage {
+    optional int32 stageId = 1;
+    optional int32 topStar = 2;
+}
+
+message MsgTetrisSkill {
+    optional int32 skillId = 1;
+    optional int32 lv = 2;
+}
+
+message MsgTetrisFortressGameData {
+    optional int32 stageId = 1;
+    repeated MsgTetrisBlock blocks = 2;
+    optional MsgTetrisFallingPiece fallingPiece = 3;
+    repeated MsgTetrisNpc soldiers = 4;
+    optional int32 curHp = 5;
+    optional int32 fullHp = 6;
+    repeated MsgTetrisItemUseNum useItems = 7;
+    repeated MsgTetrisNpc enemies = 8;
+    optional int32 round = 9;
+    optional int64 coming = 10;
+    optional int32 status = 11;
+    repeated MsgTetrisNpc superSoldiers = 12;
+    optional MsgTetrisNpcBattleMoment battleMoment = 13;
+}
+
+message MsgTetrisBlock {
+    optional int32 blockId = 1;
+    optional int32 blockType = 2;
+    optional int32 x = 3;
+    optional int32 y = 4;
+    optional bool empty = 5;
+}
+
+message MsgTetrisFallingPiece {
+    optional int32 blockId = 1;
+    repeated MsgTetrisBlock blocks = 2;
+    optional int32 dir = 3;
+}
+
+message MsgTetrisNpc {
+    optional int32 npcId = 1;
+    optional int32 npcType = 2;
+    optional int32 hp = 3;
+    optional int32 speed = 4;
+    optional int32 uniqueId = 5;
+    optional int64 joinMillis = 6;
+    optional int32 fullHp = 7;
+}
+
+message MsgTetrisItemUseNum {
+    optional int32 itemId = 1;
+    optional int32 num = 2;
+}
+
+message MsgTetrisElimination {
+    repeated int32 clearYs = 1;
+    optional MsgTetrisFallingPiece fallingPiece = 2;
+    repeated MsgTetrisBlock soldierBlocks = 3;
+    optional int32 comboCount = 4;
+    optional int32 addPower = 5;
+}
+
+message MsgTetrisNpcBattleMoment {
+    optional int32 selfUniqueId = 1;
+    optional int32 enemyUniqueId = 2;
+    optional int64 meetMillis = 3;
+    optional int32 selfNpcType = 4;
+}
+
+message TetrisFortressStartReq_34121 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 stageId = 3;
+}
+
+message TetrisFortressStartResp_34121 {
+    required int32 ret = 1;
+    optional int32 activityType = 2;
+    optional int32 activityId = 3;
+    optional MsgTetrisFortressGameData gameData = 4;
+}
+
+message TetrisFortressStopReq_34122 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 stageId = 3;
+}
+
+message TetrisFortressStopResp_34122 {
+    required int32 ret = 1;
+    optional int32 activityType = 2;
+    optional int32 activityId = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 4;
+    optional int32 star = 5;
+    optional int32 hp = 6;
+    optional int32 kills = 7;
+    optional int32 addExp = 8;
+    optional int32 originLv = 9;
+    optional int32 originExp = 10;
+    optional int32 newStageId = 11;
+    optional bool newRecord = 12;
+    optional int32 stageId = 13;
+    optional MsgTetrisFortressPlayerData playerData = 15;
+}
+
+message TetrisMovePieceReq_34123 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 startX = 3;
+    optional int32 startY = 4;
+    optional int32 endX = 5;
+    optional int32 endY = 6;
+}
+
+message TetrisMovePieceResp_34123 {
+    required int32 ret = 1;
+    optional MsgTetrisFortressGameData gameData = 4;
+}
+
+message TetrisFortressRotateReq_34124 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 x = 3;
+    optional int32 y = 4;
+}
+
+message TetrisFortressRotateResp_34124 {
+    required int32 ret = 1;
+    optional MsgTetrisFortressGameData gameData = 4;
+}
+
+message TetrisFortressFallEndReq_34125 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 x = 3;
+    optional int32 y = 4;
+    optional int32 dir = 5;
+}
+
+message TetrisFortressFallEndResp_34125 {
+    required int32 ret = 1;
+    optional MsgTetrisElimination elimination = 2;
+    optional bool deadGame = 3;
+    optional MsgTetrisFortressGameData gameData = 4;
+}
+
+message TetrisFortressWipeOutReq_34130 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 stageId = 3;
+    optional int32 times = 4;
+}
+
+message TetrisFortressWipeOutResp_34130 {
+    required int32 ret = 1;
+    optional MsgTetrisFortressPlayerData playerData = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 4;
+    optional int32 kills = 7;
+    optional int32 addExp = 8;
+    optional int32 originLv = 9;
+    optional int32 originExp = 10;
+}
+
+message TetrisFortressUseItemReq_34131 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 itemId = 3;
+}
+
+message TetrisFortressUseItemResp_34131 {
+    required int32 ret = 1;
+    optional int32 itemId = 2;
+    optional MsgTetrisFortressGameData gameData = 4;
+    repeated int32 enemyUniqueIds = 5;
+}
+
+message TetrisFortressBattleReq_34132 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 soliderUniqueId = 3;
+    optional int32 enemyUniqueId = 4;
+}
+
+message TetrisFortressBattleResp_34132 {
+    required int32 ret = 1;
+    optional int32 result = 2;
+    optional MsgTetrisNpc soldier = 3;
+    optional MsgTetrisNpc enemy = 4;
+    optional MsgTetrisFortressGameData gameData = 5;
+}
+
+message TetrisFortressBeAttackReq_34133 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 enemyUniqueId = 4;
+}
+
+message TetrisFortressBeAttackResp_34133 {
+    required int32 ret = 1;
+    optional int32 enemyUniqueId = 2;
+    optional int32 hp = 3;
+}
+
+message TetrisFortressMarchReq_34134 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 soliderUniqueId = 3;
+}
+
+message TetrisFortressMarchResp_34134 {
+    required int32 ret = 1;
+    optional int32 soliderUniqueId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+}
+
+message TetrisSkillUpgradeReq_34135 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 skillId = 3;
+}
+
+message TetrisSkillUpgradeResp_34135 {
+    required int32 ret = 1;
+    repeated MsgTetrisSkill skills = 2;
+    optional int32 skillId = 3;
+}
+
+message TetrisFortressAddNpcPushResp_34136 {
+    required int32 ret = 1;
+    optional MsgTetrisNpc npc = 2;
+    optional MsgTetrisFortressGameData gameData = 10;
+}
+
+message TetrisFortressStopPushResp_34137 {
+    required int32 ret = 1;
+    optional bool win = 2;
+}
+
+message TetrisFortressTaskReq_34138 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 taskId = 3;
+}
+
+message TetrisFortressTaskResp_34138 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 activityType = 3;
+    repeated int32 gainTaskIds = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 5;
+}

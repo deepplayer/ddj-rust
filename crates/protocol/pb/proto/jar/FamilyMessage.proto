@@ -1,0 +1,471 @@
+syntax = "proto2";
+
+package bf.messages.game.FamilyMessage;
+
+import "CommonMsgMessage.proto";
+import "PlayerMessage.proto";
+import "HomelandMessage.proto";
+
+message MsgFamilyData {
+    repeated int32 updateFieldsList = 90;
+    optional int64 familyId = 1;
+    optional string name = 2;
+    optional int32 iconId = 3;
+    optional string declaration = 4;
+    optional string notice = 5;
+    optional int32 autoJoin = 6;
+    optional string patriarchId = 7;
+    optional string patriarchName = 8;
+    optional int32 memberCnt = 9;
+    optional string money = 10;
+    optional int32 level = 11;
+    optional int32 exp = 12;
+    optional int32 rank = 13;
+    optional int64 donateResetTime = 14;
+    optional int32 donateNum = 15;
+    optional int64 forbitEditTime = 16;
+    optional string qq = 17;
+    optional string wx = 18;
+    optional int32 serverId = 19;
+    optional int64 qqCoolingTime = 20;
+    optional int64 wxCoolingTime = 21;
+    optional int64 dissolutionFamilyTime = 22;
+}
+
+message MsgLastExitFamilyInfo {
+    optional int64 id = 1;
+    optional string name = 2;
+    optional int32 icoId = 3;
+}
+
+message MsgFamilyMemberData {
+    repeated int32 updateFieldsList = 90;
+    optional int64 familyId = 1;
+    optional string memberId = 2;
+    repeated int32 fashionIds = 3;
+    optional int32 viplv = 4;
+    optional string name = 5;
+    optional string money = 6;
+    optional int32 job = 7;
+    optional int64 lastExitTime = 8;
+    optional int64 offline = 9;
+    optional int32 npcSex = 10;
+    optional int32 lv = 11;
+    optional string historyContribution = 12;
+    optional int32 sex = 13;
+    optional int64 lastDonateTime = 14;
+    optional int32 lastDonateType = 15;
+    optional bf.messages.game.CommonMsgMessage.MsgAddress address = 16;
+    repeated int64 lastDonateTimes = 17;
+    optional int32 monthCard = 18;
+    optional MsgLastExitFamilyInfo lastExitFamilyInfo = 19;
+}
+
+message MsgFamilyJoinData {
+    optional string memberId = 1;
+    optional string name = 2;
+    optional int32 lv = 3;
+    optional int32 viplv = 4;
+    optional string money = 5;
+    repeated int32 fashionIds = 6;
+    optional int64 joinTime = 7;
+    optional int32 sex = 8;
+    optional bf.messages.game.CommonMsgMessage.MsgAddress address = 9;
+    optional int32 monthCard = 10;
+    optional int32 npcSex = 11;
+}
+
+message MsgFamilyLoginData {
+    optional MsgFamilyMemberData msgFamilyMemberData = 1;
+    repeated MsgFamilyJoinData msgFamilyJoinData = 2;
+}
+
+message MsgFamilyEventData {
+    optional int32 event = 1;
+    optional int64 familyId = 2;
+    optional string name = 3;
+    optional int64 time = 4;
+    optional int32 job = 5;
+    optional int32 familyIco = 6;
+    optional int32 preLv = 7;
+    optional string playerName = 8;
+}
+
+message MsgCrossFamilyData {
+    repeated int32 updateFieldsList = 90;
+    optional int64 familyId = 1;
+    optional string familyName = 2;
+    optional int32 icon = 3;
+    optional int32 serverId = 4;
+    optional string totalMoney = 5;
+    optional int32 memberCnt = 6;
+    optional string ownerName = 7;
+    optional int32 lv = 8;
+}
+
+message MsgFamilySimpleInfo {
+    optional int64 familyId = 1;
+    optional string name = 2;
+    optional int32 iconId = 3;
+    optional string declaration = 4;
+    optional string patriarchId = 7;
+    optional string patriarchName = 8;
+    optional int32 memberCnt = 9;
+    optional string money = 10;
+    optional int32 level = 11;
+    optional int32 serverId = 12;
+}
+
+message MsgFamilyMemberSimpleInfo {
+    optional string memberId = 2;
+    repeated int32 fashionIds = 3;
+    optional int32 viplv = 4;
+    optional string name = 5;
+    optional string money = 6;
+    optional int32 job = 7;
+    optional int32 lv = 11;
+    optional int32 sex = 13;
+    optional int32 npcSex = 14;
+    optional bf.messages.game.CommonMsgMessage.MsgAddress address = 16;
+}
+
+message MsgRedPacketGainRecord {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 1;
+    optional int32 num = 2;
+    optional int64 time = 3;
+}
+
+message MsgFamilyDataResp_6001 {
+    optional MsgFamilyData familyData = 1;
+}
+
+message MsgFamilyMemberDataResp_6002 {
+    repeated MsgFamilyMemberData familyMemberData = 1;
+}
+
+message FamilyCreateReq_6003 {
+    optional string name = 1;
+    optional int32 iconId = 2;
+    optional string declaration = 3;
+    optional string notice = 4;
+    optional int32 autoJoin = 5;
+}
+
+message FamilyCreateResp_6003 {
+    required int32 ret = 1;
+}
+
+message FamilyJoinReq_6004 {
+    optional int64 familyId = 1;
+}
+
+message FamilyJoinResp_6004 {
+    required int32 ret = 1;
+    optional string familyName = 2;
+    optional MsgFamilyMemberData msgFamilyMemberData = 3;
+}
+
+message FamilySearchReq_6005 {
+    optional string condition = 1;
+}
+
+message FamilySearchResp_6005 {
+    required int32 ret = 1;
+    optional MsgFamilyData familyData = 2;
+}
+
+message FamilyExitReq_6006 {
+}
+
+message FamilyExitResp_6006 {
+    required int32 ret = 1;
+}
+
+message FamilyReq_6008 {
+}
+
+message FamilyResp_6008 {
+    required int32 ret = 1;
+    optional MsgFamilyData family = 2;
+    repeated MsgFamilyMemberData members = 3;
+    repeated int64 familyIds = 4;
+    repeated bf.messages.game.HomelandMessage.MsgFamilyManor manors = 5;
+}
+
+message FamilyDismissReq_6009 {
+    optional string memberId = 1;
+}
+
+message FamilyDismissResp_6009 {
+    required int32 ret = 1;
+    optional string memberId = 2;
+}
+
+message FamilyAppointReq_6010 {
+    optional string memberId = 1;
+    optional int32 job = 2;
+}
+
+message FamilyAppointResp_6010 {
+    required int32 ret = 1;
+}
+
+message FamilyTransferReq_6011 {
+    optional string memberId = 1;
+}
+
+message FamilyTransferResp_6011 {
+    required int32 ret = 1;
+}
+
+message FamilyDissolutionReq_6012 {
+}
+
+message FamilyDissolutionResp_6012 {
+    required int32 ret = 1;
+}
+
+message FamilyDeclarationReq_6013 {
+    optional string declaration = 1;
+}
+
+message FamilyDeclarationResp_6013 {
+    required int32 ret = 1;
+}
+
+message FamilyNoticeReq_6014 {
+    optional string notice = 1;
+}
+
+message FamilyNoticeResp_6014 {
+    required int32 ret = 1;
+}
+
+message FamilyJoinListReq_6015 {
+}
+
+message FamilyJoinListResp_6015 {
+    required int32 ret = 1;
+    repeated MsgFamilyJoinData joins = 2;
+}
+
+message FamilyAllowJoinReq_6016 {
+    optional string playerId = 1;
+}
+
+message FamilyAllowJoinResp_6016 {
+    required int32 ret = 1;
+    optional int32 allowNum = 2;
+}
+
+message FamilyRefuseJoinReq_6017 {
+    optional string playerId = 1;
+}
+
+message FamilyRefuseJoinResp_6017 {
+    required int32 ret = 1;
+}
+
+message FamilyAutoJoinReq_6018 {
+    optional int32 autoJoin = 1;
+}
+
+message FamilyAllowJoinResp_6018 {
+    required int32 ret = 1;
+}
+
+message FamilyNameReq_6019 {
+    optional string name = 1;
+}
+
+message FamilyNameResp_6019 {
+    required int32 ret = 1;
+}
+
+message FamilyAddJoinResp_6020 {
+    optional MsgFamilyJoinData msgFamilyJoinData = 1;
+}
+
+message FamilyDelJoinResp_6021 {
+    repeated string memberIds = 1;
+}
+
+message FamilyEventResp_6022 {
+    optional MsgFamilyEventData msgFamilyEventData = 1;
+}
+
+message FamilyEventListReq_6023 {
+}
+
+message FamilyEventListResp_6023 {
+    required int32 ret = 1;
+    optional MsgFamilyEventData msgFamilyEventData = 2;
+}
+
+message ReadFamilyEventReq_6024 {
+    optional int32 event = 1;
+}
+
+message ReadFamilyEventResp_6024 {
+    required int32 ret = 1;
+}
+
+message FamilyDelPlayerJoinRequestResp_6025 {
+    repeated int64 familyIds = 1;
+}
+
+message ShowFamilyReq_6026 {
+    optional int64 familyId = 1;
+}
+
+message ShowFamilyResp_6026 {
+    required int32 ret = 1;
+    optional MsgFamilyData familyData = 2;
+}
+
+message FamilyDonateReq_6027 {
+    optional int32 donateType = 1;
+}
+
+message FamilyDonateResp_6027 {
+    required int32 ret = 1;
+}
+
+message CrossFamilyGetReq_6028 {
+    repeated int64 familyId = 1;
+}
+
+message CrossFamilyGetResp_6028 {
+    required int32 ret = 1;
+    repeated MsgFamilyData msgFamilyData = 2;
+}
+
+message FamilyModifyQQReq_6029 {
+    optional string qq = 1;
+}
+
+message FamilyModifyQQResp_6029 {
+    required int32 ret = 1;
+    optional string qq = 2;
+}
+
+message FamilyModifyWXReq_6030 {
+    optional string wx = 1;
+}
+
+message FamilyModifyWXResp_6030 {
+    required int32 ret = 1;
+    optional string wx = 2;
+}
+
+message MsgQueryFamilySimpleInfoReq_6031 {
+    optional int64 familyId = 1;
+}
+
+message MsgQueryFamilySimpleInfoResp_6031 {
+    required int32 ret = 1;
+    optional MsgFamilySimpleInfo family = 2;
+    repeated MsgFamilyMemberSimpleInfo members = 3;
+}
+
+message MsgQueryActivityFamilySimpleInfoReq_6032 {
+    optional int64 familyId = 1;
+    optional int32 rankType = 2;
+    optional int32 activityId = 3;
+}
+
+message MsgQueryActivityFamilySimpleInfoResp_6032 {
+    required int32 ret = 1;
+    optional MsgFamilySimpleInfo family = 2;
+    repeated MsgFamilyMemberSimpleInfo members = 3;
+}
+
+message MsgSendRedPacketReq_6033 {
+    optional int32 templateId = 1;
+    optional int32 descIndex = 2;
+}
+
+message MsgSendRedPacketResp_6033 {
+    required int32 ret = 1;
+}
+
+message MsgOpenRedPacketReq_6034 {
+    optional int64 id = 1;
+}
+
+message MsgOpenRedPacketResp_6034 {
+    required int32 ret = 1;
+    required int32 status = 2;
+    optional int32 num = 3;
+    optional int32 templateId = 5;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 6;
+    optional int32 descIndex = 7;
+}
+
+message MsgQueryRedPacketGainRecordReq_6035 {
+    optional int64 id = 1;
+}
+
+message MsgQueryRedPacketGainRecordResp_6035 {
+    required int32 ret = 1;
+    repeated MsgRedPacketGainRecord records = 2;
+    optional int32 gainNum = 3;
+    optional int32 surplusNum = 4;
+    optional int32 templateId = 5;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 6;
+    optional int32 descIndex = 7;
+}
+
+message MsgQueryRedPacketChatStatusReq_6036 {
+    repeated int64 id = 1;
+}
+
+message MsgQueryRedPacketChatStatusResp_6036 {
+    required int32 ret = 1;
+    repeated int64 id = 2;
+    repeated int32 status = 3;
+}
+
+message MsgAddOrDeleteCanGainRedPacketIdPushResp_6037 {
+    optional int32 type = 1;
+    optional int64 id = 2;
+}
+
+message MsgQueryCanGainIdsReq_6038 {
+}
+
+message MsgQueryCanGainIdsResp_6038 {
+    required int32 ret = 1;
+    repeated int64 redPacketId = 2;
+}
+
+message MsgIsPushFamilyInfoReq_6039 {
+}
+
+message MsgIsPushFamilyInfoResp_6039 {
+    required int32 ret = 1;
+    optional bool isPushFamilyInfo = 2;
+}
+
+message FamilyCancelDissolutionReq_6040 {
+}
+
+message FamilyCancelDissolutionResp_6040 {
+    required int32 ret = 1;
+}
+
+message FamilyDissolutionResultReq_6041 {
+}
+
+message FamilyDissolutionResultResp_6041 {
+    required int32 ret = 1;
+    optional bool isSuccessDissolutionFamily = 2;
+}
+
+message FamilyModifyIcomReq_6042 {
+    optional int32 iconId = 1;
+}
+
+message FamilyModifyIcomResp_6042 {
+    required int32 ret = 1;
+}

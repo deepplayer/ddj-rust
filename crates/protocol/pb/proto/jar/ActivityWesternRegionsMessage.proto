@@ -1,0 +1,1133 @@
+syntax = "proto2";
+
+package bf.messages.game.ActivityWesternRegionsMessage;
+
+import "CommonMsgMessage.proto";
+import "FamilyMessage.proto";
+import "FestivalMessage.proto";
+import "GmActivityMessage.proto";
+import "PlayerMessage.proto";
+import "RankingMessage.proto";
+
+message MsgPass {
+    optional int32 lv = 1;
+    optional bool isFree = 2;
+    optional bool isPay = 3;
+}
+
+message MsgSettled {
+    optional int32 countryId = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+}
+
+message MsgFamilyMember {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 1;
+    optional bool isSign = 2;
+    optional string reputation = 3;
+    optional string playerJade = 4;
+    optional int32 declareCnt = 5;
+}
+
+message MsgDeclareBrief {
+    optional int64 uniqueId = 1;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData fromFamily = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData toFamily = 3;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 4;
+    optional int32 type = 5;
+    optional int64 declareTime = 6;
+    optional string robJade = 7;
+    optional int32 freeCnt = 8;
+    optional string loseJade = 9;
+    optional bool isLimit = 10;
+}
+
+message MsgDeclareDetail {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser fromPlayer = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser toPlayer = 2;
+    optional int32 type = 3;
+    optional string robJade = 4;
+    optional int64 timeStamp = 5;
+}
+
+message MsgDeclareHist {
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData fromFamily = 1;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData toFamily = 2;
+    optional bool isDeclare = 3;
+    optional int32 type = 4;
+    optional string reputation = 5;
+    optional string robJade = 6;
+    optional int64 timeStamp = 7;
+    optional string toPlayerId = 8;
+    optional string toPlayerName = 9;
+}
+
+message MsgDeclarePlayer {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgUser = 1;
+    optional string playerJade = 2;
+    optional int32 challengeCnt = 3;
+    optional int32 pursuitCnt = 4;
+}
+
+message MsgDeclareList {
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgFamily = 1;
+    optional string familyJade = 2;
+    optional int32 familyRank = 3;
+    optional bool isDeclare = 4;
+}
+
+message MsgEvent {
+    optional int32 eventId = 1;
+    optional MsgEventMonster msgEventMonster = 2;
+    optional MsgEventPlayer msgEventPlayer = 3;
+    optional MsgEventBusinessman msgEventBusinessman = 4;
+}
+
+message MsgEventMonster {
+    optional string curHp = 1;
+    optional string maxHp = 2;
+    optional bool isFish = 3;
+}
+
+message MsgEventPlayer {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgUser = 1;
+    optional int32 playerRank = 2;
+    optional int32 familyRank = 3;
+    repeated MsgTalent msgTalent = 4;
+    optional int32 countryId = 5;
+}
+
+message MsgEventBusinessman {
+    repeated int32 giftId = 1;
+}
+
+message MsgTalent {
+    repeated int32 updateFieldsList = 99;
+    optional int32 talentId = 1;
+    optional int32 lv = 2;
+    optional int32 degree = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgTalentSkin skinIds = 4;
+    optional int32 usedSkinId = 5;
+    optional string money = 6;
+    optional int32 winCnt = 7;
+}
+
+message MsgSkill {
+    optional int32 id = 1;
+    optional int64 exp = 2;
+}
+
+message MsgMarkNpc {
+    optional int32 id = 1;
+    optional string toPlayerId = 2;
+    optional string toPlayerName = 3;
+    optional string curHp = 4;
+    optional string maxHp = 5;
+    optional int64 timeStamp = 6;
+    optional int64 lastTime = 7;
+}
+
+message MsgMarkLuBan {
+    optional int32 id = 1;
+    optional string toPlayerId = 2;
+    optional string toPlayerName = 3;
+    optional int64 timeStamp = 4;
+    optional int64 lastTime = 5;
+    repeated bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 6;
+}
+
+message MsgEnergy {
+    optional int64 id = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 2;
+    optional int32 giftId = 3;
+    optional int32 num = 4;
+    optional int64 timeStamp = 5;
+    optional bool isGain = 6;
+}
+
+message MsgTransferItem {
+    optional int32 templateId = 1;
+    optional int64 num = 2;
+    optional string score = 3;
+}
+
+message MsgDefenceHist {
+    optional int64 id = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 2;
+    optional int32 type = 3;
+    optional int32 winCnt = 4;
+    optional string familyJade = 5;
+    optional bool isFightBack = 6;
+    optional int64 timeStamp = 7;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData msgPvPBattleData = 8;
+}
+
+message MsgHelp {
+    optional int32 eventId = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 2;
+    optional string reputation = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 4;
+    optional int64 timeStamp = 5;
+}
+
+message MsgMoney {
+    optional string playerId = 1;
+    repeated MsgTalent msgTalent = 2;
+    optional string money = 3;
+}
+
+message MsgWesternRegionsBattleExtra {
+    optional string damage = 1;
+    optional string curHp = 2;
+    repeated bool isWin = 3;
+    optional string scoreOfMine = 4;
+    optional string scoreOfEnemy = 5;
+}
+
+message MsgFamilyJade {
+    optional int64 familyId = 1;
+    optional string fakeJade = 2;
+}
+
+message MsgOneKeyResult {
+    optional int32 eventId = 1;
+    optional int32 onlyId = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData msgPvPBattleData = 3;
+    optional string reputationGain = 4;
+    optional string jadeGain = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 6;
+    optional bool isMark = 7;
+    optional bool isEscape = 8;
+}
+
+message MsgGsOneKeyResult {
+    optional MsgEvent msgExplore = 1;
+    optional MsgEvent msgAuto = 2;
+    optional int32 onlyId = 3;
+    optional int32 winCnt = 4;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData msgPvPBattleData = 5;
+    repeated MsgSkill msgSkillBrief = 6;
+    optional string reputationGain = 7;
+    optional string jadeGain = 8;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 9;
+    optional bool isMark = 10;
+    optional bool isEscape = 11;
+    optional int32 fromPlayerRank = 12;
+    optional string fromReputation = 13;
+    optional int32 familyRank = 14;
+    optional string familyJade = 15;
+    optional string fromJade = 16;
+    optional int32 countryId = 17;
+    optional int32 settleAdd = 18;
+    optional int32 skillAdd = 19;
+    optional int64 toFamilyId = 20;
+    optional string toJade = 21;
+    optional string toFamilyJade = 22;
+    optional string toPlayerId = 23;
+    optional MsgFamilyJade msgFamilyJade = 24;
+    optional MsgMarkNpc msgMarkNpc = 25;
+    optional MsgMarkLuBan msgMarkLuBan = 26;
+}
+
+message SignUpReq_27401 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message SignUpResp_27401 {
+    required int32 ret = 1;
+}
+
+message GetPassReq_27402 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 type = 2;
+}
+
+message GetPassResp_27402 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+    optional int32 lv = 3;
+    optional int32 exp = 4;
+    optional bool isBuy = 5;
+    optional int32 lvLimit = 6;
+    repeated MsgPass msgPass = 7;
+}
+
+message GainPassAwardReq_27403 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 type = 2;
+    optional int32 lv = 3;
+    optional bool isOneKey = 4;
+}
+
+message GainPassAwardResp_27403 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+    repeated MsgPass msgPass = 4;
+}
+
+message GetSettledReq_27404 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetSettledResp_27404 {
+    required int32 ret = 1;
+    repeated MsgSettled msgSettled = 2;
+    optional int32 playerRank = 3;
+    optional string reputation = 4;
+    optional string familyJade = 5;
+    optional int32 personalSkill = 6;
+    optional int32 settledSkill = 7;
+    optional int64 declareEndTime = 8;
+    optional int64 changeTime = 9;
+}
+
+message GetSettledPlayerReq_27405 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 countryId = 2;
+    required string toPlayerId = 3;
+}
+
+message GetSettledPlayerResp_27405 {
+    required int32 ret = 1;
+    optional int32 countryId = 2;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 3;
+    optional int32 playerRank = 4;
+    optional string reputation = 5;
+    optional int64 changeTime = 6;
+}
+
+message GetFamilyMemberReq_27406 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetFamilyMemberResp_27406 {
+    required int32 ret = 1;
+    repeated MsgFamilyMember msgFamilyMember = 2;
+}
+
+message SearchReq_27407 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string toPlayerId = 2;
+}
+
+message SearchResp_27407 {
+    required int32 ret = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional string playerJade = 3;
+    optional string robFamilyJade = 4;
+    repeated MsgTalent msgTalent = 5;
+}
+
+message getEnemyReq_27408 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 type = 2;
+    optional string toPlayerId = 3;
+    optional int64 toFamilyId = 4;
+    optional int64 id = 5;
+    optional bool isChallenge = 6;
+}
+
+message getEnemyResp_27408 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 3;
+    optional int32 toRank = 4;
+    optional int32 toFamilyRank = 5;
+    repeated MsgTalent toTalent = 6;
+    repeated MsgTalent fromTalent = 7;
+    repeated MsgSkill msgSkill = 8;
+    optional string reputation = 9;
+    optional string familyJade = 10;
+    optional int32 playerRank = 11;
+    optional int32 personalSkill = 12;
+    optional int32 settledSkill = 13;
+    optional int32 declareSkill = 14;
+    optional int32 freeCnt = 15;
+}
+
+message GetDeclarePlayerReq_27409 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int64 toFamilyId = 2;
+}
+
+message GetDeclarePlayerResp_27409 {
+    required int32 ret = 1;
+    repeated MsgDeclarePlayer msgDeclarePlayer = 2;
+    optional int32 freeCnt = 3;
+}
+
+message GetDeclareListReq_27410 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetDeclareListResp_27410 {
+    required int32 ret = 1;
+    repeated MsgDeclareList msgDeclareList = 2;
+}
+
+message DeclareReq_27411 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int64 toFamilyId = 2;
+    required int32 type = 3;
+}
+
+message DeclareResp_27411 {
+    required int32 ret = 1;
+}
+
+message GetMapReq_27412 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetMapResp_27412 {
+    required int32 ret = 1;
+    optional MsgEvent msgEvent = 2;
+    repeated MsgTalent msgTalent = 3;
+    repeated MsgSkill msgSkill = 4;
+    optional string reputation = 5;
+    optional string familyJade = 6;
+    optional int32 playerRank = 7;
+    optional int32 personalSkill = 8;
+    optional int32 settledSkill = 9;
+    optional int32 energyUse = 10;
+}
+
+message ExploreReq_27413 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message ExploreResp_27413 {
+    required int32 ret = 1;
+    optional MsgEvent msgEvent = 2;
+    optional string reputation = 3;
+    optional string familyJade = 4;
+    optional int32 playerRank = 5;
+    optional int32 personalSkill = 6;
+    optional int32 settledSkill = 7;
+    optional int32 energyUse = 8;
+}
+
+message ActiveEventReq_27414 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 type = 2;
+    repeated int32 talentId = 3;
+    optional bool isUseChallengeItem = 4;
+    optional bool isUsePursuitItem = 5;
+    optional bool isAttackNpcAgain = 6;
+    optional bool isCrack = 7;
+    optional int32 giftId = 8;
+    optional string toPlayerId = 9;
+}
+
+message ActiveEventResp_27414 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+    optional int32 onlyId = 3;
+    optional MsgEvent msgEvent = 4;
+    repeated MsgSkill msgSkill = 5;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData msgPvPBattleData = 6;
+    optional string reputation = 7;
+    optional string familyJade = 8;
+    optional string reputationGain = 9;
+    optional string jadeGain = 10;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 11;
+    optional int32 playerRank = 12;
+    optional int32 personalSkill = 13;
+    optional int32 settledSkill = 14;
+}
+
+message GetMarkReq_27415 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 type = 2;
+    optional bool isMine = 3;
+}
+
+message GetMarkResp_27415 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+    repeated MsgMarkNpc msgMarkNpc = 3;
+    repeated MsgMarkLuBan msgMarkLuBan = 4;
+}
+
+message MarkReq_27416 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message MarkResp_27416 {
+    required int32 ret = 1;
+    optional MsgEvent msgEvent = 2;
+}
+
+message ActiveMarkReq_27417 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 type = 2;
+    optional string toPlayerId = 3;
+    optional int64 timeStamp = 4;
+}
+
+message ActiveMarkResp_27417 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+    optional string reputationGain = 3;
+    optional string reputation = 4;
+    optional string familyJade = 5;
+    optional int32 playerRank = 6;
+    optional int32 personalSkill = 7;
+    optional int32 settledSkill = 8;
+    repeated MsgMarkNpc msgMarkNpc = 9;
+    repeated MsgMarkLuBan msgMarkLuBan = 10;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData msgPvPBattleData = 11;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 12;
+    optional int32 onlyId = 13;
+    repeated MsgSkill msgSkill = 14;
+}
+
+message GetEnergyPanelReq_27418 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetEnergyPanelResp_27418 {
+    required int32 ret = 1;
+    repeated MsgEnergy msgEnergy = 2;
+    optional int32 energyCnt = 3;
+}
+
+message GainEnergyReq_27419 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int64 id = 2;
+}
+
+message GainEnergyResp_27419 {
+    required int32 ret = 1;
+    optional MsgEnergy msgEnergy = 2;
+    optional int32 energyCnt = 3;
+}
+
+message GetGainEnergyHistReq_27420 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int64 id = 2;
+}
+
+message GetGainEnergyHistResp_27420 {
+    required int32 ret = 1;
+    repeated bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 2;
+}
+
+message NotifyRedDotResp_27421 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 type = 2;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 3;
+    optional int32 giftId = 4;
+}
+
+message NotifyHelpResp_27422 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional MsgHelp msgHelp = 2;
+}
+
+message GetHelpNotifyReq_27423 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetHelpNotifyResp_27423 {
+    required int32 ret = 1;
+    repeated MsgHelp msgHelp = 2;
+}
+
+message ConfirmNotifyReq_27424 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int64 timeStamp = 2;
+}
+
+message ConfirmNotifyResp_27424 {
+    required int32 ret = 1;
+}
+
+message TransferItemReq_27425 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message TransferItemResp_27425 {
+    required int32 ret = 1;
+    repeated MsgTransferItem msgTransferItem = 2;
+}
+
+message SearchFamilyReq_27426 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int64 toFamilyId = 2;
+}
+
+message SearchFamilyResp_27426 {
+    required int32 ret = 1;
+    optional MsgDeclareList msgDeclareList = 2;
+}
+
+message GetDefenceHistReq_27427 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetDefenceHistResp_27427 {
+    required int32 ret = 1;
+    repeated MsgDefenceHist msgDefenceHist = 2;
+}
+
+message GetAllDeclareReq_27428 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetAllDeclareResp_27428 {
+    required int32 ret = 1;
+    repeated MsgDeclareBrief msgDeclareBrief = 2;
+}
+
+message GetDeclareDetailReq_27429 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int64 uniqueId = 2;
+}
+
+message GetDeclareDetailResp_27429 {
+    required int32 ret = 1;
+    repeated MsgDeclareDetail msgDeclareDetail = 2;
+}
+
+message GetDeclareHistReq_27430 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetDeclareHistResp_27430 {
+    required int32 ret = 1;
+    repeated MsgDeclareHist msgDeclareHist = 2;
+}
+
+message SignUpCsRemote_27431 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    repeated MsgTalent msgTalent = 4;
+    optional string money = 5;
+}
+
+message SignUpGsRemote_27431 {
+    required int32 ret = 1;
+    repeated MsgTalent msgTalent = 2;
+}
+
+message SyncMoneyCsRemote_27432 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated MsgMoney msgMoney = 2;
+}
+
+message SyncMoneyGsRemote_27432 {
+    required int32 ret = 1;
+    repeated MsgMoney msgMoney = 2;
+}
+
+message GetSettledCsRemote_27433 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    repeated MsgTalent msgTalent = 4;
+}
+
+message GetSettledGsRemote_27433 {
+    required int32 ret = 1;
+    repeated MsgSettled msgSettled = 2;
+    optional int32 playerRank = 3;
+    optional string reputation = 4;
+    optional string familyJade = 5;
+    optional int32 personalSkill = 6;
+    optional int32 settledSkill = 7;
+    optional int64 declareEndTime = 8;
+    optional int64 changeTime = 9;
+    repeated MsgTalent msgTalent = 10;
+}
+
+message GetSettledPlayerCsRemote_27434 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int32 countryId = 4;
+    optional string toPlayerId = 5;
+}
+
+message GetSettledPlayerGsRemote_27434 {
+    required int32 ret = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional int32 playerRank = 3;
+    optional string reputation = 4;
+    optional int64 changeTime = 5;
+}
+
+message GetFamilyMemberCsRemote_27435 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+}
+
+message GetFamilyMemberGsRemote_27435 {
+    required int32 ret = 1;
+    repeated MsgFamilyMember msgFamilyMember = 2;
+}
+
+message SearchCsRemote_27436 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional string toPlayerId = 4;
+}
+
+message SearchGsRemote_27436 {
+    required int32 ret = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional string playerJade = 3;
+    optional string robFamilyJade = 4;
+    repeated MsgTalent msgTalent = 5;
+}
+
+message getEnemyCsRemote_27437 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int32 type = 4;
+    optional string toPlayerId = 5;
+    optional int64 toFamilyId = 6;
+    optional int64 uniqueId = 7;
+    optional bool isChallenge = 8;
+    repeated MsgTalent msgTalent = 9;
+}
+
+message getEnemyGsRemote_27437 {
+    required int32 ret = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional int32 toRank = 3;
+    optional int32 toFamilyRank = 4;
+    repeated MsgTalent toTalent = 5;
+    repeated MsgTalent fromTalent = 6;
+    repeated MsgSkill msgSkill = 7;
+    optional string reputation = 8;
+    optional string familyJade = 9;
+    optional int32 playerRank = 10;
+    optional int32 personalSkill = 11;
+    optional int32 settledSkill = 12;
+    optional int32 declareSkill = 13;
+    optional int32 freeCnt = 14;
+}
+
+message GetDeclarePlayerCsRemote_27438 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    required int64 toFamilyId = 4;
+}
+
+message GetDeclarePlayerGsRemote_27438 {
+    required int32 ret = 1;
+    repeated MsgDeclarePlayer msgDeclarePlayer = 2;
+    optional int32 freeCnt = 3;
+}
+
+message GetDeclareListCsRemote_27439 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+}
+
+message GetDeclareListGsRemote_27439 {
+    required int32 ret = 1;
+    repeated MsgDeclareList msgDeclareList = 2;
+}
+
+message DeclareCsRemote_27440 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    required int64 toFamilyId = 4;
+    required int32 type = 5;
+}
+
+message DeclareGsRemote_27440 {
+    required int32 ret = 1;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 2;
+}
+
+message GetMapCsRemote_27441 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    repeated MsgTalent msgTalent = 4;
+}
+
+message GetMapGsRemote_27441 {
+    required int32 ret = 1;
+    optional MsgEvent msgEvent = 2;
+    repeated MsgTalent msgTalent = 3;
+    repeated MsgSkill msgSkill = 4;
+    optional string reputation = 5;
+    optional string familyJade = 6;
+    optional int32 playerRank = 7;
+    optional int32 personalSkill = 8;
+    optional int32 settledSkill = 9;
+    optional int32 energyUse = 10;
+}
+
+message ExploreCsRemote_27442 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int64 rmb = 4;
+}
+
+message ExploreGsRemote_27442 {
+    required int32 ret = 1;
+    optional MsgEvent msgEvent = 2;
+    optional string reputation = 3;
+    optional string familyJade = 4;
+    optional int32 playerRank = 5;
+    optional int32 personalSkill = 6;
+    optional int32 settledSkill = 7;
+    optional int32 energyUse = 8;
+}
+
+message ActiveEventCsRemote_27443 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int32 type = 4;
+    repeated MsgTalent msgTalent = 5;
+    optional bool isUseChallengeItem = 6;
+    optional bool isUsePursuitItem = 7;
+    optional bool isAttackNpcAgain = 8;
+    optional bool isCrack = 9;
+    optional int32 giftId = 10;
+    optional string toPlayerId = 11;
+}
+
+message ActiveEventGsRemote_27443 {
+    required int32 ret = 1;
+    optional int32 eventId = 2;
+    optional int32 onlyId = 3;
+    optional MsgEvent msgEvent = 4;
+    repeated MsgSkill fromSkill = 5;
+    repeated MsgSkill ownerSkill = 6;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData msgPvPBattleData = 7;
+    optional int32 winCnt = 8;
+    optional string reputationGain = 9;
+    optional string jadeGain = 10;
+    optional int32 declareType = 11;
+    optional string ownerPlayerId = 12;
+    optional int64 uniqueId = 13;
+    optional MsgFamilyJade msgFamilyJade = 14;
+    optional int32 fromPlayerRank = 15;
+    optional int32 ownerPlayerRank = 16;
+    optional string fromReputation = 17;
+    optional string ownerReputation = 18;
+    optional int32 familyRank = 19;
+    optional string familyJade = 20;
+    optional string fromJade = 21;
+    optional string ownerJade = 22;
+    optional int64 toFamilyId = 23;
+    optional int32 countryId = 24;
+    optional int32 settleAdd = 25;
+    optional int32 skillAdd = 26;
+    optional int32 declareAdd = 27;
+    optional string toJade = 28;
+    optional string toFamilyJade = 29;
+    optional string toPlayerId = 30;
+    repeated MsgTalent msgTalent = 31;
+}
+
+message GetMarkCsRemote_27444 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int32 type = 4;
+    optional bool isMine = 5;
+}
+
+message GetMarkGsRemote_27444 {
+    required int32 ret = 1;
+    repeated MsgMarkNpc msgMarkNpc = 2;
+    repeated MsgMarkLuBan msgMarkLuBan = 3;
+}
+
+message MarkCsRemote_27445 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+}
+
+message MarkGsRemote_27445 {
+    required int32 ret = 1;
+    optional int32 eventType = 2;
+    optional MsgEvent msgEvent = 3;
+    optional MsgMarkNpc msgMarkNpc = 4;
+    optional MsgMarkLuBan msgMarkLuBan = 5;
+}
+
+message ActiveMarkCsRemote_27446 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int32 type = 4;
+    optional string toPlayerId = 5;
+    repeated MsgTalent msgTalent = 6;
+    optional int64 timeStamp = 7;
+    optional int64 energy = 8;
+}
+
+message ActiveMarkGsRemote_27446 {
+    required int32 ret = 1;
+    optional int32 eventId = 2;
+    optional string gainReputation = 3;
+    repeated MsgMarkNpc msgMarkNpc = 4;
+    repeated MsgMarkLuBan msgMarkLuBan = 5;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData msgPvPBattleData = 6;
+    optional int32 onlyId = 7;
+    repeated MsgSkill fromSkill = 8;
+    repeated MsgSkill toSkill = 9;
+    optional int64 energyCost = 10;
+    optional int32 settleAdd = 11;
+    optional int32 skillAdd = 12;
+    optional int32 fromPlayerRank = 13;
+    optional int32 toPlayerRank = 14;
+    optional int32 familyRank = 15;
+    optional string fromReputation = 16;
+    optional string toReputation = 17;
+    optional string fromJade = 18;
+    optional string toJade = 19;
+    optional string familyJade = 20;
+    repeated string helpPlayerIds = 21;
+    optional int32 countryId = 22;
+    repeated MsgTalent msgTalent = 23;
+}
+
+message CheckPayCsRemote_27447 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int32 giftId = 3;
+}
+
+message CheckPayGsRemote_27447 {
+    required int32 ret = 1;
+}
+
+message PayCsRemote_27448 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int32 giftId = 3;
+}
+
+message PayGsRemote_27448 {
+    required int32 ret = 1;
+    optional int32 eventId = 2;
+}
+
+message SearchFamilyCsRemote_27449 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int64 toFamilyId = 4;
+}
+
+message SearchFamilyGsRemote_27449 {
+    required int32 ret = 1;
+    optional MsgDeclareList msgDeclareList = 2;
+}
+
+message GetAllDeclareCsRemote_27450 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+}
+
+message GetAllDeclareGsRemote_27450 {
+    required int32 ret = 1;
+    repeated MsgDeclareBrief msgDeclareBrief = 2;
+}
+
+message GetDeclareDetailCsRemote_27451 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int64 uniqueId = 4;
+}
+
+message GetDeclareDetailGsRemote_27451 {
+    required int32 ret = 1;
+    repeated MsgDeclareDetail msgDeclareDetail = 2;
+}
+
+message GetDeclareHistCsRemote_27452 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+}
+
+message GetDeclareHistGsRemote_27452 {
+    required int32 ret = 1;
+    repeated MsgDeclareHist msgDeclareHist = 2;
+}
+
+message NotifySettledGsRemote_27453 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated MsgSettled msgSettled = 2;
+}
+
+message NotifyWorldGsRemote_27454 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 templateId = 2;
+    repeated string replaceStr = 3;
+    optional int32 familyIcon = 4;
+}
+
+message NotifyDefenceGsRemote_27455 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 3;
+    optional int32 type = 4;
+    optional string robJade = 5;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData msgPvPBattleData = 6;
+    optional int64 timeStamp = 7;
+    optional int32 playerRank = 8;
+    optional int32 familyRank = 9;
+    optional string reputation = 10;
+    optional string playerJade = 11;
+    optional string familyJade = 12;
+}
+
+message GetRedDotCsRemote_27456 {
+    optional string playerId = 1;
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+    repeated int32 rankType = 3;
+    optional int64 familyId = 4;
+    optional bool isEnergy = 5;
+    optional bool isGift = 6;
+}
+
+message GetRedDotGsRemote_27456 {
+    required int32 ret = 1;
+    repeated bf.messages.game.RankingMessage.MsgRankIndex msgRankIndex = 2;
+    optional int32 stageType = 3;
+    optional int64 endTime = 4;
+    optional bool isEnergy = 5;
+    optional bool isFreeCnt = 6;
+    optional bool isMarkNpc = 7;
+    optional bool isMarkLuBan = 8;
+    optional bool isGift = 9;
+    optional bool isBattle = 10;
+    optional string reputation = 11;
+    optional string fakeJade = 12;
+}
+
+message GetRankCsRemote_27457 {
+    required string playerId = 1;
+    required int64 familyId = 2;
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 3;
+}
+
+message GetRankGsRemote_27457 {
+    required int32 ret = 1;
+    repeated bf.messages.game.FestivalMessage.MsgRankIndex msgRankIndex = 2;
+    optional int64 oldFamilyId = 3;
+}
+
+message NotifyEventGsRemote_27458 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional MsgEvent msgEvent = 3;
+    repeated MsgTalent msgTalent = 4;
+    repeated MsgSkill msgSkill = 5;
+    optional string reputation = 6;
+    optional string familyJade = 7;
+    optional int32 playerRank = 8;
+    optional int32 personalSkill = 9;
+    optional int32 settledSkill = 10;
+    optional int32 energyUse = 11;
+}
+
+message DeployReq_27459 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated int32 talentId = 2;
+}
+
+message DeployResp_27459 {
+    required int32 ret = 1;
+}
+
+message DeployCsRemote_27460 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    repeated MsgTalent msgTalent = 4;
+}
+
+message DeployGsRemote_27460 {
+    required int32 ret = 1;
+    optional int32 playerRank = 2;
+    optional int32 familyRank = 3;
+    optional string reputation = 4;
+    optional string playerJade = 5;
+    optional string familyJade = 6;
+    repeated MsgTalent msgTalent = 7;
+}
+
+message OneKeyActiveReq_27461 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated int32 talentId = 2;
+    optional bool isMonster = 3;
+    optional bool isPlayer = 4;
+    optional bool isGuest = 5;
+    optional bool isBox = 6;
+    optional bool isLuBan = 7;
+    optional bool isBusinessman = 8;
+}
+
+message OneKeyActiveResp_27461 {
+    required int32 ret = 1;
+    repeated MsgOneKeyResult msgOneKeyResult = 2;
+    optional MsgEvent msgEvent = 3;
+    repeated MsgSkill msgSkill = 4;
+    optional string reputation = 5;
+    optional string familyJade = 6;
+    optional int32 playerRank = 7;
+    optional int32 personalSkill = 8;
+    optional int32 settledSkill = 9;
+}
+
+message OneKeyActiveGsRemote_27462 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    repeated MsgTalent msgTalent = 4;
+    optional int64 rmb = 5;
+    optional int32 energy = 6;
+    optional bool isMonster = 7;
+    optional bool isPlayer = 8;
+    optional bool isGuest = 9;
+    optional bool isBox = 10;
+    optional bool isLuBan = 11;
+    optional bool isBusinessman = 12;
+}
+
+message OneKeyActiveCsRemote_27462 {
+    required int32 ret = 1;
+    optional int32 energyUse = 2;
+    repeated MsgGsOneKeyResult msgGsOneKeyResult = 3;
+    optional MsgEvent msgEvent = 4;
+    repeated MsgSkill msgSkill = 5;
+    optional string reputation = 6;
+    optional string familyJade = 7;
+    optional int32 playerRank = 8;
+    optional int32 personalSkill = 9;
+    optional int32 settledSkill = 10;
+    repeated MsgTalent msgTalent = 11;
+}
+
+message SetAutoReceiveReq_27463 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bool isAutoReceive = 2;
+}
+
+message SetAutoReceiveResp_27463 {
+    required int32 ret = 1;
+}

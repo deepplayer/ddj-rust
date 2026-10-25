@@ -1,0 +1,834 @@
+syntax = "proto2";
+
+package bf.messages.game.TeaRoadActMessage;
+
+import "CommonMsgMessage.proto";
+import "PlayerMessage.proto";
+import "StageMessage.proto";
+import "GmActivityMessage.proto";
+import "RankingMessage.proto";
+
+message MsgTeaRoadAllTemplateData {
+    repeated bf.messages.game.GmActivityMessage.MsgRank msgRank = 1;
+    repeated MsgTeaRoadEventDb msgEventDbs = 2;
+    repeated MsgTeaRoadRechargeDb msgRechargeDbs = 3;
+}
+
+message MsgTeaRoadPlayerData {
+    optional int32 playerRank = 1;
+    optional int32 familyRank = 2;
+    optional int64 integral = 3;
+    optional int32 stage = 4;
+    optional int64 nextStageTime = 5;
+    repeated bf.messages.game.GmActivityMessage.CarnivalRankState rankState = 6;
+    optional bool join = 7;
+    optional bool mileageTask = 8;
+    optional int32 remainingEnemies = 9;
+    optional int32 shareGiftStatus = 10;
+}
+
+message MsgTeaRoadHomeData {
+    repeated int32 updateFieldsList = 90;
+    optional int32 eventState = 1;
+    optional int32 curMapId = 2;
+    optional MsgTeaRoadPlayerEvent teaRoadEvent = 3;
+    optional int32 remainingEnemies = 4;
+    optional MsgTeaRoadEnemy teaRoadBoss = 5;
+    optional bool canAtkBoss = 6;
+    repeated MsgTeaRoadBuff buffs = 7;
+    optional bool mileageTask = 8;
+    optional int32 remainingPublicEventNum = 9;
+    optional int32 remainingPersonalEventNum = 10;
+    repeated bf.messages.game.StageMessage.MsgTalentStatusX talentStatuses = 11;
+    optional int32 playerRank = 12;
+    optional int64 integral = 13;
+    optional int32 shareGiftStatus = 14;
+    optional bool autoMarked = 15;
+    optional int32 useEnergy = 16;
+    optional bool autoGainFamilyGift = 17;
+}
+
+message MsgTeaRoadEventDb {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 eventId = 3;
+    optional string hp = 4;
+    optional string score = 5;
+    optional string cost = 6;
+    optional string reward = 7;
+    optional int32 buff1 = 8;
+    optional int32 buff2 = 9;
+    optional int32 rewardNum = 10;
+    optional string killReward = 11;
+    optional string random = 12;
+}
+
+message MsgTeaRoadRechargeDb {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 giftId = 3;
+    optional int32 rmb = 4;
+    optional int32 overseasPayId = 5;
+    optional int32 vipExp = 6;
+    optional string voucher = 7;
+    optional string reward = 8;
+    optional int32 discount = 9;
+    optional string name = 10;
+    optional int32 shareNum = 11;
+    optional string shareReward = 12;
+}
+
+message MsgTeaRoadPlayerEvent {
+    optional int32 triggerEventType = 1;
+    optional MsgTeaRoadEnemy enemy = 2;
+    optional int32 treasureTroveId = 3;
+    optional int32 randomRewardId = 4;
+    optional int32 diamondGiftId = 5;
+    optional MsgTeaRoadGift gift = 6;
+    optional MsgTeaRoadQuiz quiz = 7;
+    optional int32 luckDrawId = 8;
+}
+
+message MsgTeaRoadGift {
+    optional int32 eventId = 1;
+    optional int32 giftId = 2;
+}
+
+message MsgTeaRoadShareGift {
+    optional int64 uniqueId = 1;
+    optional int32 giftId = 2;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer backer = 3;
+    optional int32 receiveNum = 4;
+    optional bool received = 5;
+}
+
+message MsgTeaRoadQuiz {
+    optional int32 eventId = 1;
+    optional int32 quizId = 2;
+}
+
+message MsgTeaRoadEnemy {
+    optional int64 uniqueId = 1;
+    optional int32 enemyId = 2;
+    optional string hp = 3;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer finder = 4;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer killer = 5;
+    optional bool boss = 6;
+    optional string fullHp = 7;
+    optional bf.messages.game.PlayerMessage.MsgFamily killerFamily = 8;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer firstBossFinder = 9;
+}
+
+message MsgTeaRoadBuff {
+    optional int32 buffId = 1;
+    optional int32 num = 2;
+}
+
+message MsgTeaRoadFamilyInformation {
+    repeated MsgTeaRoadEnemy uncompletedEnemies = 1;
+    repeated MsgTeaRoadEnemy completedEnemies = 2;
+}
+
+message MsgTeaRoadFamilyMileage {
+    optional int32 taskId = 1;
+    optional int64 familyId = 2;
+    optional int32 serverId = 3;
+    optional string familyName = 4;
+    optional string leaderName = 5;
+    optional int32 iconId = 6;
+    optional int32 rewardState = 7;
+}
+
+message MsgTeaRoadFightResult {
+    optional int64 uniqueId = 1;
+    optional string damageHp = 2;
+    optional string leftHp = 3;
+    optional bool win = 4;
+    optional bool boss = 5;
+    optional int32 rewardType = 6;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 7;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources extraResources = 8;
+    optional int64 addIntegral = 9;
+    repeated MsgTeaRoadBuff useBuffs = 10;
+    optional int32 enemyId = 11;
+    optional int64 buffIntegral = 12;
+    optional bf.messages.game.CommonMsgMessage.MsgResources killScoreReward = 13;
+}
+
+message MsgTeaRoadBossAttack {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer other = 1;
+    optional string damageHp = 2;
+    optional int32 index = 3;
+    optional int64 attackTime = 4;
+}
+
+message MsgShareGiftReceiver {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer info = 1;
+    optional int64 receiveTime = 2;
+}
+
+message MsgTeaRoadOneKeyConfig {
+    optional bool quiz = 1;
+    optional bool delivery = 2;
+    repeated int32 skipEnemyQuality = 4;
+    optional int32 powerBuffState = 5;
+    optional int32 scoreBuffState = 6;
+    optional bool skipGift = 7;
+}
+
+message MsgTeaRoadForwardQuicklyItem {
+    optional int32 eventType = 1;
+    optional int32 eventId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources costs = 4;
+    repeated MsgTeaRoadBuff buffs = 5;
+}
+
+message TeaRoadHomeReq_33401 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message TeaRoadHomeResp_33401 {
+    required int32 ret = 1;
+    optional MsgTeaRoadHomeData homeData = 2;
+}
+
+message TeaRoadForwardReq_33402 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message TeaRoadForwardResp_33402 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional MsgTeaRoadHomeData homeData = 3;
+}
+
+message TeaRoadSkipEventReq_33403 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message TeaRoadSkipEventResp_33403 {
+    required int32 ret = 1;
+    optional MsgTeaRoadHomeData homeData = 3;
+}
+
+message TeaRoadFightReq_33404 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 talentId = 3;
+    optional int64 uniqueId = 4;
+}
+
+message TeaRoadFightResp_33404 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional MsgTeaRoadFightResult fightResult = 3;
+    optional MsgTeaRoadHomeData homeData = 6;
+}
+
+message TeaRoadEnemyDeadResp_33405 {
+    optional int32 serverId = 1;
+    optional string playerName = 2;
+    optional MsgTeaRoadHomeData homeData = 3;
+    optional int64 uniqueId = 4;
+}
+
+message TeaRoadBossAppearResp_33406 {
+    optional int32 serverId = 1;
+    optional string playerName = 2;
+    optional MsgTeaRoadHomeData homeData = 3;
+}
+
+message TeaRoadBossDeadResp_33407 {
+    optional MsgTeaRoadEnemy teaRoadBoss = 1;
+}
+
+message TeaRoadRecentAtkBossReq_33408 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int64 enemyUniqueId = 3;
+}
+
+message TeaRoadRecentAtkBossResp_33408 {
+    required int32 ret = 1;
+    repeated MsgTeaRoadBossAttack attacks = 2;
+    optional string enemyLeftHp = 3;
+    optional bool inFamily = 4;
+}
+
+message TeaRoadOpenTreasureReq_33409 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 eventType = 3;
+    optional int32 eventId = 4;
+    optional bool free = 5;
+}
+
+message TeaRoadOpenTreasureResp_33409 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 eventType = 3;
+    optional MsgTeaRoadHomeData homeData = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 5;
+    repeated MsgTeaRoadBuff buffs = 6;
+    optional bool free = 7;
+}
+
+message TeaRoadAnswerQuestionReq_33411 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 answer = 3;
+}
+
+message TeaRoadAnswerQuestionResp_33411 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 3;
+    optional MsgTeaRoadHomeData homeData = 4;
+    optional bool correct = 5;
+}
+
+message TeaRoadTalentRecoverReq_33412 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 talentId = 3;
+}
+
+message TeaRoadTalentRecoverResp_33412 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional MsgTeaRoadHomeData homeData = 4;
+}
+
+message TeaRoadResetResp_33413 {
+    required int32 ret = 1;
+    optional MsgTeaRoadHomeData homeData = 2;
+}
+
+message TeaRoadCloseResp_33414 {
+    required int32 ret = 1;
+}
+
+message TeaRoadEnterMapResp_33415 {
+    required int32 ret = 1;
+    optional int32 curMapId = 2;
+    optional MsgTeaRoadHomeData homeData = 3;
+    optional int32 activityId = 4;
+}
+
+message TeaRoadFamilyMileageUpdateResp_33416 {
+    optional MsgTeaRoadHomeData homeData = 1;
+}
+
+message TeaRoadFamilyInfoUpdateResp_33417 {
+    optional MsgTeaRoadHomeData homeData = 1;
+}
+
+message TeaRoadFamilyMileageReq_33419 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message TeaRoadFamilyMileageResp_33419 {
+    required int32 ret = 1;
+    optional int64 familyMileageCount = 2;
+    repeated MsgTeaRoadFamilyMileage mileages = 3;
+}
+
+message TeaRoadMileageRewardReq_33420 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 taskId = 3;
+}
+
+message TeaRoadMileageRewardResp_33420 {
+    required int32 ret = 1;
+    optional int32 taskId = 2;
+    optional int32 taskState = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 4;
+}
+
+message TeaRoadFamilyInfoReq_33421 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message TeaRoadFamilyInfoResp_33421 {
+    required int32 ret = 1;
+    optional MsgTeaRoadFamilyInformation familyInfo = 2;
+}
+
+message TeaRoadShareGiftReq_33422 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message TeaRoadShareGiftResp_33422 {
+    required int32 ret = 1;
+    repeated MsgTeaRoadShareGift shareGifts = 2;
+}
+
+message TeaRoadShareGiftRewardReq_33423 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int64 uniqueId = 3;
+}
+
+message TeaRoadShareGiftRewardResp_33423 {
+    required int32 ret = 1;
+    optional int64 uniqueId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 3;
+}
+
+message TeaRoadMemberBuyGiftResp_33424 {
+    required int32 ret = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 2;
+    optional string giftName = 3;
+}
+
+message TeaRoadLuckDrawReq_33425 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 selectedPos = 3;
+}
+
+message TeaRoadLuckDrawResp_33425 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 selectPos = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 4;
+    optional MsgTeaRoadHomeData homeData = 5;
+}
+
+message TeaRoadShareGiftReceiverReq_33426 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int64 uniqueId = 3;
+}
+
+message TeaRoadShareGiftReceiverResp_33426 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int64 uniqueId = 3;
+    repeated MsgShareGiftReceiver receivers = 4;
+}
+
+message TeaRoadAutoMarkReq_33427 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message TeaRoadAutoMarkResp_33427 {
+    required int32 ret = 1;
+    optional MsgTeaRoadHomeData homeData = 2;
+}
+
+message TeaRoadEnemyDamageRankReq_33428 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int64 enemyUniqueId = 3;
+}
+
+message TeaRoadEnemyDamageRankResp_33428 {
+    required int32 ret = 1;
+    optional bf.messages.game.RankingMessage.MsgRankingData msgRankingDatas = 2;
+    optional string killPlayerId = 3;
+}
+
+message TeaRoadForwardQuicklyReq_33429 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional MsgTeaRoadOneKeyConfig oneKeyConfig = 3;
+}
+
+message TeaRoadForwardQuicklyResp_33429 {
+    required int32 ret = 1;
+    repeated MsgTeaRoadForwardQuicklyItem results = 2;
+    optional MsgTeaRoadHomeData homeData = 3;
+}
+
+message TeaRoadSetAutoGainGiftReq_33430 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional bool autoGainFamilyGift = 3;
+}
+
+message TeaRoadSetAutoGainGiftResp_33430 {
+    required int32 ret = 1;
+    optional MsgTeaRoadHomeData homeData = 2;
+}
+
+message MsgTeaRoadLog {
+    optional int32 current_maplevel = 1;
+    optional string ar_share_roleid = 2;
+    optional string ar_people_power = 3;
+    optional int32 this_injury_rank = 4;
+    optional int32 distance_change = 5;
+    optional int64 ar_score_change = 6;
+    optional int64 ar_score = 7;
+    optional int64 ar_family_score_change = 8;
+    optional int64 family_distance = 9;
+    optional int32 ar_people_use = 10;
+    optional int32 ar_boss_id = 11;
+    optional string ar_boss_hp_add = 12;
+    optional int32 ar_boss_rank = 13;
+    optional string box_only_id = 14;
+    optional string rank_score = 15;
+    optional int32 rank_num = 16;
+    optional int64 ar_family_score = 17;
+    optional int32 ar_family_rank = 18;
+    optional int32 eventType = 19;
+    optional int32 ar_buff_id = 20;
+    repeated MsgTeaRoadBuff ar_buff_quantity = 21;
+    optional string monster_hp_left = 22;
+    optional string reason = 23;
+    optional string playerId = 24;
+    optional int32 activityId = 25;
+    optional string dice_affair_type = 26;
+    optional int64 familyId = 27;
+    optional string ar_gift_type = 28;
+    optional int32 ar_gift_price = 29;
+    optional string ar_gift_name = 30;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources ar_gift_goods = 31;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources item_cost = 32;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources item_gain = 33;
+}
+
+message MsgTeaRoadQuicklyResult {
+    optional MsgTeaRoadForwardQuicklyItem item = 1;
+    optional MsgTeaRoadLog forwardLog = 2;
+    optional MsgTeaRoadLog skipLog = 3;
+    optional MsgTeaRoadLog solveLog = 4;
+}
+
+message TeaRoadPlayerDataGCRep_33451 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+}
+
+message TeaRoadPlayerDataCGResp_33451 {
+    required int32 ret = 1;
+    optional MsgTeaRoadPlayerData playerData = 2;
+}
+
+message TeaRoadHomeGCReq_33452 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message TeaRoadHomeCGResp_33452 {
+    required int32 ret = 1;
+    optional MsgTeaRoadHomeData homeData = 2;
+}
+
+message TeaRoadForwardGCReq_33453 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int64 sumRmb = 3;
+}
+
+message TeaRoadForwardCGResp_33453 {
+    required int32 ret = 1;
+    optional MsgTeaRoadHomeData homeData = 2;
+    optional MsgTeaRoadLog log = 3;
+}
+
+message TeaRoadBossAppearCGReq_33454 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 finderServerId = 2;
+    optional string finderName = 3;
+    repeated string notifyPlayers = 4;
+    optional MsgTeaRoadEnemy boss = 5;
+    optional string finderId = 6;
+}
+
+message TeaRoadSkipEventGCReq_33455 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message TeaRoadSkipEventCGResp_33455 {
+    required int32 ret = 1;
+    optional MsgTeaRoadHomeData homeData = 2;
+    optional MsgTeaRoadLog log = 3;
+}
+
+message TeaRoadFightGCReq_33456 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int32 talentId = 3;
+    optional string damagePowerNoBuff = 4;
+    optional int64 uniqueId = 5;
+}
+
+message TeaRoadFightCGResp_33456 {
+    required int32 ret = 1;
+    optional MsgTeaRoadHomeData homeData = 2;
+    optional MsgTeaRoadFightResult fightResult = 3;
+    optional int64 integral = 4;
+    optional int32 playerRank = 5;
+    optional MsgTeaRoadLog log = 6;
+}
+
+message TeaRoadRecentAtkBossGCReq_33457 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int64 enemyUniqueId = 3;
+}
+
+message TeaRoadRecentAtkBossCGResp_33457 {
+    required int32 ret = 1;
+    repeated MsgTeaRoadBossAttack attacks = 2;
+    optional string bossLeftHp = 3;
+    optional bool inFamily = 4;
+}
+
+message TeaRoadOpenTreasureGCReq_33458 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 eventType = 2;
+    optional int32 eventId = 3;
+    optional string playerId = 4;
+    optional bool free = 5;
+}
+
+message TeaRoadOpenTreasureCGResp_33458 {
+    required int32 ret = 1;
+    optional int32 eventType = 3;
+    optional MsgTeaRoadHomeData homeData = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 5;
+    repeated MsgTeaRoadBuff buffs = 6;
+    optional bool free = 7;
+    optional MsgTeaRoadLog log = 8;
+}
+
+message TeaRoadAnswerQuizGCReq_33459 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 answer = 2;
+    optional string playerId = 3;
+}
+
+message TeaRoadAnswerQuizCGResp_33459 {
+    required int32 ret = 1;
+    optional int32 eventId = 2;
+    optional int32 quizId = 3;
+    optional MsgTeaRoadHomeData homeData = 4;
+    optional bool correct = 5;
+    optional MsgTeaRoadLog log = 6;
+}
+
+message TeaRoadRecoverGCReq_33460 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 talentId = 2;
+    optional int32 itemId = 3;
+    optional int64 ownNum = 4;
+    optional string playerId = 5;
+}
+
+message TeaRoadRecoverCGResp_33460 {
+    required int32 ret = 1;
+    optional int32 talentId = 2;
+    optional int32 itemId = 3;
+    optional int64 needSubNum = 4;
+    optional MsgTeaRoadHomeData homeData = 5;
+    optional MsgTeaRoadLog log = 6;
+}
+
+message FamilyEventRemoteReq_33461 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+    optional int32 eventType = 4;
+    optional string familyName = 5;
+    optional int32 job = 6;
+}
+
+message TeaRoadCloseStageCGReq_33462 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated MsgTeaRoadCrossPlayer playerData = 2;
+}
+
+message MsgTeaRoadCrossPlayer {
+    optional string playerId = 1;
+    optional MsgTeaRoadHomeData homeData = 2;
+    optional MsgTeaRoadLog log = 3;
+    optional MsgTeaRoadPlayerData playerData = 4;
+}
+
+message TeaRoadStageResetCGReq_33463 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated MsgTeaRoadCrossPlayer players = 2;
+}
+
+message TeaRoadEnterMapCGReq_33464 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 curMapId = 2;
+    repeated MsgTeaRoadCrossPlayer players = 3;
+}
+
+message TeaRoadBossDeadCGReq_33465 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional MsgTeaRoadEnemy teaRoadBoss = 2;
+    repeated string players = 3;
+}
+
+message TeaRoadEnemyDeadCGReq_33466 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 serverId = 2;
+    optional string playerName = 3;
+    repeated MsgTeaRoadCrossPlayer players = 4;
+    optional int64 uniqueId = 5;
+}
+
+message TeaRoadGiftSuccessGCReq_33467 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message TeaRoadGiftSuccessCGResp_33467 {
+    required int32 ret = 1;
+    optional string playerId = 2;
+    optional MsgTeaRoadHomeData homeData = 3;
+    optional MsgTeaRoadLog log = 4;
+    optional int64 giftUniqueId = 5;
+}
+
+message TeaRoadRankRewardGCReq_33468 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int32 rankType = 3;
+}
+
+message TeaRoadFamilyMileageGCReq_33469 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message TeaRoadFamilyMileageCGResp_33469 {
+    required int32 ret = 1;
+    optional int64 familyMileageCount = 2;
+    repeated MsgTeaRoadFamilyMileage mileages = 3;
+}
+
+message TeaRoadMileageRewardGCReq_33470 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int32 taskId = 3;
+}
+
+message TeaRoadMileageRewardCGResp_33470 {
+    required int32 ret = 1;
+    optional int32 taskId = 2;
+    optional int32 taskState = 3;
+    optional MsgTeaRoadLog log = 4;
+}
+
+message TeaRoadFamilyInfoGCReq_33471 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message TeaRoadFamilyInfoCGResp_33471 {
+    required int32 ret = 1;
+    optional MsgTeaRoadFamilyInformation familyInfo = 2;
+}
+
+message TeaRoadMileageTaskMailCGReq_33472 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    repeated int32 taskIds = 3;
+}
+
+message TeaRoadShareGiftGCReq_33473 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message MsgTeaRoadShareGiftCross {
+    optional MsgTeaRoadShareGift shareGift = 1;
+    optional string backer = 2;
+}
+
+message TeaRoadShareGiftCGResp_33473 {
+    required int32 ret = 1;
+    repeated MsgTeaRoadShareGiftCross shareGifts = 2;
+}
+
+message TeaRoadRevShareGiftGCReq_33474 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int64 uniqueId = 3;
+}
+
+message TeaRoadRevShareGiftCGResp_33474 {
+    required int32 ret = 1;
+    optional int64 uniqueId = 2;
+    optional int32 giftId = 3;
+    optional MsgTeaRoadLog log = 4;
+}
+
+message TeaRoadLuckDrawGCReq_33475 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int32 selectedPos = 3;
+}
+
+message TeaRoadLuckDrawCGResp_33475 {
+    required int32 ret = 1;
+    optional int32 luckDrawEventId = 2;
+    optional MsgTeaRoadLog log = 3;
+    optional MsgTeaRoadHomeData homeData = 4;
+}
+
+message TeaRoadShareGiftReceiverGCReq_33476 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int64 uniqueId = 3;
+}
+
+message TeaRoadShareGiftReceiverCGResp_33476 {
+    required int32 ret = 1;
+    optional int64 uniqueId = 2;
+    repeated MsgShareGiftReceiver receivers = 3;
+}
+
+message TeaRoadAutoMarkGCReq_33477 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message TeaRoadAutoMarkCGResp_33477 {
+    required int32 ret = 1;
+    optional MsgTeaRoadHomeData homeData = 2;
+}
+
+message TeaRoadEnemyDamageRankGCReq_33478 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int64 enemyUniqueId = 3;
+}
+
+message TeaRoadEnemyDamageRankCGResp_33478 {
+    required int32 ret = 1;
+    optional bf.messages.game.RankingMessage.MsgRankingData msgRankingDatas = 2;
+    optional string killPlayerId = 3;
+}
+
+message TeaRoadForwardQuicklyGCReq_33479 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional MsgTeaRoadOneKeyConfig oneKeyConfig = 3;
+    optional int64 sumRmb = 4;
+    optional int32 leftEnergy = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources checkResources = 6;
+}
+
+message TeaRoadForwardQuicklyCGResp_33479 {
+    required int32 ret = 1;
+    repeated MsgTeaRoadQuicklyResult results = 2;
+    optional MsgTeaRoadHomeData homeData = 3;
+    optional int32 realForwardTimes = 4;
+}

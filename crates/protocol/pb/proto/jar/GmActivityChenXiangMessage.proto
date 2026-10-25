@@ -1,0 +1,588 @@
+syntax = "proto2";
+
+package bf.messages.game.GmActivityChenXiangMessage;
+
+import "CommonMsgMessage.proto";
+import "GmActivityCommonMessage.proto";
+import "PlayerMessage.proto";
+import "RankingMessage.proto";
+import "TalentMessage.proto";
+
+message MsgChenXiangAllTemplateData {
+    repeated bf.messages.game.GmActivityCommonMessage.MsgRankReward rankRewards = 1;
+    repeated MsgChenXiangEventTemplateData events = 2;
+    repeated MsgTaskRewardTemplate rewards = 3;
+    repeated MsgImageTemplate images = 4;
+    repeated MsgArenaRankRewardTemplate arenas = 5;
+}
+
+message MsgChenXiangEventTemplateData {
+    optional int32 eventId = 1;
+    optional int32 eventType = 2;
+    optional int32 setype = 3;
+    optional string integralReward = 4;
+    optional int32 rewardQuantity = 6;
+    optional int32 latticeReward = 7;
+    optional string rewardPreview = 10;
+}
+
+message MsgTaskRewardTemplate {
+    optional int32 id = 1;
+    optional int32 region = 2;
+    optional string reward = 3;
+}
+
+message MsgImageTemplate {
+    optional int32 id = 1;
+    optional int32 condition = 2;
+    optional int32 param = 3;
+}
+
+message MsgArenaRankRewardTemplate {
+    optional string rankInterval = 1;
+    optional int32 rankType = 2;
+    optional string reward1 = 3;
+    optional string reward2 = 4;
+}
+
+message MsgChenXiangPlayerData {
+    repeated int32 updateFieldsList = 99;
+    optional bf.messages.game.GmActivityCommonMessage.MsgRankPlayerData rankData = 1;
+    repeated int32 gainTaskId = 2;
+    optional int32 totalChargeNum = 3;
+    optional bool isStartGame = 4;
+    optional bool newEventLog = 5;
+    optional int32 lockChargeNum = 6;
+    optional int32 fashionId = 7;
+    optional bool redArena = 8;
+    optional int32 freeNum = 9;
+    repeated MsgTalent talents = 11;
+    optional int32 recoverHpCount = 13;
+    optional int32 buffItem = 14;
+    optional int32 buffBattle = 15;
+    optional string baseHp = 16;
+    optional int32 areaId = 21;
+    repeated MsgMapCell cells = 22;
+    optional int32 curPos = 25;
+    optional int32 tarPos = 26;
+    optional MsgTrapData trapData = 27;
+}
+
+message MsgTalent {
+    optional int32 talentId = 1;
+    optional string hp = 2;
+    optional string surplusHp = 3;
+    optional int32 equipLv = 4;
+    optional string origMoney = 5;
+}
+
+message MsgMapCell {
+    optional int32 pos = 1;
+    optional int32 eventId = 2;
+    optional int32 eventType = 3;
+    optional MsgMapNpc npcEvent = 6;
+}
+
+message MsgMapNpc {
+    repeated MsgTalent talents = 1;
+}
+
+message MsgTrapData {
+    optional bool isTrap = 1;
+    optional int64 trapEndTime = 2;
+    optional int64 trapHelpEndTime = 3;
+}
+
+message MsgTrapHelp {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 1;
+    optional int64 time = 2;
+}
+
+message MsgEventLog {
+    optional int32 type = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources extraRewards = 3;
+    optional string killPlayerName = 6;
+    optional string helpTrapPlayerName = 7;
+}
+
+message MsgBattleResultExtra {
+    optional int32 eventId = 1;
+    repeated string fromSurplusHp = 2;
+    repeated string toSurplusHp = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources extraReward = 6;
+    optional bool haveBuff = 7;
+}
+
+message MsgAutoPlayParam {
+    optional int32 actionType = 1;
+    repeated int32 eventSorts = 2;
+    optional int32 recoveryType = 3;
+    optional int32 wishType = 4;
+    optional bool firstNpc = 5;
+    optional int32 trapType = 6;
+}
+
+message MsgAutoPlayEventResult {
+    optional int32 type = 1;
+    optional int32 count = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources extRewards = 4;
+    repeated int32 wishType = 6;
+    optional int32 recoveryNum = 7;
+    optional bf.messages.game.CommonMsgMessage.MsgResources cost = 5;
+    optional int32 trapCostNum = 8;
+}
+
+message MsgRankExt {
+    optional int32 imageId = 1;
+    optional bool isRobot = 2;
+}
+
+message MsgEnemy {
+    optional int32 playerRank = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 2;
+    optional string robotId = 3;
+}
+
+message MsgBattleLog {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 2;
+    optional bool isAttack = 3;
+    optional int32 winCnt = 4;
+    optional int32 score = 5;
+    optional int64 timeStamp = 6;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData msgPvPBattleData = 7;
+}
+
+message MsgStartGameReq_62601 {
+}
+
+message MsgStartGameResp_62601 {
+    required int32 ret = 1;
+}
+
+message MsgEnterNextAreaReq_62603 {
+}
+
+message MsgEnterNextAreaResp_62603 {
+    required int32 ret = 1;
+}
+
+message MsgSyncTalentReq_62604 {
+}
+
+message MsgSyncTalentResp_62604 {
+    required int32 ret = 1;
+    repeated int32 downTalent = 2;
+    repeated int32 upTalent = 3;
+}
+
+message MsgPlayerDataUpdatePushResp_62602 {
+    required int32 ret = 1;
+    optional MsgChenXiangPlayerData data = 2;
+}
+
+message MsgOpenBoxReq_62607 {
+    optional int32 tarPos = 1;
+}
+
+message MsgOpenBoxResp_62607 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources extraReward = 3;
+}
+
+message MsgRecoveryHpReq_62608 {
+    optional int32 tarPos = 1;
+    optional int32 type = 2;
+}
+
+message MsgRecoveryHpResp_62608 {
+    required int32 ret = 1;
+    optional int32 recoveryNum = 2;
+}
+
+message MsgDrawReq_62609 {
+    optional int32 tarPos = 1;
+}
+
+message MsgDrawResp_62609 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+    optional int32 npcId = 3;
+}
+
+message MsgAbandonEventReq_62610 {
+    optional int32 tarPos = 1;
+}
+
+message MsgAbandonEventResp_62610 {
+    required int32 ret = 1;
+}
+
+message MsgMakeWishReq_62611 {
+    optional int32 tarPos = 1;
+}
+
+message MsgMakeWishResp_62611 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+    repeated int32 recoveryHpTalent = 6;
+    optional int32 recoveryHpType = 7;
+}
+
+message MsgLeaveTrapAsEndReq_62612 {
+}
+
+message MsgLeaveTrapAsEndResp_62612 {
+    required int32 ret = 1;
+}
+
+message MsgLeaveTrapAsItemReq_62613 {
+}
+
+message MsgLeaveTrapAsItemResp_62613 {
+    required int32 ret = 1;
+}
+
+message MsgLeaveTrapAsHelpReq_62614 {
+}
+
+message MsgLeaveTrapAsHelpResp_62614 {
+    required int32 ret = 1;
+}
+
+message MsgMemberHelpLeaveTrapReq_62615 {
+    optional string playerId = 1;
+}
+
+message MsgMemberHelpLeaveTrapResp_62615 {
+    required int32 ret = 1;
+}
+
+message MsgQueryFamilyTrapHelpReq_62616 {
+}
+
+message MsgQueryFamilyTrapHelpResp_62616 {
+    required int32 ret = 1;
+    repeated MsgTrapHelp infos = 2;
+}
+
+message MsgQueryAttackTeamReq_62617 {
+}
+
+message MsgQueryAttackTeamResp_62617 {
+    required int32 ret = 1;
+    repeated int32 talentId = 2;
+    optional bool freeAttack = 3;
+}
+
+message MsgAttackNpcReq_62618 {
+    optional int32 tarPos = 1;
+    repeated int32 talentIds = 2;
+}
+
+message MsgAttackNpcResp_62618 {
+    required int32 ret = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData battleData = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources extraReward = 6;
+}
+
+message MsgUpgradeTalentEquipReq_62620 {
+    optional int32 talentId = 1;
+}
+
+message MsgUpgradeTalentEquipResp_62620 {
+    required int32 ret = 1;
+}
+
+message MsgAddTrapOrNpcPushResp_62622 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+}
+
+message MsgQueryEventLogReq_62624 {
+}
+
+message MsgQueryEventLogResp_62624 {
+    required int32 ret = 1;
+    repeated MsgEventLog logs = 2;
+}
+
+message MsgUseFashionReq_62630 {
+    optional int32 id = 1;
+}
+
+message MsgUseFashionResp_62630 {
+    required int32 ret = 1;
+    optional int32 id = 2;
+}
+
+message MsgGainTaskRewardReq_62631 {
+    optional int32 taskId = 1;
+}
+
+message MsgGainTaskRewardResp_62631 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+}
+
+message MsgUseItemRecoveryAllHpReq_62633 {
+}
+
+message MsgUseItemRecoveryAllHpResp_62633 {
+    required int32 ret = 1;
+}
+
+message MsgAutoPlayReq_62634 {
+    optional MsgAutoPlayParam autoParam = 1;
+}
+
+message MsgAutoPlayResp_62634 {
+    required int32 ret = 1;
+    optional MsgChenXiangPlayerData playerData = 2;
+    repeated MsgAutoPlayEventResult eventResults = 3;
+}
+
+message MsgFirstArriveAreaPushResp_62635 {
+    required int32 ret = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 2;
+    optional int32 areaId = 3;
+}
+
+message MsgGetArenaReq_62641 {
+}
+
+message MsgGetArenaResp_62641 {
+    required int32 ret = 1;
+    optional bf.messages.game.RankingMessage.MsgRankingData rankData = 2;
+    optional bool redArena = 4;
+}
+
+message MsgGetArenaPlayerReq_62642 {
+    optional string playerId = 1;
+}
+
+message MsgGetArenaPlayerResp_62642 {
+    required int32 ret = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 2;
+    optional int32 playerRank = 3;
+    optional int32 familyRank = 4;
+    optional int32 arenaRank = 5;
+    optional int32 fashionId = 6;
+    repeated bf.messages.game.TalentMessage.MsgTalentData talent = 7;
+}
+
+message MsgGetEnemyReq_62643 {
+}
+
+message MsgGetEnemyResp_62643 {
+    required int32 ret = 1;
+    repeated MsgEnemy msgEnemy = 2;
+    optional int32 playerRank = 3;
+    optional string money = 4;
+}
+
+message MsgRefreshEnemyReq_62644 {
+}
+
+message MsgRefreshEnemyResp_62644 {
+    required int32 ret = 1;
+    repeated MsgEnemy msgEnemy = 2;
+}
+
+message MsgGetEnemyBriefReq_62645 {
+    required string playerId = 2;
+}
+
+message MsgGetEnemyBriefResp_62645 {
+    required int32 ret = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgBattlePlayerData fromMsgBattlePlayerData = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgBattlePlayerData toMsgBattlePlayerData = 3;
+    optional int32 fromScore = 4;
+    optional int32 toScore = 5;
+}
+
+message MsgBattleReq_62646 {
+    optional string playerId = 2;
+    repeated int32 talentId = 3;
+}
+
+message MsgBattleResp_62646 {
+    required int32 ret = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData msgPvPBattleData = 2;
+    optional int32 score = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources extraReward = 6;
+    optional bf.messages.game.RankingMessage.MsgRankingData rankData = 11;
+    optional int32 freeNum = 12;
+}
+
+message MsgQueryBattleLogReq_62647 {
+}
+
+message MsgQueryBattleLogResp_62647 {
+    required int32 ret = 1;
+    repeated MsgBattleLog log = 2;
+}
+
+message MsgArenaSettleReq_62648 {
+}
+
+message MsgArenaSettleResp_62648 {
+    required int32 ret = 1;
+    optional int32 rank = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+}
+
+message MsgCrossQueryPlayerDataReq_62680 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 11;
+    optional string playerId = 12;
+}
+
+message MsgCrossQueryPlayerDataResp_62680 {
+    required int32 ret = 1;
+    optional bool redArena = 2;
+    optional int32 freeNum = 3;
+}
+
+message MsgCrossGetInitMapDataReq_62681 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 2;
+    optional int32 areaId = 3;
+}
+
+message MsgCrossGetInitMapDataResp_62681 {
+    required int32 ret = 1;
+    optional string baseHp = 2;
+}
+
+message MsgCrossSyncDefenseTeamReq_62682 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgBattleTalentData battleTalentData = 3;
+}
+
+message MsgCrossFirstArriveAreaPushResp_62683 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 2;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 3;
+    optional int32 areaId = 4;
+}
+
+message MsgCrossUseFashionReq_62684 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 11;
+    optional string playerId = 12;
+    optional int32 id = 1;
+}
+
+message MsgCrossGetArenaReq_62691 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 11;
+    optional string playerId = 12;
+}
+
+message MsgCrossGetArenaResp_62691 {
+    required int32 ret = 1;
+    optional bf.messages.game.RankingMessage.MsgRankingData rankData = 2;
+    optional bool redArena = 4;
+}
+
+message MsgCrossGetArenaPlayerReq_62692 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 11;
+    optional string playerId = 12;
+    optional string tarPlayerId = 1;
+}
+
+message MsgCrossGetArenaPlayerResp_62692 {
+    required int32 ret = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 2;
+    optional int32 playerRank = 3;
+    optional int32 familyRank = 4;
+    optional int32 arenaRank = 5;
+    optional int32 fashionId = 6;
+    repeated bf.messages.game.TalentMessage.MsgTalentData talent = 7;
+}
+
+message MsgCrossGetEnemyReq_62693 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 11;
+    optional string playerId = 12;
+    repeated string familyMemberIds = 13;
+}
+
+message MsgCrossGetEnemyResp_62693 {
+    required int32 ret = 1;
+    repeated MsgEnemy msgEnemy = 2;
+    optional int32 playerRank = 3;
+    optional string money = 4;
+}
+
+message MsgCrossRefreshEnemyReq_62694 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 11;
+    optional string playerId = 12;
+    repeated string familyMemberIds = 1;
+}
+
+message MsgCrossRefreshEnemyResp_62694 {
+    required int32 ret = 1;
+    repeated MsgEnemy msgEnemy = 2;
+}
+
+message MsgCrossGetEnemyBriefReq_62695 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 11;
+    optional string playerId = 12;
+    optional string tarPlayerId = 1;
+}
+
+message MsgCrossGetEnemyBriefResp_62695 {
+    required int32 ret = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgBattlePlayerData fromMsgBattlePlayerData = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgBattlePlayerData toMsgBattlePlayerData = 3;
+    optional int32 fromScore = 4;
+    optional int32 toScore = 5;
+}
+
+message MsgCrossBattleReq_62696 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 11;
+    optional string playerId = 12;
+    optional string tarPlayerId = 2;
+    repeated int32 talentId = 3;
+    optional int32 curStrengthNum = 4;
+}
+
+message MsgCrossBattleResp_62696 {
+    required int32 ret = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData msgPvPBattleData = 2;
+    optional int32 score = 3;
+    optional int32 costStrengthNum = 4;
+    optional bf.messages.game.RankingMessage.MsgRankingData rankData = 11;
+    optional int32 freeNum = 12;
+    repeated int32 toTalents = 13;
+    repeated string enemy = 14;
+    optional int32 rank = 15;
+    optional int32 rankScore = 16;
+    optional int32 chgScore = 17;
+}
+
+message MsgCrossQueryBattleLogReq_62697 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 11;
+    optional string playerId = 12;
+}
+
+message MsgCrossQueryBattleLogResp_62697 {
+    required int32 ret = 1;
+    repeated MsgBattleLog log = 2;
+}
+
+message MsgCrossArenaSettleReq_62698 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 11;
+    optional string playerId = 12;
+}
+
+message MsgCrossArenaSettleResp_62698 {
+    required int32 ret = 1;
+    optional int32 rank = 2;
+    optional int32 rankScore = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 4;
+}

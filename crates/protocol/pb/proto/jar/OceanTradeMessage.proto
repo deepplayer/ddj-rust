@@ -1,0 +1,60 @@
+syntax = "proto2";
+
+package bf.messages.game.OceanTradeMessage;
+
+import "CommonMsgMessage.proto";
+import "RankingMessage.proto";
+
+message MsgOceanTradeData {
+    required int32 checkpointId = 1;
+    required int64 seasonId = 2;
+    optional int64 startTime = 3;
+    required int64 endTime = 4;
+    optional string npcHp = 5;
+    repeated bf.messages.game.RankingMessage.MsgRankingEntryData topThree = 6;
+    optional int32 topCheckpointId = 7;
+    optional bool endGame = 9;
+}
+
+message MsgOceanTradeRankingData {
+    optional int64 seasonId = 1;
+    repeated bf.messages.game.RankingMessage.MsgRankingEntryData msgOceanTradeEntities = 2;
+    optional int32 progress = 3;
+    optional int32 index = 4;
+}
+
+message OceanTradeEnterReq_41001 {
+}
+
+message OceanTradeEnterResp_41001 {
+    required int32 ret = 1;
+    optional MsgOceanTradeData msgOceanTradeData = 2;
+}
+
+message OceanTradeGetRankingReq_41002 {
+    required int32 type = 1;
+}
+
+message OceanTradeGetRankingResp_41002 {
+    required int32 ret = 1;
+    optional MsgOceanTradeRankingData rankData = 2;
+    optional int32 type = 3;
+}
+
+message OceanTradeNegotiationReq_41003 {
+    required int32 type = 1;
+    optional int32 num = 2;
+    optional int64 seasonId = 3;
+}
+
+message OceanTradeNegotiationResp_41003 {
+    required int32 ret = 1;
+    optional string preMoney = 2;
+    optional string costMoney = 3;
+    optional int32 checkpointId = 4;
+    optional string npcHp = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 6;
+    optional int32 winNum = 7;
+    optional string damageHp = 8;
+    optional bool endGame = 9;
+}

@@ -1,0 +1,456 @@
+syntax = "proto2";
+
+package bf.messages.game.PlayerMessage;
+
+import "CommonMsgMessage.proto";
+import "TalentMessage.proto";
+import "PetMessage.proto";
+
+message PlayerCacheTemp {
+    optional int32 key = 1;
+    optional string value = 2;
+}
+
+message VipServer {
+    optional string wechatNum = 1;
+    optional int32 wechatRMB = 2;
+    optional string qqNum = 3;
+}
+
+message MsgPlayer {
+    repeated int32 updateFieldsList = 90;
+    optional string id = 1;
+    optional string name = 2;
+    repeated int32 fashionIds = 3;
+    optional int32 sex = 4;
+    optional int64 exp = 5;
+    optional int32 lv = 6;
+    optional int64 jewel = 7;
+    optional string money = 8;
+    optional int32 updateNameCot = 9;
+    optional bool drawEveryday = 10;
+    optional int32 vip = 11;
+    optional int32 vipExp = 12;
+    optional int32 npcSex = 13;
+    optional int64 sumRmb = 20;
+    optional int32 fortune = 22;
+    optional int32 fortuneLv = 23;
+    optional bf.messages.game.CommonMsgMessage.MsgAddress address = 24;
+    optional int32 resetAddressTimes = 25;
+    optional int64 fristChargeTime = 26;
+    optional VipServer vipServer = 27;
+    optional int32 crossId = 28;
+    optional int32 adRewardTimes = 29;
+    optional int32 wealRewardStatus = 30;
+    optional string maxMoneySpeed = 31;
+    optional int32 mammonType = 32;
+    optional int64 vvipNoticeTime = 33;
+    optional int64 sumRmbReal = 34;
+    optional int32 talentResetTimes = 35;
+    optional string maxMoney = 36;
+    optional bool haveMammon = 37;
+    optional string mammonDec = 38;
+    optional bool openVVip = 39;
+    optional int64 mutedTime = 40;
+    optional int64 preferentialChargeTime = 41;
+    optional int32 smallGamesLevel = 42;
+    optional int64 timeOffForbidResetName = 43;
+    optional int64 replaceMoney = 44;
+    optional int32 miniGameType = 45;
+    optional string slgDec = 46;
+    optional string wechatImg = 47;
+    optional int32 PartnerSex = 48;
+    optional int64 createTime = 49;
+    repeated PlayerCacheTemp playerCacheTemp = 99;
+}
+
+message MsgOtherPlayer {
+    optional string playerId = 1;
+    optional string name = 2;
+    repeated int32 fashionIds = 3;
+    optional int32 sex = 4;
+    optional int64 lv = 5;
+    optional int32 npcSex = 6;
+    optional int32 vipLv = 8;
+    optional string family = 9;
+    optional string talentAbility = 10;
+    optional string buildingAbility = 11;
+    optional int32 stage = 12;
+    optional int32 talentNum = 13;
+    optional bf.messages.game.CommonMsgMessage.MsgAddress address = 15;
+    optional int32 petNum = 16;
+    repeated int32 titles = 17;
+    optional int32 serverId = 18;
+    optional string mammonDec = 19;
+    optional int32 familyIco = 20;
+    optional bool friendScope = 21;
+}
+
+message MsgOtherPlayerDetail {
+    optional MsgOtherPlayer playerData = 1;
+    repeated bf.messages.game.TalentMessage.MsgTalentData talentData = 2;
+    repeated bf.messages.game.PetMessage.MsgPetData petData = 3;
+}
+
+message MsgOfflinePet {
+    optional int32 id = 1;
+    optional int32 skinId = 2;
+}
+
+message MsgOfflinePlayer {
+    repeated int32 updateFieldsList = 90;
+    optional string playerId = 1;
+    repeated int32 fashionIds = 2;
+    optional int32 lv = 3;
+    optional int32 sex = 4;
+    optional int32 vipLv = 5;
+    optional int32 vipExp = 6;
+    optional int64 logoutDateTime = 7;
+    optional int32 npcSex = 8;
+    optional string name = 9;
+    optional string moneySpeed = 10;
+    repeated MsgOfflinePet pets = 11;
+    optional int32 cityId = 12;
+    optional int64 familyId = 13;
+    optional string money = 14;
+    optional string manifesto = 15;
+    optional int32 serverId = 16;
+    repeated int32 petSeniorIds = 17;
+    optional string familyName = 18;
+    optional bf.messages.game.CommonMsgMessage.MsgAddress address = 19;
+    optional string slgDec = 20;
+    optional int32 familyIco = 21;
+    optional bool online = 22;
+    optional bool isReborn = 23;
+    optional string topSlgDec = 24;
+}
+
+message MsgCrossUser {
+    repeated int32 updateFieldsList = 90;
+    optional string playerId = 1;
+    repeated int32 fashionIds = 2;
+    optional int32 lv = 3;
+    optional int32 sex = 4;
+    optional int32 vipLv = 5;
+    optional int32 vipExp = 6;
+    optional int64 logoutDateTime = 7;
+    optional int32 npcSex = 8;
+    optional string name = 9;
+    optional string moneySpeed = 10;
+    repeated MsgOfflinePet pets = 11;
+    optional int32 cityId = 12;
+    optional MsgFamily msgFamily = 13;
+    optional string money = 14;
+    optional string manifesto = 15;
+    optional int32 serverId = 16;
+    repeated int32 petSeniorIds = 17;
+}
+
+message MsgFamily {
+    optional int64 familyId = 1;
+    optional string familyName = 2;
+    optional int32 familyJob = 3;
+}
+
+message MsgVipWordConfig {
+    optional string title = 1;
+    optional string content = 2;
+    optional string tips = 3;
+    optional string wxTitile = 4;
+    optional string wx = 5;
+    optional string qqTitile = 6;
+    optional string qq = 7;
+    optional string reward = 8;
+}
+
+message MsgForbidActivity {
+    optional int32 typePlay = 1;
+    optional int64 forbiddenTime = 2;
+    optional int32 whether = 3;
+}
+
+message MsgGmLanConfig {
+    optional int32 id = 1;
+    optional string lan = 2;
+    optional int32 type = 3;
+}
+
+message PlayerDataUpdateResp_1001 {
+    optional MsgPlayer msgPlayer = 2;
+}
+
+message UpdateNameReq_1002 {
+    optional string name = 1;
+}
+
+message UpdateNameResp_1002 {
+    required int32 ret = 1;
+}
+
+message UpPlayerLvReq_1003 {
+}
+
+message UpPlayerLvResp_1003 {
+    required int32 ret = 1;
+}
+
+message UpdatePlayerVarReq_1004 {
+    optional string var = 1;
+}
+
+message PlayerViewOtherReq_1008 {
+    optional string playerId = 1;
+}
+
+message PlayerViewOtherResp_1008 {
+    required int32 ret = 1;
+    optional MsgOtherPlayer msgOtherPlayer = 2;
+}
+
+message PlayerUseGiftKeyReq_1009 {
+    optional string giftKey = 1;
+}
+
+message PlayerUseGiftKeyResp_1009 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message SetLocationReq_1010 {
+    required int32 cityId = 1;
+    optional int32 type = 2;
+}
+
+message SetLocationResp_1010 {
+    required int32 ret = 1;
+}
+
+message OfflineDataGetReq_1011 {
+    optional string playerId = 1;
+}
+
+message OfflineDataGetResp_1011 {
+    required int32 ret = 1;
+    optional MsgOfflinePlayer msgOfflinePlayer = 2;
+}
+
+message sendVVIPRewardReq_1012 {
+}
+
+message sendVVIPRewardResp_1012 {
+    required int32 ret = 1;
+}
+
+message CrossPlayerViewOtherReq_1013 {
+    optional string playerId = 1;
+}
+
+message OfflineDataGetReq_1014 {
+    repeated string playerId = 1;
+}
+
+message OfflineDataGetResp_1014 {
+    required int32 ret = 1;
+    repeated MsgOfflinePlayer msgOfflinePlayer = 2;
+}
+
+message systemOpenReq_1015 {
+    optional int32 systemId = 1;
+}
+
+message systemOpenResp_1015 {
+    required int32 ret = 1;
+}
+
+message wealRewardReq_1016 {
+}
+
+message wealRewardResp_1016 {
+    required int32 ret = 1;
+}
+
+message wealRewardResultResp_1017 {
+    optional int32 ret = 1;
+}
+
+message MsgSetMammonDeclareReq_1018 {
+    optional string dec = 1;
+}
+
+message MsgSetMammonDeclareResp_1018 {
+    required int32 ret = 1;
+}
+
+message MsgGetPlayerDeclareReq_1019 {
+    optional string playerId = 1;
+}
+
+message MsgGetPlayerDeclareResp_1019 {
+    required int32 ret = 1;
+    optional string dec = 2;
+}
+
+message PlayerViewOtherDetailReq_1020 {
+    optional string playerId = 1;
+}
+
+message PlayerViewOtherDetailResp_1020 {
+    required int32 ret = 1;
+    optional MsgOtherPlayerDetail msgOtherPlayer = 2;
+}
+
+message CrossPlayerViewOtherDetailReq_1021 {
+    optional string playerId = 1;
+}
+
+message MsgQueryVipWordConfigReq_1022 {
+}
+
+message MsgQueryVipWordConfigResp_1022 {
+    required int32 ret = 1;
+    optional MsgVipWordConfig info = 2;
+}
+
+message MsgVipWordConfigChgPushResp_1023 {
+    optional MsgVipWordConfig info = 1;
+}
+
+message MsgUpdateSexReq_1024 {
+    optional int32 sex = 1;
+}
+
+message MsgUpdateSexResp_1024 {
+    required int32 ret = 1;
+}
+
+message MsgG2COfflineDataGetReq_1025 {
+    repeated string playerIds = 1;
+}
+
+message MsgG2COfflineDataGetResp_1025 {
+    required int32 ret = 1;
+    repeated MsgOfflinePlayer msgOfflinePlayers = 2;
+}
+
+message GetOfflineDataReq_1026 {
+    repeated string playerId = 1;
+}
+
+message GetOfflineDataResp_1026 {
+    required int32 ret = 1;
+    repeated MsgOfflinePlayer msgOfflinePlayer = 2;
+}
+
+message MsgPushAddGmLanConfigResp_1027 {
+    required int32 ret = 1;
+    repeated MsgGmLanConfig addLanConfig = 2;
+}
+
+message PlayerSaveNewPlayerDataReq_1100 {
+    repeated PlayerCacheTemp playerCacheTemp = 1;
+}
+
+message PlayerIconLogReq_1101 {
+    optional string reason = 1;
+    optional string iconId = 2;
+    optional string iconName = 3;
+    optional int64 time = 4;
+}
+
+message ClientErrorSendReq_1102 {
+    optional string errorInfo = 1;
+}
+
+message ClientSaveGuideIdReq_1103 {
+    optional int32 guideId = 1;
+    optional int32 nextId = 2;
+    optional bool isPastt = 3;
+}
+
+message PlayerAdRewardReq_1104 {
+}
+
+message PlayerAdRewardResp_1104 {
+    required int32 ret = 1;
+    optional int32 adRewardTimes = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+}
+
+message ChatOnoffResp_1105 {
+    required int32 ret = 1;
+    optional bool chatOnoff = 2;
+    optional bool chatOnoffNew = 3;
+}
+
+message MsgFacebookConfig {
+    optional string fbUrl = 1;
+    optional int32 settingCenterSwitch = 2;
+    optional int32 sideSwitch = 3;
+    optional int64 startTime = 4;
+    optional int64 endTime = 5;
+    repeated int32 channelIds = 6;
+}
+
+message FacebookConfigResp_1106 {
+    required int32 ret = 1;
+    optional MsgFacebookConfig fbConfig = 2;
+}
+
+message getWechatOfficialAccountInfoReq_1107 {
+}
+
+message getWechatOfficialAccountInfoResp_1107 {
+    required int32 ret = 1;
+    optional string title = 2;
+    optional string content = 3;
+}
+
+message ForbidActivityPushResp_1108 {
+    repeated MsgForbidActivity forbidActivities = 1;
+}
+
+message PlayerSendSpecialMsgReq_1109 {
+    optional string msgId = 1;
+    optional string data = 2;
+}
+
+message PlayerSendSpecialMsgResp_1109 {
+    required int32 ret = 1;
+    optional string msgId = 2;
+    optional string data = 3;
+}
+
+message PlayerSaveCacheDataReq_1111 {
+    repeated PlayerCacheTemp playerCacheTemp = 1;
+}
+
+message GetPlayerCacheDataReq_1112 {
+    repeated int32 key = 1;
+}
+
+message GetPlayerCacheDataResp_1112 {
+    required int32 ret = 1;
+    repeated PlayerCacheTemp playerCacheTemp = 2;
+}
+
+message MsgGainBindRewardReq_1115 {
+}
+
+message MsgGainBindRewardResp_1115 {
+    required int32 ret = 1;
+}
+
+message PhoneBindStateSyncRemoteReq_1151 {
+    optional string openId = 1;
+    optional int32 channelId = 2;
+    optional int32 serverId = 3;
+    optional string playerId = 4;
+}
+
+message GetSwitchPaymentReq_1110 {
+}
+
+message GetSwitchPaymentResp_1110 {
+    required int32 ret = 1;
+    optional int32 state = 2;
+}

@@ -1,0 +1,16 @@
+syntax = "proto2";
+
+package bf.messages.game.CommonBattleMessage;
+
+import "PetMessage.proto";
+import "TalentMessage.proto";
+
+message MsgBattleGroup {
+    optional bf.messages.game.TalentMessage.MsgTalentData msgTalent = 1;
+    optional bf.messages.game.PetMessage.MsgPetData msgPetData = 2;
+}
+
+message MsgMirrorGroup {
+    optional MsgBattleGroup msgGroup = 1;
+    optional string curHp = 2;
+}

@@ -1,0 +1,106 @@
+syntax = "proto2";
+
+package bf.messages.game.MoonGoingActivityMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgMoonGoingPlayerData {
+    optional int32 topScore = 1;
+    repeated int32 targetIds = 2;
+    optional MsgMoonGoingGameData gameData = 3;
+}
+
+message MsgMoonGoingGameData {
+    repeated MsgStarTrekStep steps = 1;
+    optional int64 endTime = 2;
+    optional int32 shieldTimes = 3;
+    optional int32 curStepId = 4;
+    optional int32 shieldStepLeft = 5;
+    optional int32 gameStatus = 6;
+}
+
+message MsgStarTrekStep {
+    optional int32 id = 1;
+    optional int32 starId = 2;
+    optional int32 phaseId = 3;
+    optional int32 rewardLine = 4;
+    optional bf.messages.game.CommonMsgMessage.MsgResources resource = 5;
+    optional int32 rewardPos = 6;
+    optional string x = 7;
+    optional string y = 8;
+}
+
+message MoonGoingStartGameReq_38601 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message MoonGoingStartGameResp_38601 {
+    required int32 ret = 1;
+    optional MsgMoonGoingGameData gameData = 2;
+}
+
+message MoonGoingEndGameReq_38602 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message MoonGoingEndGameResp_38602 {
+    required int32 ret = 1;
+    optional int64 score = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 3;
+    optional bool newRecord = 4;
+}
+
+message MoonGoingTargetRewardReq_38603 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 taskId = 3;
+}
+
+message MoonGoingTargetRewardResp_38603 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 activityType = 3;
+    repeated int32 taskIds = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 5;
+}
+
+message MoonGoingUseGoldenShieldReq_38604 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message MoonGoingUseGoldenShieldResp_38604 {
+    required int32 ret = 1;
+    optional int32 shieldTimes = 2;
+    optional int32 shieldStepLeft = 3;
+}
+
+message MoonGoingStepForwardReq_38605 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional bool forward = 3;
+    optional bool combo = 4;
+    optional int32 moveTime = 5;
+    optional int32 stepId = 6;
+}
+
+message MoonGoingStepForwardResp_38605 {
+    required int32 ret = 1;
+    optional int32 tmpScore = 2;
+    optional int32 curStepId = 3;
+    optional int32 addScore = 4;
+    optional bool combo = 5;
+}
+
+message MoonGoingStepGainRewardReq_38606 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message MoonGoingStepGainRewardResp_38606 {
+    required int32 ret = 1;
+    optional int32 addScore = 2;
+    optional int32 tmpScore = 3;
+}

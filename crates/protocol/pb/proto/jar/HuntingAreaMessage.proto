@@ -1,0 +1,157 @@
+syntax = "proto2";
+
+package bf.messages.game.HuntingAreaMessage;
+
+import "StageMessage.proto";
+import "CommonMsgMessage.proto";
+
+message MsgEventData {
+    optional int32 eventId = 1;
+    optional string hp = 2;
+    optional int32 useTalentId = 3;
+}
+
+message MsgHuntingOneData {
+    optional int32 scene = 1;
+    optional int32 monsterKill = 2;
+    optional MsgEventData eventInfo = 3;
+    repeated bf.messages.game.StageMessage.MsgTalentStatus talentsInfo = 4;
+    repeated int32 location = 5;
+    optional bool isOneKey = 6;
+}
+
+message MsgHuntingTwoData {
+    repeated bf.messages.game.StageMessage.MsgTalentStatus talentsInfo = 1;
+    optional string bosshp = 2;
+    optional string bossMaxHp = 3;
+    optional MsgHuntingLastShotData killer = 4;
+    repeated MsgHuntingLFighterInfoData fightInfo = 5;
+}
+
+message MsgHuntingDefeatData {
+    optional int32 rank = 1;
+    optional string playerName = 2;
+    optional int64 time = 3;
+    optional string playerId = 4;
+}
+
+message MsgHuntingLastShotData {
+    optional string playerId = 1;
+    optional string playerName = 2;
+    optional int32 sex = 3;
+    repeated int32 fashionIds = 4;
+    optional bf.messages.game.CommonMsgMessage.MsgAddress address = 5;
+    optional int32 npcSex = 6;
+}
+
+message MsgHuntingLFighterInfoData {
+    optional string playerName = 1;
+    optional string damageHp = 2;
+    optional int64 id = 3;
+    optional bool isMale = 4;
+    optional string playerId = 5;
+    optional int64 attackTime = 6;
+}
+
+message MsgOneKeyResult {
+    optional int32 mapId = 1;
+    optional int32 pos = 2;
+    optional int32 monsterId = 3;
+    repeated int32 talentId = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources coinResource = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources killResource = 6;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources passResource = 7;
+}
+
+message HuntingEnterReq_22001 {
+    optional int32 type = 1;
+}
+
+message HuntingEnterResp_22001 {
+    required int32 ret = 1;
+    optional MsgHuntingOneData huntingOneData = 2;
+    optional MsgHuntingTwoData huntingTwoData = 3;
+}
+
+message OneKeyActiveReq_22002 {
+}
+
+message OneKeyActiveResp_22002 {
+    required int32 ret = 1;
+    repeated MsgOneKeyResult msgOneKeyResult = 2;
+}
+
+message HuntingOneSearchReq_22003 {
+    optional int32 location = 1;
+}
+
+message HuntingOneSearchResp_22003 {
+    required int32 ret = 1;
+    optional MsgEventData eventInfo = 2;
+    repeated int32 location = 3;
+}
+
+message HuntingOneSelectReq_22005 {
+    optional int32 talentId = 1;
+}
+
+message HuntingOneSelectResp_22005 {
+    required int32 ret = 1;
+    optional int32 talentId = 2;
+}
+
+message HuntingOneFightReq_22006 {
+    optional int32 talentId = 1;
+}
+
+message HuntingOneFightResp_22006 {
+    required int32 ret = 1;
+    optional string hp = 2;
+}
+
+message HuntingOneRaisedReq_22007 {
+    optional int32 talentId = 1;
+}
+
+message HuntingOneRaisedResp_22007 {
+    required int32 ret = 1;
+}
+
+message HuntingOneGetTalentInfoResp_22008 {
+    optional bf.messages.game.StageMessage.MsgTalentStatus talentsInfo = 1;
+}
+
+message HuntingTwoFightReq_22009 {
+    optional int32 talentId = 1;
+}
+
+message HuntingTwoFightResp_22009 {
+    required int32 ret = 1;
+    optional string bosshp = 2;
+    optional int32 talentId = 3;
+    optional bool isKill = 4;
+    optional int32 awardNum = 5;
+}
+
+message HuntingTwoOpenDefeatRankReq_22011 {
+}
+
+message HuntingTwoOpenDefeatRankResp_22011 {
+    repeated MsgHuntingDefeatData info = 1;
+}
+
+message HuntingTwoLastShotResp_22012 {
+    optional MsgHuntingLastShotData info = 1;
+}
+
+message HuntingTwoRaisedReq_22013 {
+    optional int32 talentId = 1;
+}
+
+message HuntingTwoRaisedResp_22013 {
+    required int32 ret = 1;
+}
+
+message HuntingTwoGetTalentInfoResp_22014 {
+    optional bf.messages.game.StageMessage.MsgTalentStatus talentsInfo = 1;
+}

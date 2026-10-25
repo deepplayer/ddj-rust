@@ -1,0 +1,718 @@
+syntax = "proto2";
+
+package bf.messages.game.WeslieMessage;
+
+import "GmActivityMessage.proto";
+import "GmActivityCommonMessage.proto";
+import "PlayerMessage.proto";
+import "CommonMsgMessage.proto";
+import "RankingMessage.proto";
+import "ActivityMysteryMessage.proto";
+
+message MsgWesliePlayerData {
+    optional int32 useImageId = 1;
+    optional int32 lv = 2;
+    repeated MsgWeslieAttr attr = 4;
+    repeated MsgWeslieEquip equip = 5;
+    optional int32 buildLv = 6;
+    optional int32 charge = 7;
+    optional int32 chapter = 8;
+    optional int32 stage = 9;
+    optional MsgWeslieEquip makeEquip = 10;
+    optional int64 fight = 11;
+    repeated int32 achievementType = 12;
+    optional bf.messages.game.GmActivityCommonMessage.MsgRankPlayerData rankData = 13;
+    optional int64 score = 14;
+    optional bool bossFreeBattle = 15;
+    optional bool redArena = 21;
+    optional int32 freeNum = 22;
+}
+
+message MsgWeslieSet {
+    optional bool fight = 1;
+    optional bool attr = 2;
+    optional int32 q = 3;
+    repeated int32 hight1 = 4;
+    repeated int32 hight2 = 5;
+}
+
+message MsgWesliePlayerBriefData {
+    repeated MsgWeslieEquip equip = 2;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 3;
+    optional int32 imageId = 4;
+    repeated MsgWeslieAttr attr = 5;
+}
+
+message MsgWeslieTemplate {
+    repeated MsgWeslieImage images = 1;
+    repeated MsgWeslieAchievement achievements = 2;
+    repeated MsgWeslieRanklist ranklists = 4;
+    repeated bf.messages.game.GmActivityMessage.MsgRank msgRank = 5;
+    repeated MsgWeslieEnemy enemy = 6;
+}
+
+message MsgWeslieEnemy {
+    optional int32 typeid = 1;
+    optional string reward1 = 2;
+    optional string reward2 = 3;
+    optional string reward3 = 4;
+    optional int32 rewardNum = 5;
+    optional string rewardShow = 6;
+    optional bf.messages.game.CommonMsgMessage.MsgResources reward = 7;
+}
+
+message MsgWeslieImage {
+    optional int32 imageId = 1;
+    optional int32 condition = 3;
+    optional int32 param = 4;
+    optional int32 effect = 5;
+}
+
+message MsgWeslieAchievement {
+    optional int32 id = 1;
+    optional int32 type = 2;
+    optional int32 value = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 4;
+}
+
+message MsgWeslieOperateEnemy {
+    optional int32 cid = 1;
+    optional int32 typeid = 2;
+    optional int32 subtype = 3;
+    optional string cost = 4;
+    optional string reward1 = 5;
+    optional string reward2 = 6;
+    optional string reward3 = 7;
+    optional int32 rewardNum = 8;
+    optional string rewardShow = 9;
+}
+
+message MsgWeslieRanklist {
+    optional int32 rankType = 1;
+    optional string rankInterval = 2;
+    optional string reward1 = 3;
+    optional string reward2 = 4;
+}
+
+message MsgWeslieEquip {
+    optional int32 id = 1;
+    optional int32 lv = 2;
+    optional int32 q = 3;
+    repeated MsgWeslieAttr attr = 4;
+    optional int64 power = 5;
+}
+
+message MsgWeslieAttr {
+    optional int32 id = 1;
+    optional int32 value = 2;
+}
+
+message MsgWeslieTransformItem {
+    required int32 templateId = 1;
+    required int64 num = 2;
+    required int64 score = 3;
+}
+
+message MsgBattleData {
+    optional int32 battleType = 1;
+    optional MsgBattleBody fromBody = 2;
+    optional MsgBattleBody toBody = 3;
+    repeated MsgBattleStep steps = 4;
+    optional bool isWin = 5;
+    optional int64 fromHp = 6;
+    optional int64 toHp = 7;
+}
+
+message MsgBattleBody {
+    optional bool isRobot = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 2;
+    optional int32 imageId = 3;
+    optional int64 hpMax = 4;
+    optional int64 hp = 5;
+    optional int32 speed = 6;
+    optional int32 attack = 7;
+    optional int32 defense = 8;
+    repeated MsgWeslieAttr specialAttr = 9;
+}
+
+message MsgBattleStep {
+    optional int32 round = 1;
+    optional bool isFrom = 2;
+    optional int32 type = 3;
+    optional bool isStay = 4;
+    optional bool isDodge = 5;
+    optional bool isCriticalHit = 6;
+    optional int32 hurt = 7;
+    optional bool isBlood = 8;
+    optional int32 recoveryHp = 9;
+    optional bool isStun = 10;
+    optional bool isRebound = 11;
+    optional int32 reboundHurt = 12;
+}
+
+message MsgAreaRankExt {
+    optional int32 imageId = 1;
+    optional bool isRobot = 2;
+}
+
+message MsgAreaEnemy {
+    optional int32 playerRank = 1;
+    optional bool isRobot = 2;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 3;
+}
+
+message MsgAreaBattleLog {
+    optional int32 id = 1;
+    optional bool isRobot = 2;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 3;
+    optional bool isAttack = 4;
+    optional int32 score = 5;
+    optional int64 timeStamp = 6;
+    optional bool isWin = 7;
+}
+
+message MsgBoss {
+    optional int32 bossId = 1;
+    optional int64 curHp = 2;
+    optional int64 maxHp = 3;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 5;
+    repeated bf.messages.game.RankingMessage.MsgRankingEntryData playerRankData = 6;
+    optional int64 damage = 9;
+    optional int32 playerRank = 10;
+    optional int32 energyCnt = 11;
+    optional int32 itemCnt = 12;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgKillUse = 13;
+    optional int64 killTime = 14;
+    optional bool isReward = 15;
+}
+
+message MsgBossState {
+    optional int32 bossId = 1;
+    optional int32 energyCnt = 2;
+    optional int32 itemCnt = 4;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 6;
+    optional int64 killTime = 7;
+    optional bool isReward = 8;
+}
+
+message WeslieUpdateResp_39401 {
+    optional int32 charge = 1;
+    repeated MsgWeslieAttr attrs = 2;
+    optional int32 lv = 3;
+    repeated MsgWeslieEquip equips = 4;
+    repeated int32 achievementType = 5;
+    optional bool bossFreeBattle = 6;
+    optional int64 fight = 11;
+}
+
+message WeslieUseImageReq_39402 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 id = 2;
+}
+
+message WeslieUseImageResp_39402 {
+    required int32 ret = 1;
+    required int32 id = 2;
+}
+
+message WeslieLockEquipReq_39403 {
+    required string playerId = 1;
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+}
+
+message WeslieLockEquipResp_39403 {
+    required int32 ret = 1;
+    optional MsgWesliePlayerBriefData briefData = 2;
+}
+
+message WeslieTransformItemReq_39404 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message WeslieTransformItemResp_39404 {
+    required int32 ret = 1;
+    repeated MsgWeslieTransformItem item = 2;
+}
+
+message WeslieAchieveRewardReq_39405 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 achieveId = 2;
+}
+
+message WeslieAchieveRewardResp_39405 {
+    required int32 ret = 1;
+    optional int32 achieveId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+}
+
+message WeslieMakeReq_39407 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bool tem = 2;
+    optional bool recycle = 3;
+    optional MsgWeslieSet set = 4;
+}
+
+message WeslieMakeResp_39407 {
+    required int32 ret = 1;
+    optional MsgWeslieEquip newEquip = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+    optional bool isok = 4;
+}
+
+message WeslieRecycleReq_39408 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bool recycle = 2;
+}
+
+message WeslieRecycleResp_39408 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+}
+
+message WeslieBuildLvReq_39409 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message WeslieBuildLvResp_39409 {
+    required int32 ret = 1;
+    optional int32 buildlv = 2;
+}
+
+message WeslieGetAchievementListReq_39410 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 type = 2;
+}
+
+message WeslieGetAchievementListResp_39410 {
+    required int32 ret = 1;
+    repeated bf.messages.game.ActivityMysteryMessage.MsgAchievement msgAchievement = 2;
+    optional bool isJoin = 3;
+}
+
+message WeslieStageBattleReq_39416 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message WeslieStageBattleResp_39416 {
+    required int32 ret = 1;
+    optional MsgBattleData data = 2;
+    optional int32 chapter = 3;
+    optional int32 stage = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 5;
+    optional int32 bossId = 6;
+}
+
+message WeslieStageFastBattleReq_39417 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message WeslieStageFastBattleResp_39417 {
+    required int32 ret = 1;
+    optional int32 chapter = 2;
+    optional int32 stage = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 4;
+    optional int32 bossId = 5;
+    optional MsgBattleData data = 6;
+}
+
+message WeslieStageMopupReq_39418 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 num = 2;
+}
+
+message WeslieStageMopupResp_39418 {
+    optional int32 chapter = 1;
+    optional int32 stage = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+    optional int32 num = 4;
+    required int32 ret = 5;
+}
+
+message WeslieStageReq_39419 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 chapter = 2;
+    optional int32 stage = 3;
+}
+
+message WeslieStageResp_39419 {
+    required int32 ret = 1;
+    optional int32 chapter = 2;
+    optional int32 stage = 3;
+    optional int64 recommend = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 5;
+}
+
+message WeslieBossEnterReq_39421 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 bossId = 2;
+}
+
+message WeslieBossEnterResp_39421 {
+    required int32 ret = 1;
+    optional MsgBoss boss = 2;
+    repeated MsgBossState bossState = 3;
+    repeated int32 score = 4;
+}
+
+message WeslieBossLeaveReq_39422 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message WeslieBossLeaveResp_39422 {
+    required int32 ret = 1;
+}
+
+message WeslieBossBattleReq_39423 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 bossId = 2;
+    optional int32 type = 3;
+}
+
+message WeslieBossBattleResp_39423 {
+    optional int32 ret = 1;
+    optional MsgBattleData data = 2;
+    optional MsgBoss msgBoss = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources completeResources = 5;
+    optional int64 damage = 6;
+}
+
+message WeslieBossDeadNoticeResp_39425 {
+    optional int32 actId = 1;
+    optional MsgBossState bossState = 3;
+}
+
+message WeslieBossDamageRankReq_39426 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 bossId = 2;
+}
+
+message WeslieBossDamageRankResp_39426 {
+    required int32 ret = 1;
+    optional bf.messages.game.RankingMessage.MsgRankingData msgRankingData = 2;
+}
+
+message WeslieBossAwardReq_39427 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 bossId = 2;
+}
+
+message WeslieBossAwardResp_39427 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rankResources = 2;
+}
+
+message MsgGetArenaReq_39451 {
+}
+
+message MsgGetArenaResp_39451 {
+    required int32 ret = 1;
+    optional bf.messages.game.RankingMessage.MsgRankingData rankData = 2;
+    optional bool redArena = 4;
+}
+
+message MsgGetEnemyReq_39453 {
+}
+
+message MsgGetEnemyResp_39453 {
+    required int32 ret = 1;
+    repeated MsgAreaEnemy msgEnemy = 2;
+    optional int32 playerRank = 3;
+    optional string money = 4;
+}
+
+message MsgRefreshEnemyReq_39454 {
+}
+
+message MsgRefreshEnemyResp_39454 {
+    required int32 ret = 1;
+    repeated MsgAreaEnemy msgEnemy = 2;
+}
+
+message MsgBattleReq_39456 {
+    optional string playerId = 2;
+}
+
+message MsgBattleResp_39456 {
+    required int32 ret = 1;
+    optional MsgBattleData battleData = 2;
+    optional int32 score = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources extraReward = 6;
+    optional int32 freeNum = 12;
+}
+
+message MsgQueryBattleLogReq_39457 {
+}
+
+message MsgQueryBattleLogResp_39457 {
+    required int32 ret = 1;
+    repeated MsgAreaBattleLog log = 2;
+}
+
+message MsgQueryBattleLogVideoReq_39458 {
+    optional int32 id = 1;
+}
+
+message MsgQueryBattleLogVideoResp_39458 {
+    required int32 ret = 1;
+    optional MsgBattleData battleData = 2;
+}
+
+message MsgArenaSettleReq_39459 {
+}
+
+message MsgArenaSettleResp_39459 {
+    required int32 ret = 1;
+    optional int32 rank = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+}
+
+message MsgG2CBossReq_39501 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int32 bossId = 3;
+    optional int64 familyId = 4;
+}
+
+message MsgG2CBossResp_39501 {
+    optional int32 ret = 1;
+}
+
+message MsgG2CGetBossReq_39502 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int32 bossId = 3;
+}
+
+message MsgG2CGetBossResp_39502 {
+    optional MsgBoss msgBoss = 1;
+    repeated MsgBossState msgBossState = 2;
+    repeated int32 score = 4;
+}
+
+message MsgG2CBossBattleReq_39503 {
+    optional int32 chapter = 1;
+    optional string playerId = 2;
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 3;
+    optional int64 fight = 4;
+}
+
+message MsgG2CBossBattleResp_39503 {
+    required int32 ret = 1;
+    optional MsgBoss msgBoss = 2;
+    optional MsgBattleData msgBattleData = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources completeResources = 5;
+    optional int64 damage = 6;
+    optional string fightInfoJO = 7;
+    optional int32 rankScore = 8;
+    optional int32 rankNum = 9;
+    optional int32 familyRank = 10;
+    optional int64 familyScore = 11;
+    optional int32 scoreChange = 12;
+}
+
+message MsgG2CGetBossStateReq_39504 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional int32 bossId = 2;
+    optional string playerId = 3;
+}
+
+message MsgG2CBossStateResp_39504 {
+    optional MsgBossState msgBossState = 1;
+}
+
+message MsgG2CActivityEndShowReq_39505 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    repeated int32 bossId = 4;
+    optional int64 familyId = 5;
+}
+
+message MsgG2CActivityEndShowResp_39505 {
+    required int32 ret = 1;
+    repeated bf.messages.game.RankingMessage.MsgRankIndex msgRankIndex = 2;
+    optional int64 oldFamilyId = 3;
+    repeated int32 bossId = 5;
+}
+
+message MsgG2CGetPlayerDataReq_39522 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required string playerId = 2;
+}
+
+message MsgG2CGetPlayerDataResp_39522 {
+    required int32 ret = 1;
+    optional int64 score = 3;
+    optional bool redArena = 4;
+    optional int32 freeNum = 5;
+    repeated int32 aliveBossId = 6;
+}
+
+message MsgG2CAchievementUpdateResp_39523 {
+    repeated int32 achievementType = 1;
+}
+
+message MsgG2CPushReq_39524 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    required string playerId = 2;
+    required int64 familyId = 3;
+    optional int64 addScore = 4;
+    optional MsgBattleBody playerBody = 5;
+    optional int32 imageId = 6;
+    optional int32 joinNum = 7;
+    optional int64 money = 8;
+}
+
+message MsgG2CPushResp_39524 {
+    optional int32 rankScore = 1;
+    optional int32 rankNum = 2;
+    optional int32 familyRank = 3;
+    optional int64 familyScore = 4;
+    optional int32 scoreChange = 5;
+}
+
+message MsgG2CGetBriefDataReq_39525 {
+    optional int32 activityId = 1;
+    optional string playerId = 2;
+}
+
+message MsgG2CGetBriefDataResp_39525 {
+    optional MsgWesliePlayerBriefData briefData = 1;
+}
+
+message MsgG2CBossDeadNoticeResp_39526 {
+    optional int32 actId = 1;
+    optional MsgBossState msgBossState = 3;
+}
+
+message MsgG2CBossDamageRankReq_39527 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int32 bossId = 4;
+}
+
+message MsgG2CBossDamageRankResp_39527 {
+    required int32 ret = 1;
+    optional bf.messages.game.RankingMessage.MsgRankingData msgRankingData = 2;
+}
+
+message MsgG2CBossAwardReq_39528 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    required int32 bossId = 4;
+}
+
+message MsgG2CBossAwardResp_39528 {
+    required int32 ret = 1;
+    optional int32 rank = 2;
+    optional string damage = 3;
+}
+
+message MsgG2CFamilEventReq_39529 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+    optional int32 eventType = 4;
+    optional string familyName = 5;
+    optional int32 job = 6;
+}
+
+message MsgG2CSyncActivityRoomReq_39550 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+    optional int32 actGroup = 3;
+    optional int64 extId = 4;
+    optional int32 gameServerId = 5;
+    optional int32 type = 6;
+}
+
+message MsgG2CSyncActivityRoomResp_39550 {
+    required int32 ret = 1;
+}
+
+message MsgG2CGetArenaReq_39551 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+}
+
+message MsgG2CGetArenaResp_39551 {
+    required int32 ret = 1;
+    optional bf.messages.game.RankingMessage.MsgRankingData rankData = 2;
+    optional bool redArena = 4;
+}
+
+message MsgG2CGetEnemyReq_39553 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    repeated string familyMemberIds = 3;
+}
+
+message MsgG2CGetEnemyResp_39553 {
+    required int32 ret = 1;
+    repeated MsgAreaEnemy msgEnemy = 2;
+    optional int32 playerRank = 3;
+    optional string money = 4;
+}
+
+message MsgG2CRefreshEnemyReq_39554 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    repeated string familyMemberIds = 3;
+}
+
+message MsgG2CRefreshEnemyResp_39554 {
+    required int32 ret = 1;
+    repeated MsgAreaEnemy msgEnemy = 2;
+}
+
+message MsgG2CBattleReq_39556 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional string tarPlayerId = 3;
+    optional int32 curStrengthNum = 4;
+}
+
+message MsgG2CBattleResp_39556 {
+    required int32 ret = 1;
+    optional MsgBattleData battleData = 2;
+    optional int32 score = 3;
+    optional int32 freeNum = 5;
+    optional int32 costStrengthNum = 6;
+    optional int32 rank = 10;
+    optional int32 rankScore = 11;
+}
+
+message MsgG2CQueryBattleLogReq_39557 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+}
+
+message MsgG2CQueryBattleLogResp_39557 {
+    required int32 ret = 1;
+    repeated MsgAreaBattleLog log = 2;
+}
+
+message MsgG2CQueryBattleLogVideoReq_39558 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int32 id = 3;
+}
+
+message MsgG2CQueryBattleLogVideoResp_39558 {
+    required int32 ret = 1;
+    optional MsgBattleData battleData = 2;
+}
+
+message MsgG2CArenaSettleReq_39559 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+}
+
+message MsgG2CArenaSettleResp_39559 {
+    required int32 ret = 1;
+    optional int32 rank = 2;
+    optional int32 rankScore = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 4;
+}

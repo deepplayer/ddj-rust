@@ -1,0 +1,113 @@
+syntax = "proto2";
+
+package bf.messages.game.FishingActivityMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgFishingTemplateData {
+    repeated MsgFishingRewardDb fishingRewardDbs = 1;
+}
+
+message MsgFishingRewardDb {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 taskId = 3;
+    optional int32 awardType = 4;
+    optional int32 integral = 5;
+    optional string reward = 6;
+}
+
+message MsgFishingPlayerData {
+    optional int64 topScore = 1;
+    repeated MsgFishingRewardStatus rewardStatus = 2;
+}
+
+message MsgFishingGameData {
+    repeated MsgFishingEvent events = 1;
+    optional int32 timeStopUse = 2;
+    optional int64 startTime = 3;
+    optional int64 endTime = 4;
+    optional string secretKey = 5;
+    repeated MsgFishingTimeStopFragment timeStopFragments = 6;
+    optional int64 stopEndTime = 7;
+}
+
+message MsgFishingRewardStatus {
+    optional int32 id = 1;
+    optional int32 status = 2;
+}
+
+message MsgFishingEvent {
+    optional int32 id = 1;
+    optional int32 appearTiming = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgResources resource = 3;
+    optional int32 pos = 4;
+    optional int32 index = 5;
+}
+
+message MsgFishingTimeStopFragment {
+    optional int32 timeStopSecond = 1;
+    repeated MsgFishingEvent events = 2;
+    optional int32 eventShowIndex = 3;
+}
+
+message MsgFishingTapGameIndex {
+    optional bool timeStopTap = 1;
+    optional int32 timeStopIndex = 2;
+    repeated int32 tapGameIndexes = 3;
+}
+
+message FishingGameStartReq_37801 {
+    optional int32 activityId = 1;
+}
+
+message FishingGameStartResp_37801 {
+    required int32 ret = 1;
+    optional MsgFishingGameData gameData = 2;
+    optional int32 activityId = 3;
+}
+
+message FishingTimeStopReq_37802 {
+    optional int32 activityId = 1;
+    optional int32 gameSecond = 2;
+    optional int32 eventShowIndex = 3;
+}
+
+message FishingTimeStopResp_37802 {
+    required int32 ret = 1;
+    optional MsgFishingGameData gameData = 2;
+    optional int32 eventShowIndex = 3;
+    optional int32 gameSecond = 4;
+    optional int32 timeStopUse = 5;
+    optional bool continuousUse = 6;
+}
+
+message FishingGameEndReq_37803 {
+    optional int32 activityId = 1;
+    optional MsgFishingTapGameIndex mainTaps = 2;
+    repeated MsgFishingTapGameIndex timeStopTaps = 3;
+    optional int32 finalIndex = 4;
+    optional string md5Code = 5;
+}
+
+message FishingGameEndResp_37803 {
+    required int32 ret = 1;
+    optional int64 score = 2;
+    optional int64 topScore = 3;
+    repeated MsgFishingRewardStatus rewardStatus = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 5;
+    optional int32 activityId = 6;
+    optional bool newRecord = 7;
+}
+
+message FishingTargetRewardReq_37804 {
+    optional int32 activityId = 1;
+    optional int32 taskId = 2;
+}
+
+message FishingTargetRewardResp_37804 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional MsgFishingRewardStatus rewardStatus = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 4;
+}

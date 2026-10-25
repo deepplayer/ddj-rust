@@ -1,0 +1,435 @@
+syntax = "proto2";
+
+package bf.messages.game.TeamMessage;
+
+import "ActivityCrossChessMessage.proto";
+import "GmActivityMessage.proto";
+import "PlayerMessage.proto";
+
+message MsgTeamMember {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer msgOfflinePlayer = 1;
+    optional bool isLeader = 2;
+    optional int32 stair = 3;
+    optional string score = 4;
+    optional string book = 5;
+    optional int64 joinTime = 6;
+}
+
+message MsgTeamInfo {
+    optional int64 teamId = 1;
+    optional string teamName = 2;
+    optional int32 num = 3;
+    optional string totalMoney = 4;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer msgOfflinePlayer = 5;
+    optional string limitMoney = 6;
+    optional string teamSlogan = 7;
+    optional int32 state = 8;
+    optional int64 serverId = 9;
+    optional int64 createTime = 10;
+}
+
+message MsgInviteInfo {
+    optional int64 inviteId = 1;
+    optional bool state = 2;
+    optional int64 lastInviteTime = 3;
+}
+
+message MsgInviteChat {
+    optional int64 inviteId = 1;
+    optional string fromPlayerId = 2;
+    optional string toPlayerId = 3;
+    optional int64 lastInviteTime = 4;
+}
+
+message MsgTeamNotify {
+    optional int32 templateId = 1;
+    repeated string replaceStr = 2;
+    optional int64 eventTime = 3;
+}
+
+message MsgTeamInfoRemote {
+    optional int64 teamId = 1;
+    optional int32 actId = 2;
+    optional int32 actType = 3;
+    optional string teamName = 4;
+    optional string teamSlogan = 5;
+}
+
+message MsgTeamMemberRemote {
+    optional int64 teamId = 1;
+    optional string playerId = 2;
+    optional int32 position = 3;
+}
+
+message MsgSysTeam {
+    optional int64 teamId = 1;
+    optional string teamName = 2;
+    optional string leaderPlayerId = 3;
+    optional string teamSlogan = 4;
+    optional int64 lastChangeTime = 5;
+}
+
+message MsgRecommendPanel {
+    repeated bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 1;
+    optional int64 timeStamp = 2;
+}
+
+message CreateTeamReq_27051 {
+    required int32 actId = 1;
+    required int32 actType = 2;
+    optional int64 teamId = 3;
+    optional string teamName = 4;
+    optional string teamSlogan = 5;
+    optional bool isAllowRandomJoin = 6;
+    optional string limitMoney = 7;
+}
+
+message CreateTeamResp_27051 {
+    required int32 ret = 1;
+}
+
+message GetTeamInfoReq_27052 {
+    required int32 actId = 1;
+    required int32 actType = 2;
+    required int64 teamId = 3;
+}
+
+message GetTeamInfoResp_27052 {
+    repeated int32 updateFieldsList = 90;
+    required int32 ret = 1;
+    optional int32 actId = 2;
+    optional int32 actType = 3;
+    repeated MsgTeamMember msgTeamMember = 4;
+    optional string teamName = 5;
+    optional string teamSlogan = 6;
+    optional int64 teamId = 7;
+    repeated string invitePlayerIds = 8;
+    optional bool isAllowRandomJoin = 9;
+    optional string limitMoney = 10;
+    optional int64 lastChangeTime = 11;
+}
+
+message GetTeamListReq_27053 {
+    required int32 actId = 1;
+    required int32 actType = 2;
+}
+
+message GetTeamListResp_27053 {
+    required int32 ret = 1;
+    optional int32 actId = 2;
+    optional int32 actType = 3;
+    repeated MsgTeamInfo msgTeamInfo = 4;
+}
+
+message ApplyTeamReq_27054 {
+    required int32 actId = 1;
+    required int32 actType = 2;
+    optional int64 teamId = 3;
+}
+
+message ApplyTeamResp_27054 {
+    required int32 ret = 1;
+}
+
+message SyncApplyListResp_27055 {
+    optional int32 actId = 1;
+    optional int32 actType = 2;
+    repeated bf.messages.game.PlayerMessage.MsgOfflinePlayer msgOfflinePlayer = 3;
+}
+
+message DealWithApplyReq_27056 {
+    required int32 actId = 1;
+    required int32 actType = 2;
+    required int64 teamId = 3;
+    required bool isAccept = 4;
+    optional string playerId = 5;
+}
+
+message DealWithApplyResp_27056 {
+    required int32 ret = 1;
+}
+
+message QuitTeamReq_27057 {
+    required int32 actId = 1;
+    required int32 actType = 2;
+    required int64 teamId = 3;
+    optional string memberId = 4;
+}
+
+message QuitTeamResp_27057 {
+    required int32 ret = 1;
+}
+
+message InvitePlayerReq_27058 {
+    required int32 actId = 1;
+    required int32 actType = 2;
+    required int64 teamId = 3;
+    required string playerId = 4;
+    optional bool isRecommend = 5;
+}
+
+message InvitePlayerResp_27058 {
+    required int32 ret = 1;
+    optional MsgRecommendPanel msgPanel = 2;
+}
+
+message GetInviteListReq_27059 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetInviteListResp_27059 {
+    required int32 ret = 1;
+    repeated MsgTeamInfo msgInvite = 2;
+}
+
+message AcceptInviteReq_27060 {
+    required int32 actId = 1;
+    required int32 actType = 2;
+    required int64 teamId = 3;
+}
+
+message AcceptInviteResp_27060 {
+    required int32 ret = 1;
+}
+
+message SyncTeamNotifyResp_27061 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated MsgTeamNotify msgTeamNotify = 2;
+}
+
+message ClearTeamNotifyReq_27062 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int64 eventTime = 2;
+}
+
+message ClearTeamNotifyResp_27062 {
+    required int32 ret = 1;
+}
+
+message SyncTeamInfoResp_27063 {
+    repeated int32 updateFieldsList = 90;
+    optional int32 actId = 1;
+    optional int32 actType = 2;
+    repeated MsgTeamMember msgTeamMember = 3;
+    optional string teamName = 4;
+    optional string teamSlogan = 5;
+    optional int64 teamId = 6;
+    repeated string invitePlayerIds = 7;
+    optional bool isAllowRandomJoin = 8;
+    optional string limitMoney = 9;
+}
+
+message GetOtherTeamMemberReq_27064 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int64 teamId = 2;
+}
+
+message GetOtherTeamMemberResp_27064 {
+    required int32 ret = 1;
+    optional int64 teamId = 2;
+    optional string teamName = 3;
+    optional string teamSlogan = 4;
+    repeated MsgTeamMember msgTeamMember = 5;
+}
+
+message NotifyIntoTeamGsRemote_27065 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int64 teamId = 3;
+    repeated bf.messages.game.ActivityCrossChessMessage.MsgChessMemberData msgChessMemberData = 4;
+}
+
+message ChangeTeamRemoteReq_27066 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int64 teamId = 2;
+    optional string teamName = 3;
+    optional string teamSlogan = 4;
+}
+
+message ChangeTeamRemoteResp_27066 {
+    required int32 ret = 1;
+}
+
+message GetMyTeamMemberCSRemoteReq_27067 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int64 teamId = 2;
+}
+
+message GetMyTeamMemberGSRemoteResp_27067 {
+    required int32 ret = 1;
+    repeated MsgTeamMember msgTeamMember = 2;
+    optional string teamName = 3;
+    optional string teamSlogan = 4;
+}
+
+message CreateTeamCsRemote_27068 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional string playerName = 3;
+    optional int64 teamId = 4;
+    optional string teamName = 5;
+    optional string teamSlogan = 6;
+    optional bool isAllowRandomJoin = 7;
+    optional string limitMoney = 8;
+}
+
+message CreateTeamGsRemote_27068 {
+    required int32 ret = 1;
+    optional int64 teamId = 2;
+    repeated bf.messages.game.ActivityCrossChessMessage.MsgChessMemberData msgChessMemberData = 3;
+}
+
+message RefreshTeamInfoGsRemote_27069 {
+    repeated string playerId = 1;
+    optional GetTeamInfoResp_27052 msg = 2;
+    optional SyncTeamInfoResp_27063 msgSync = 3;
+}
+
+message GetTeamInfoCsRemote_27070 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int64 teamId = 2;
+    optional string playerId = 3;
+}
+
+message GetTeamInfoGsRemote_27070 {
+    required int32 ret = 1;
+    optional GetTeamInfoResp_27052 msg = 2;
+}
+
+message GetTeamListCsRemote_27071 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional string money = 3;
+}
+
+message GetTeamListGsRemote_27071 {
+    required int32 ret = 1;
+    repeated MsgTeamInfo msgTeamInfo = 2;
+}
+
+message ApplyTeamCsRemote_27072 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional int64 teamId = 3;
+}
+
+message ApplyTeamGsRemote_27072 {
+    required int32 ret = 1;
+    optional int64 teamId = 2;
+    repeated bf.messages.game.ActivityCrossChessMessage.MsgChessMemberData msgChessMemberData = 3;
+}
+
+message SyncApplyListGsRemote_27073 {
+    optional string playerId = 1;
+    optional SyncApplyListResp_27055 msg = 2;
+}
+
+message DealWithApplyCsRemote_27074 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional string playerName = 3;
+    optional int64 teamId = 4;
+    optional bool isAccept = 5;
+    optional string toPlayerId = 6;
+}
+
+message DealWithApplyGsRemote_27074 {
+    required int32 ret = 1;
+    repeated string toPlayerId = 2;
+    repeated bf.messages.game.ActivityCrossChessMessage.MsgChessMemberData msgChessMemberData = 3;
+}
+
+message NotifyTeamMsgGsRemote_27075 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated string playerId = 2;
+    optional int32 templateId = 3;
+    repeated string replaceStr = 4;
+}
+
+message QuitTeamCsRemote_27076 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional string playerName = 3;
+    required int64 teamId = 4;
+    optional string memberId = 5;
+}
+
+message QuitTeamGsRemote_27076 {
+    required int32 ret = 1;
+    optional bool isLeave = 2;
+    repeated bf.messages.game.ActivityCrossChessMessage.MsgChessMemberData msgChessMemberData = 3;
+}
+
+message InvitePlayerCsRemote_27077 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int64 teamId = 3;
+    optional string toPlayerId = 4;
+    optional bool isRecommend = 5;
+}
+
+message InvitePlayerGsRemote_27077 {
+    required int32 ret = 1;
+    repeated bf.messages.game.ActivityCrossChessMessage.MsgChessMemberData msgChessMemberData = 2;
+    optional MsgRecommendPanel msgPanel = 3;
+}
+
+message GetInviteListCsRemote_27078 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message GetInviteListGsRemote_27078 {
+    required int32 ret = 1;
+    repeated MsgTeamInfo msgInvite = 2;
+}
+
+message AcceptInviteCsRemote_27079 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int64 teamId = 3;
+}
+
+message AcceptInviteGsRemote_27079 {
+    required int32 ret = 1;
+    optional GetTeamInfoResp_27052 msg = 2;
+    repeated bf.messages.game.ActivityCrossChessMessage.MsgChessMemberData msgChessMemberData = 3;
+}
+
+message GetApplyListCsRemote_27080 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message GetApplyListGsRemote_27080 {
+    required int32 ret = 1;
+    repeated bf.messages.game.PlayerMessage.MsgOfflinePlayer msgOfflinePlayer = 2;
+}
+
+message SearchAllTeamCsRemote_27081 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message SearchAllTeamGsRemote_27081 {
+    required int32 ret = 1;
+    repeated MsgSysTeam msgTeam = 2;
+}
+
+message GetRecommendReq_27082 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetRecommendResp_27082 {
+    required int32 ret = 1;
+    optional MsgRecommendPanel msgPanel = 2;
+}
+
+message GetRecommendCsRemote_27083 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message GetRecommendGsRemote_27083 {
+    required int32 ret = 1;
+    optional MsgRecommendPanel msgPanel = 2;
+}

@@ -1,0 +1,115 @@
+syntax = "proto2";
+
+package bf.messages.game.ChargeMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgChargeData {
+    repeated int32 payRewardId = 1;
+    repeated int32 fristPayRewardDays = 2;
+    repeated int32 preferentialPayRewardDays = 3;
+}
+
+message ChargeOrderReq_20001 {
+    optional int32 chargeId = 1;
+}
+
+message ChargeOrderResp_20001 {
+    required int32 ret = 1;
+    optional string cpOrder = 2;
+    optional int32 chargeId = 3;
+    optional string sign = 4;
+}
+
+message ChargeOrderSuccessResp_20002 {
+    optional int32 chargeId = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message ChargeDrawAwardReq_20003 {
+    optional int32 payRewardId = 1;
+    optional int32 day = 2;
+}
+
+message ChargeDrawAwardResp_20003 {
+    required int32 ret = 1;
+    optional int32 payRewardId = 2;
+    optional int32 day = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 4;
+}
+
+message ChargeCouponReq_20004 {
+    optional int32 chargeId = 1;
+}
+
+message ChargeCouponResp_20004 {
+    required int32 ret = 1;
+    optional int32 chargeId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+}
+
+message ChargeOrderGmActivityReq_20005 {
+    optional int32 type = 1;
+    optional int32 id = 2;
+    optional string ca = 3;
+    optional string str = 4;
+}
+
+message ChargeOrderGmActivityResp_20005 {
+    required int32 ret = 1;
+    optional string cpOrder = 2;
+    optional int32 type = 3;
+    optional int32 id = 4;
+    optional string ca = 5;
+    optional string str = 6;
+    optional string sign = 7;
+}
+
+message ChargeOrderGmActivitySuccessResp_20006 {
+    optional int32 type = 1;
+    optional int32 id = 2;
+    optional string ca = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 4;
+}
+
+message ChargeCouponGmReq_20007 {
+    optional int32 type = 1;
+    optional int32 id = 2;
+    optional string ca = 3;
+}
+
+message ChargeCouponGmResp_20007 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+    optional int32 id = 3;
+    optional string ca = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 5;
+}
+
+message HyChargeOrderSuccessResp_20008 {
+    optional int32 chargeId = 1;
+}
+
+message ChargeReplaceMoneyReq_20009 {
+    optional int32 chargeId = 1;
+}
+
+message ChargeReplaceMoneyResp_20009 {
+    required int32 ret = 1;
+    optional int32 chargeId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+}
+
+message ChargeReplaceMoneyGmReq_20010 {
+    optional int32 type = 1;
+    optional int32 id = 2;
+    optional string ca = 3;
+}
+
+message ChargeReplaceMoneyGmResp_20010 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+    optional int32 id = 3;
+    optional string ca = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 5;
+}

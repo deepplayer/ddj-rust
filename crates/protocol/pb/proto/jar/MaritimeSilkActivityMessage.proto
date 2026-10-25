@@ -1,0 +1,694 @@
+syntax = "proto2";
+
+package bf.messages.game.MaritimeSilkActivityMessage;
+
+import "CommonMsgMessage.proto";
+import "GmActivityMessage.proto";
+import "PlayerMessage.proto";
+import "StageMessage.proto";
+
+message MsgMaritimeAllTemplateData {
+    repeated bf.messages.game.GmActivityMessage.MsgRank msgRank = 1;
+    repeated MsgOceanRewardTemplate oceanRewards = 2;
+}
+
+message MsgOceanRewardTemplate {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 taskId = 3;
+    optional int64 param1 = 4;
+    optional string reward = 5;
+    optional int32 jump = 6;
+}
+
+message MsgMaritimeSilkPlayerData {
+    repeated int32 updateFieldsList = 90;
+    optional int32 stage = 1;
+    optional int64 historyCurrency = 2;
+    optional int32 playerRank = 3;
+    optional int64 goodsRTime = 4;
+    optional int64 shipsRTime = 5;
+    optional int32 shipLv = 6;
+    optional int32 shipState = 7;
+    optional MsgCity msgCity = 8;
+    repeated MsgGoods goods = 9;
+    repeated int32 drawType = 10;
+    repeated MsgStageTaskState stageState = 11;
+    optional MsgSailEvent selfSail = 12;
+    optional MsgPirateEvent selfPirate = 13;
+    repeated MsgPlunderPlayer otherSails = 14;
+    repeated int32 redDots = 15;
+    repeated bf.messages.game.StageMessage.MsgTalentStatus talentEscortStatus = 16;
+    repeated bf.messages.game.StageMessage.MsgTalentStatus talentRobStatus = 17;
+    optional int32 familyRank = 18;
+    optional bool isJoin = 19;
+    optional int64 lackGoodsRTime = 20;
+    optional int32 crossVersion = 21;
+}
+
+message MsgStageTaskState {
+    optional int32 taskId = 1;
+    optional int32 state = 2;
+}
+
+message MsgGoods {
+    optional int64 bulkId = 1;
+    optional int32 goodsId = 2;
+    optional int32 price = 3;
+    optional int64 num = 4;
+    optional bool fromRob = 5;
+    optional bool notSale = 6;
+}
+
+message MsgCity {
+    optional int32 cityId = 1;
+    repeated MsgGoods saleGoods = 2;
+    repeated int32 lackGoodsIds = 3;
+    optional bool reported = 4;
+}
+
+message MsgPirateEvent {
+    optional int64 evtId = 1;
+    optional string playerId = 2;
+    optional int32 pirateId = 3;
+    optional string hp = 4;
+    optional string killer = 5;
+    optional int64 leaveTime = 6;
+    optional int32 state = 7;
+    optional int64 eventTime = 8;
+    optional int64 lastAtkTime = 9;
+    optional bool marked = 10;
+    optional string finderName = 11;
+    optional string killerId = 12;
+}
+
+message MsgSailEvent {
+    optional string playerId = 1;
+    optional int32 targetCity = 2;
+    optional int32 escortTalent = 3;
+    optional int64 arriveTime = 4;
+    optional int32 state = 5;
+    optional int64 eventTime = 6;
+    optional int32 atkState = 7;
+    optional int32 startCity = 8;
+    optional int64 currencyX = 9;
+    optional int64 currencyY = 10;
+    optional int32 escortTalentUseSkinId = 11;
+    optional int64 goodsValueX = 12;
+    optional int64 goodsValueY = 13;
+    optional int32 sailShipLv = 14;
+    optional int32 skinAwake = 15;
+}
+
+message MsgMaritimeSilkPlayer {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer msgPlayer = 1;
+    optional int32 shipLv = 2;
+    optional int64 historyCurrency = 3;
+    optional string familyName = 4;
+}
+
+message MsgPlunderPlayer {
+    optional MsgMaritimeSilkPlayer msgMSPlayer = 1;
+    optional MsgSailEvent sailEvt = 2;
+    optional int32 robTimes = 3;
+}
+
+message MsgFamilyReport {
+    repeated MsgPirateEvent pirateEvts = 1;
+}
+
+message MsgDefenceEvent {
+    optional int64 evtId = 1;
+    optional MsgPlunderPlayer player = 2;
+    optional bool win = 3;
+    optional bool beatBack = 4;
+    optional int64 eventTime = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources lost = 6;
+    optional int32 defenceType = 7;
+}
+
+message MsgDefenceReport {
+    repeated MsgDefenceEvent defences = 1;
+}
+
+message MsgCityInformation {
+    optional MsgCity msgCity = 1;
+    optional string name = 2;
+}
+
+message MsgCitySimpleInfo {
+    optional int32 cityId = 1;
+    optional string name = 2;
+    repeated int32 lackGoods = 3;
+}
+
+message MsgMaritimeTalentBrief {
+    optional string playerId = 1;
+    required int32 talentId = 2;
+    optional int32 degree = 3;
+    optional int32 skinId = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgTalentSkin skins = 5;
+    optional string money = 6;
+    optional int32 lv = 7;
+}
+
+message MsgFamilyChannelPirateReplaceStr {
+    repeated string replaceStr = 1;
+}
+
+message MsgMaritimeGoodsSign {
+    optional MsgGoods goods = 1;
+    optional int32 cityId = 2;
+}
+
+message MsgMaritimeBusinessLog {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer msgPlayer = 1;
+    optional int32 goodsId = 2;
+    optional int64 num = 3;
+    optional string currency = 4;
+    optional bool sale = 5;
+    optional int64 time = 6;
+}
+
+message MsgMaritimeSailLog {
+    optional int32 type = 1;
+    optional int64 time = 2;
+    repeated int32 params = 3;
+}
+
+message MsgMaritimeSailDayLog {
+    optional int64 dayTimestamp = 1;
+    repeated MsgMaritimeSailLog logs = 2;
+}
+
+message MaritimeShipUpgradeReq_35001 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message MaritimeShipUpgradeResp_35001 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+}
+
+message MaritimeCitySailReq_35002 {
+    optional int32 activityId = 1;
+    optional int32 cityId = 2;
+    optional int32 talentId = 3;
+    optional int32 activityType = 4;
+}
+
+message MaritimeCitySailResp_35002 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+}
+
+message MaritimeSailReduceTimeReq_35003 {
+    optional int32 activityId = 1;
+    optional int32 num = 2;
+    optional int32 activityType = 3;
+}
+
+message MaritimeSailReduceTimeResp_35003 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional bool arrived = 3;
+    optional bool triggerPirate = 4;
+}
+
+message MaritimeAttackPirateReq_35004 {
+    optional int32 activityId = 1;
+    optional int64 evtId = 2;
+    optional int32 activityType = 3;
+}
+
+message MaritimeAttackPirateResp_35004 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 damageHp = 3;
+    optional MsgPirateEvent pirateEvt = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 5;
+}
+
+message MaritimeMarkPirateReq_35005 {
+    optional int32 activityId = 1;
+    optional int64 evtId = 2;
+    optional int32 activityType = 3;
+}
+
+message MaritimeMarkPirateResp_35005 {
+    required int32 ret = 1;
+    optional int64 evtId = 2;
+}
+
+message MaritimeAttackPlayerReq_35006 {
+    optional int32 activityId = 1;
+    optional string enemyId = 2;
+    optional int32 talentId = 3;
+    optional int32 resType = 4;
+    optional bool beatBack = 5;
+    optional int64 defenceEvtId = 6;
+    optional int32 activityType = 7;
+}
+
+message MaritimeAttackPlayerResp_35006 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData battleData = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 4;
+}
+
+message MaritimeBuyGoodsReq_35007 {
+    optional int32 activityId = 1;
+    optional int32 cityId = 2;
+    optional int32 goodsId = 3;
+    optional int32 num = 4;
+    optional int32 activityType = 5;
+}
+
+message MaritimeBuyGoodsResp_35007 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgResources resource = 3;
+}
+
+message MaritimeSaleGoodsReq_35008 {
+    optional int32 activityId = 1;
+    optional int32 cityId = 2;
+    optional int64 bulkId = 3;
+    optional int32 num = 4;
+    optional int32 activityType = 5;
+}
+
+message MaritimeSaleGoodsResp_35008 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgResources resource = 3;
+}
+
+message MaritimeStageRewardReq_35009 {
+    optional int32 activityId = 1;
+    optional int32 taskId = 2;
+    optional int32 activityType = 3;
+}
+
+message MaritimeStageRewardResp_35009 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 taskId = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 4;
+}
+
+message MaritimeCityInfoReq_35010 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message MaritimeCityInfoResp_35010 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    repeated MsgCitySimpleInfo cities = 3;
+}
+
+message MaritimeCityInfoDetailReq_35011 {
+    optional int32 activityId = 1;
+    optional int32 cityId = 2;
+    optional int32 activityType = 3;
+}
+
+message MaritimeCityInfoDetailResp_35011 {
+    required int32 ret = 1;
+    optional MsgCityInformation cityInfo = 2;
+}
+
+message MaritimeFamilyReportReq_35012 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message MaritimeFamilyReportResp_35012 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional MsgFamilyReport familyReport = 3;
+}
+
+message MaritimeDefenceReportReq_35013 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message MaritimeDefenceReportResp_35013 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional MsgDefenceReport defenceReport = 3;
+}
+
+message MaritimeClearRedDotsReq_35014 {
+    optional int32 activityId = 1;
+    repeated int32 redDots = 2;
+    optional int32 activityType = 3;
+}
+
+message MaritimeClearRedDotsResp_35014 {
+    required int32 ret = 1;
+}
+
+message MaritimeRecoverTalentStatusReq_35015 {
+    optional int32 activityId = 1;
+    optional int32 talentId = 2;
+    optional bool escortOrRob = 3;
+    optional int32 activityType = 4;
+}
+
+message MaritimeRecoverTalentStatusResp_35015 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+}
+
+message MaritimeCityReportReq_35016 {
+    optional int32 activityId = 1;
+    optional int32 cityId = 2;
+    optional int32 activityType = 3;
+}
+
+message MaritimeCityReportResp_35016 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+}
+
+message MaritimeFamilyChannelPirateReq_35017 {
+    optional int32 activityId = 1;
+    repeated int64 pirateEventIds = 2;
+    optional int32 activityType = 3;
+}
+
+message MaritimeFamilyChannelPirateResp_35017 {
+    required int32 ret = 1;
+    repeated MsgFamilyChannelPirateReplaceStr replaces = 2;
+}
+
+message MaritimeSailBeAtkResp_35018 {
+    optional bool defenceWin = 1;
+}
+
+message MaritimeSailEventQueryReq_35019 {
+    optional int32 activityId = 1;
+    optional string playerId = 2;
+    optional int32 activityType = 3;
+}
+
+message MaritimeSailEventQueryResp_35019 {
+    required int32 ret = 1;
+    optional MsgPlunderPlayer plunderPlayer = 2;
+}
+
+message MaritimeGoodsSignQueryReq_35020 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message MaritimeGoodsSignQueryResp_35020 {
+    required int32 ret = 1;
+    repeated MsgMaritimeGoodsSign speGoods = 2;
+    repeated MsgMaritimeGoodsSign lackGoods = 3;
+}
+
+message MaritimeGoodsChangeReq_35021 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message MaritimeGoodsChangeResp_35021 {
+    required int32 ret = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgResources resource = 2;
+}
+
+message MaritimeBusinessLogQueryReq_35022 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 cityId = 3;
+}
+
+message MaritimeBusinessLogQueryResp_35022 {
+    required int32 ret = 1;
+    repeated MsgMaritimeBusinessLog businessLogs = 2;
+}
+
+message MaritimeSailLogQueryReq_35023 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message MaritimeSailLogQueryResp_35023 {
+    required int32 ret = 1;
+    repeated MsgMaritimeSailDayLog dayLogs = 2;
+}
+
+message MsgMaritimePlayerDataFromCross {
+    repeated int32 updateFieldsList = 90;
+    optional int32 stage = 1;
+    optional int32 playerRank = 2;
+    optional int64 goodsRTime = 3;
+    optional int64 shipsRTime = 4;
+    optional int32 shipState = 5;
+    optional MsgSailEvent sailEvt = 6;
+    optional MsgPirateEvent pirateEvt = 7;
+    repeated MsgPlunderPlayer plunders = 8;
+    optional string playerId = 9;
+    optional int32 familyRank = 10;
+    optional int32 alivePirateNum = 11;
+    optional int64 lackGoodsRTime = 12;
+}
+
+message MaritimeActPlayerDataReq_35051 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message MaritimeActPlayerDataResp_35051 {
+    required int32 ret = 1;
+    optional MsgMaritimePlayerDataFromCross playerData = 2;
+}
+
+message MaritimeShipSailCSReq_35052 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional MsgMaritimeTalentBrief talent = 3;
+    optional int32 cityId = 4;
+    optional int32 shipLv = 5;
+    optional int32 startCity = 6;
+    optional int64 currencyWhenSail = 7;
+    optional int64 goodsValueWhenSail = 8;
+}
+
+message MaritimeShipSailCSResp_35052 {
+    required int32 ret = 1;
+    optional MsgMaritimePlayerDataFromCross playerData = 2;
+}
+
+message MaritimeReduceSailTimeCSReq_35053 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int32 num = 3;
+}
+
+message MaritimeReduceSailTimeCSResp_35054 {
+    required int32 ret = 1;
+    optional MsgMaritimePlayerDataFromCross playerData = 2;
+    optional bool arrived = 3;
+}
+
+message MaritimeAtkPirateCSReq_35054 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int64 pirateEvtId = 3;
+    optional int32 shipLv = 4;
+}
+
+message MaritimeAtkPirateCSResp_35055 {
+    required int32 ret = 1;
+    optional MsgPirateEvent pirateEvt = 2;
+    optional int32 damageHp = 3;
+    optional MsgSailEvent sailEvt = 4;
+}
+
+message MaritimeMarkPirateCSReq_35056 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int64 pirateEvtId = 3;
+    optional int64 familyId = 4;
+}
+
+message MaritimeMarkPirateCSResp_35056 {
+    required int32 ret = 1;
+    optional MsgMaritimePlayerDataFromCross playerData = 2;
+}
+
+message MaritimeBeyondHistoryCSReq_35057 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int64 historyCurrency = 3;
+    optional int64 familyId = 4;
+}
+
+message MaritimeBeyondHistoryCSResp_35057 {
+    required int32 ret = 1;
+}
+
+message MaritimePiratesReportCSReq_35058 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int64 familyId = 2;
+    optional string playerId = 3;
+}
+
+message MaritimePiratesReportCSResp_35058 {
+    required int32 ret = 1;
+    optional MsgFamilyReport familyReport = 2;
+}
+
+message MaritimeDefencesReportCSReq_35059 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message MaritimeDefencesReportCSResp_35059 {
+    required int32 ret = 1;
+    optional MsgDefenceReport defenceReport = 2;
+}
+
+message MaritimeChatStateCSReq_35060 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated int64 pirateEventIds = 2;
+}
+
+message MaritimeChatStateCSResp_35060 {
+    required int32 ret = 1;
+    repeated MsgFamilyChannelPirateReplaceStr replaces = 2;
+}
+
+message MaritimeAtkOtherCSReq_35061 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required string attacker = 2;
+    required string enemyId = 3;
+    required MsgMaritimeTalentBrief talentBrief = 4;
+    optional int32 resType = 5;
+    optional bool beatBack = 6;
+    optional int64 defenceEvtId = 7;
+}
+
+message MaritimeAtkOtherCSResp_35061 {
+    required int32 ret = 1;
+    optional bool selfWin = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData battleData = 3;
+    optional bf.messages.game.CommonMsgMessage.MsgResources resources = 4;
+    repeated MsgGoods goods = 5;
+    optional MsgMaritimePlayerDataFromCross playerData = 6;
+}
+
+message MaritimeRankCSReq_35062 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required string key = 2;
+    required int32 rankType = 3;
+}
+
+message MaritimeRankCSResp_35062 {
+    required int32 ret = 1;
+    optional int32 rank = 2;
+    optional int32 rankType = 3;
+    optional string key = 4;
+}
+
+message MaritimeShipLvUpCS_35063 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int32 shipLv = 3;
+}
+
+message MaritimeQueryPlayerCSReq_35064 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional string otherPlayerId = 3;
+}
+
+message MaritimeQueryPlayerCSResp_35064 {
+    required int32 ret = 1;
+    optional MsgPlunderPlayer plunderPlayer = 2;
+}
+
+message MaritimeStockParamCSReq_35065 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message MaritimeStockParamCSResp_35065 {
+    required int32 ret = 1;
+    optional int32 day = 2;
+    optional int32 times = 3;
+}
+
+message MaritimePirateBeAtkGSRep_35081 {
+    optional string playerId = 1;
+    optional MsgMaritimePlayerDataFromCross playerData = 2;
+    optional int32 activityId = 3;
+    optional int64 familyId = 4;
+}
+
+message MaritimeGoodsRefreshGSReq_35082 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int64 nextGoodsRTime = 2;
+    optional int32 dayNum = 3;
+    optional int32 todayRefreshNum = 4;
+    optional bool goodsRefresh = 5;
+    optional bool lackGoodsRefresh = 6;
+    optional int64 nextLackGoodsRTime = 7;
+}
+
+message MaritimeShipsRefreshGSReq_35083 {
+    optional int32 activityId = 1;
+    repeated MsgMaritimePlayerDataFromCross playerData = 2;
+    optional int64 nextShipsRTime = 3;
+}
+
+message MaritimeArriveCityGSReq_35084 {
+    optional int32 activityId = 1;
+    repeated MsgMaritimePlayerDataFromCross playerData = 2;
+}
+
+message MaritimeSendPlayerDataReq_35085 {
+    optional int32 activityId = 1;
+    repeated MsgMaritimePlayerDataFromCross playerData = 2;
+    optional int32 func = 3;
+}
+
+message MaritimeSelfBeAtkGSReq_35087 {
+    optional string playerId = 1;
+    optional string enemyId = 2;
+    optional bool selfWin = 3;
+    optional int32 resType = 4;
+    optional int32 activityId = 5;
+    optional MsgMaritimePlayerDataFromCross playerData = 7;
+    optional MsgMaritimeTalentBrief enemyTalent = 9;
+    optional string selfTalentPower = 10;
+}
+
+message MaritimeSelfBeAtkGSResp_35087 {
+    required int32 ret = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgResources lostCurrency = 2;
+    repeated MsgGoods goods = 3;
+    optional int32 resType = 4;
+    optional bool goodsLimit = 5;
+    optional bool currencyLimit = 6;
+}
+
+message MaritimeRankChangeReq_35088 {
+    optional int32 playerRank = 1;
+    optional int32 familyRank = 2;
+    optional string playerId = 3;
+    optional int64 familyId = 4;
+    optional bool bePlayerRank = 5;
+    optional int32 activityId = 6;
+}
+
+message MaritimeLackGoodsRefreshGSReq_35089 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int64 nextGoodsRTime = 2;
+}

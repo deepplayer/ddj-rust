@@ -1,0 +1,646 @@
+syntax = "proto2";
+
+package bf.messages.game.GmActivityPawnMessage;
+
+import "CommonMsgMessage.proto";
+import "GmActivityCommonMessage.proto";
+import "PlayerMessage.proto";
+
+message MsgPawnAllTemplateData {
+    repeated bf.messages.game.GmActivityCommonMessage.MsgRankReward rankRewards = 1;
+    repeated MsgPawnRewardTemplate taskRewards = 2;
+}
+
+message MsgPawnRewardTemplate {
+    optional int32 id = 1;
+    optional string name = 2;
+    optional string des = 3;
+    optional int32 param1 = 4;
+    optional string reward = 5;
+}
+
+message MsgPawnAllPlayerData {
+    repeated int32 updateFieldsList = 99;
+    optional bf.messages.game.GmActivityCommonMessage.MsgRankPlayerData rankData = 1;
+    repeated int32 gainTaskId = 2;
+    optional int32 maxNum = 3;
+    optional int32 curNum = 4;
+    optional bool lockPriceBtn = 5;
+    optional int32 staffRefreshNum = 17;
+    optional int32 day = 6;
+    optional int32 storeLv = 7;
+    optional MsgPawnPersonal personalData = 8;
+    repeated MsgGoods goodsData = 9;
+    repeated MsgStaffMarket staffMarketData = 10;
+    optional int64 staffMarketNextTime = 11;
+    repeated MsgStaff staffData = 12;
+    repeated MsgBuff buff = 13;
+    optional MsgEvent eventData = 14;
+    repeated int32 npcId = 15;
+    optional MsgTrade tradeData = 16;
+    optional int32 isShowResetBtn = 18;
+    optional MsgWeeklyFail weeklyFail = 20;
+    repeated MsgGoods auctionStorage = 22;
+    optional int32 auctionSuccessNum = 23;
+}
+
+message MsgPawnPersonal {
+    optional int32 lv = 1;
+    optional int32 exp = 2;
+    repeated MsgRoleAttr attrs = 3;
+}
+
+message MsgRoleAttr {
+    optional int32 type = 1;
+    optional int32 value = 2;
+    optional int32 extValue = 3;
+}
+
+message MsgGoods {
+    optional int32 id = 1;
+    optional int32 itemId = 2;
+    optional bool isLegend = 3;
+    optional int32 quality = 4;
+    optional int32 state = 5;
+    optional bool isLookFake = 6;
+    optional int32 estimatePrice = 7;
+    optional int32 buyPrice = 8;
+    optional int32 status = 9;
+    optional int32 staffId = 10;
+    optional int32 pawnEndDay = 11;
+    optional int32 startPrice = 12;
+}
+
+message MsgStaffMarket {
+    optional int32 id = 1;
+    optional int32 staffId = 2;
+    optional bool isRecruit = 3;
+}
+
+message MsgStaff {
+    optional int32 id = 1;
+    optional int32 staffId = 2;
+    optional int32 status = 3;
+    optional int32 totalWorkDay = 4;
+    optional int32 curWorkDay = 5;
+}
+
+message MsgEvent {
+    optional int32 eventId = 1;
+    optional int32 price = 2;
+}
+
+message MsgTrade {
+    optional MsgCustomer customer = 1;
+    optional MsgGoods goods = 2;
+    optional int32 talkId = 3;
+    optional int32 talkIndex = 4;
+    optional int32 playerPrice = 5;
+    optional int32 npcPrice = 6;
+    optional bool isUseMediator = 7;
+    optional MsgPriceComponent priceComponent = 8;
+    optional int32 result = 9;
+    optional int32 finalPrice = 10;
+    optional int32 finalPriceEx = 12;
+    optional int32 goodsHideAttr = 15;
+    optional int32 goodsLegendAdd = 16;
+    optional int32 goodsBasePrice = 17;
+    optional int32 goodsPrice = 18;
+    repeated MsgRoleAttr playerAttr = 19;
+    repeated MsgRoleAttr npcAttr = 20;
+    optional bool isPressPrice = 21;
+    optional int32 npcPatient = 22;
+    optional int32 npcAssessPrice = 23;
+    optional int32 npcExpectPrice = 24;
+    optional int32 npcSetPrice = 25;
+    optional int32 npcSetPriceNum = 26;
+    repeated bool npcAssessParams = 27;
+}
+
+message MsgCustomer {
+    optional int32 npcId = 1;
+    optional int32 type = 2;
+    repeated MsgRoleAttr attrs = 3;
+}
+
+message MsgPriceComponent {
+    optional int32 minPrice = 1;
+    optional int32 maxPrice = 2;
+    optional int32 stepPrice = 3;
+}
+
+message MsgWeekly {
+    optional int32 totalProfit = 1;
+    optional int32 coin = 2;
+    optional int32 goodsPrice = 3;
+    optional int32 auctionGoodsPrice = 4;
+    optional int32 staffPrice = 11;
+    optional int32 storePrice = 12;
+    optional int32 attrPrice = 13;
+    optional int32 repairPrice = 14;
+    optional int32 forgePrice = 15;
+    optional int32 buyGoods = 16;
+    optional int32 eventCost = 17;
+    optional int32 totalCost = 18;
+    optional int32 sellGoodsPrice = 21;
+    optional int32 eventReward = 22;
+    optional int32 totalReward = 23;
+}
+
+message MsgWeeklyFail {
+    optional int32 staffPrice = 1;
+    optional int32 coin = 2;
+    optional int32 surplusCoin = 3;
+}
+
+message MsgDaily {
+    optional int32 type = 1;
+    optional MsgGoods goods = 2;
+    optional int32 lastIntegrity = 3;
+    optional int32 lastQuality = 4;
+    optional int32 chgPrice = 5;
+    optional int32 profit = 6;
+    optional int32 finalPrice = 7;
+    optional int32 finalPriceEx = 8;
+}
+
+message MsgBuff {
+    optional int32 type = 1;
+    optional int32 endDay = 2;
+    optional int32 priceAdd = 5;
+}
+
+message MsgAuctionHall {
+    optional int32 level = 1;
+    optional int64 startTime = 2;
+    optional int64 endTime = 3;
+    repeated MsgAuctionRoomSimple infos = 4;
+}
+
+message MsgAuctionRoomSimple {
+    optional string roomId = 1;
+    optional MsgGoods goods = 2;
+    optional bool isEnd = 3;
+}
+
+message MsgAuctionRoom {
+    optional string roomId = 1;
+    optional int32 level = 2;
+    optional int64 startTime = 3;
+    optional int64 endTime = 4;
+    optional int64 playerAuctionEndTime = 5;
+    optional MsgGoods goods = 6;
+    repeated int32 optionalPrice = 7;
+    optional MsgSetPriceRecord curPrice = 8;
+    repeated MsgSetPriceRecord records = 9;
+    optional bool isEnd = 10;
+}
+
+message MsgSetPriceRecord {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 1;
+    optional int32 price = 2;
+    optional int64 time = 3;
+}
+
+message MsgAuctionLog {
+    optional string roomId = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 2;
+    optional int32 type = 3;
+    optional MsgGoods goods = 4;
+    optional int32 myPrice = 5;
+    optional int32 finalPrice = 6;
+}
+
+message MsgDayLog {
+    optional int32 day = 1;
+    repeated MsgLog log = 2;
+}
+
+message MsgLog {
+    optional int32 type = 1;
+    repeated int32 params = 2;
+}
+
+message MsgQueryPlayerDataReq_32801 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+}
+
+message MsgQueryPlayerDataResp_32801 {
+    required int32 ret = 1;
+    optional int32 actType = 2;
+    optional int32 actId = 3;
+    optional MsgPawnAllPlayerData data = 4;
+}
+
+message MsgPlayerDataUpdatePushResp_32802 {
+    required int32 ret = 1;
+    optional int32 actType = 2;
+    optional int32 actId = 3;
+    optional MsgPawnAllPlayerData data = 4;
+}
+
+message MsgGainAchievementReq_32804 {
+    optional int32 actType = 2;
+    optional int32 actId = 3;
+    optional int32 id = 1;
+}
+
+message MsgGainAchievementResp_32804 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+}
+
+message MsgStoreUpgradeReq_32805 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+    optional int32 type = 3;
+}
+
+message MsgStoreUpgradeResp_32805 {
+    required int32 ret = 1;
+    optional int32 actType = 2;
+    optional int32 actId = 3;
+    optional bool prestigeUpgrade = 4;
+}
+
+message MsgAttrUpgradeReq_32806 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+    optional int32 type = 3;
+}
+
+message MsgAttrUpgradeResp_32806 {
+    required int32 ret = 1;
+    optional int32 actType = 2;
+    optional int32 actId = 3;
+    optional bool prestigeUpgrade = 4;
+    optional int32 attrId = 5;
+}
+
+message MsgQueryStaffMarketReq_32810 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+}
+
+message MsgQueryStaffMarketResp_32810 {
+    required int32 ret = 1;
+}
+
+message MsgRefreshStaffMarketReq_32807 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+}
+
+message MsgRefreshStaffMarketResp_32807 {
+    required int32 ret = 1;
+}
+
+message MsgStaffRecruitReq_32808 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+    optional int32 id = 3;
+}
+
+message MsgStaffRecruitResp_32808 {
+    required int32 ret = 1;
+}
+
+message MsgStaffDismissReq_32809 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+    optional int32 id = 3;
+}
+
+message MsgStaffDismissResp_32809 {
+    required int32 ret = 1;
+}
+
+message MsgGoodsRepairReq_32811 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+    optional int32 goodsId = 3;
+}
+
+message MsgGoodsRepairResp_32811 {
+    required int32 ret = 1;
+}
+
+message MsgGoodsForgeReq_32812 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+    optional int32 goodsId = 3;
+}
+
+message MsgGoodsForgeResp_32812 {
+    required int32 ret = 1;
+}
+
+message MsgGoodsDeleteReq_32813 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+    optional int32 goodsId = 3;
+}
+
+message MsgGoodsDeleteResp_32813 {
+    required int32 ret = 1;
+}
+
+message MsgStartBusinessReq_32814 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+}
+
+message MsgStartBusinessResp_32814 {
+    required int32 ret = 1;
+    optional int32 actType = 2;
+    optional int32 actId = 3;
+    repeated MsgDaily daily = 4;
+}
+
+message MsgDialogEventReq_32815 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+    optional int32 choice = 3;
+}
+
+message MsgDialogEventResp_32815 {
+    required int32 ret = 1;
+    optional int32 actType = 2;
+    optional int32 actId = 3;
+    optional int32 choice = 4;
+    optional int32 eventId = 5;
+    optional MsgBuff buff = 11;
+    optional MsgGoods goods = 12;
+    optional int32 coin = 13;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 14;
+}
+
+message MsgReceptionCustomerReq_32816 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+}
+
+message MsgReceptionCustomerResp_32816 {
+    required int32 ret = 1;
+}
+
+message MsgDialogCustomerReq_32817 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+    optional int32 stage = 3;
+    optional int32 choice = 4;
+}
+
+message MsgDialogCustomerResp_32817 {
+    required int32 ret = 1;
+}
+
+message MsgSetPriceReq_32818 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+    optional int32 stage = 3;
+    optional int32 price = 4;
+}
+
+message MsgSetPriceResp_32818 {
+    required int32 ret = 1;
+}
+
+message MsgNextCustomerReq_32820 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+}
+
+message MsgNextCustomerResp_32820 {
+    required int32 ret = 1;
+}
+
+message MsgResetGameReq_32821 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+}
+
+message MsgResetGameResp_32821 {
+    required int32 ret = 1;
+    optional int32 actType = 2;
+    optional int32 actId = 3;
+}
+
+message MsgCommonGetPriceReq_32822 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+    optional int32 type = 3;
+    optional int32 goodsId = 4;
+}
+
+message MsgCommonGetPriceResp_32822 {
+    required int32 ret = 1;
+    optional int32 actType = 2;
+    optional int32 actId = 3;
+    optional int32 type = 4;
+    optional int32 goodsId = 5;
+    optional int32 price = 6;
+    optional int32 staffId = 7;
+}
+
+message MsgTradeEndPushResp_32823 {
+    required int32 ret = 1;
+    optional int32 actType = 2;
+    optional int32 actId = 3;
+    optional MsgTrade tradeData = 4;
+    optional MsgWeekly weekly = 5;
+}
+
+message MsgBankruptcySellGoodsReq_32824 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+    repeated int32 goodsId = 3;
+}
+
+message MsgBankruptcySellGoodsResp_32824 {
+    required int32 ret = 1;
+    optional int32 actType = 2;
+    optional int32 actId = 3;
+}
+
+message MsgQueryLogReq_32825 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+}
+
+message MsgQueryLogResp_32825 {
+    required int32 ret = 1;
+    repeated MsgDayLog log = 2;
+}
+
+message MsgEntryAuctionHallReq_32826 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+}
+
+message MsgEntryAuctionHallResp_32826 {
+    required int32 ret = 1;
+    optional int32 actType = 2;
+    optional int32 actId = 3;
+    optional MsgAuctionHall hall = 4;
+}
+
+message MsgLeaveAuctionHallReq_32827 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+}
+
+message MsgLeaveAuctionHallResp_32827 {
+    required int32 ret = 1;
+}
+
+message MsgGainAuctionGoodsReq_32828 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+    optional int32 index = 3;
+}
+
+message MsgGainAuctionGoodsResp_32828 {
+    required int32 ret = 1;
+    optional int32 actType = 2;
+    optional int32 actId = 3;
+    repeated MsgGoods goods = 4;
+}
+
+message MsgQueryAuctionLogReq_32829 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+}
+
+message MsgQueryAuctionLogResp_32829 {
+    required int32 ret = 1;
+    optional int32 actType = 2;
+    optional int32 actId = 3;
+    repeated MsgAuctionLog logs = 4;
+}
+
+message MsgQueryAuctionRoomReq_32830 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+    optional string roomId = 3;
+}
+
+message MsgQueryAuctionRoomResp_32830 {
+    required int32 ret = 1;
+    optional int32 actType = 2;
+    optional int32 actId = 3;
+    optional MsgAuctionRoom room = 4;
+}
+
+message MsgAuctionSetPriceReq_32831 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+    optional string roomId = 3;
+    optional int32 price = 4;
+}
+
+message MsgAuctionSetPriceResp_32831 {
+    required int32 ret = 1;
+}
+
+message MsgAuctionSetPricePushResp_32832 {
+    required int32 ret = 1;
+    optional int32 actType = 2;
+    optional int32 actId = 3;
+    optional int32 level = 4;
+    optional string roomId = 5;
+    optional int64 playerAuctionEndTime = 6;
+    repeated int32 optionalPrice = 7;
+    optional MsgSetPriceRecord record = 8;
+    optional bool isEnd = 9;
+}
+
+message MsgInnerGoods {
+    optional int32 itemId = 2;
+    optional bool isLegend = 3;
+    optional int32 quality = 4;
+    optional int32 state = 5;
+    optional bool isFake = 6;
+    optional int32 hideAttr = 7;
+    optional int32 legendAdd = 8;
+    optional int32 basePrice = 9;
+    optional int32 price = 10;
+    optional int32 buyPrice = 11;
+}
+
+message MsgG2CQueryAuctionHallReq_32841 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int32 level = 3;
+}
+
+message MsgG2CQueryAuctionHallResp_32841 {
+    required int32 ret = 1;
+    optional MsgAuctionHall hall = 2;
+}
+
+message MsgG2CQueryAuctionLogReq_32842 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    repeated string roomId = 3;
+}
+
+message MsgG2CQueryAuctionLogResp_32842 {
+    required int32 ret = 1;
+    repeated MsgAuctionLog logs = 2;
+}
+
+message MsgG2CQueryAuctionRoomReq_32843 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional string roomId = 3;
+}
+
+message MsgG2CQueryAuctionRoomResp_32843 {
+    required int32 ret = 1;
+    optional MsgAuctionRoom room = 2;
+}
+
+message MsgG2CAuctionSetPriceReq_32844 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional string roomId = 3;
+    optional int32 price = 4;
+    optional int32 gameNum = 5;
+    optional int32 level = 6;
+}
+
+message MsgG2CAuctionSetPriceResp_32844 {
+    required int32 ret = 1;
+    optional int32 itemId = 2;
+}
+
+message MsgC2GAuctionSetPricePushResp_32845 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 2;
+    optional int32 level = 3;
+    optional string roomId = 4;
+    optional int64 playerAuctionEndTime = 5;
+    repeated int32 optionalPrice = 6;
+    optional MsgSetPriceRecord record = 7;
+    optional bool isEnd = 8;
+}
+
+message MsgC2GAuctionSuccessPushResp_32846 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 2;
+    optional string playerId = 3;
+    optional string roomId = 4;
+    optional MsgInnerGoods goods = 5;
+    optional int32 gameNum = 6;
+}
+
+message MsgC2GAuctionFailPushResp_32847 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 2;
+    optional string playerId = 3;
+    optional string roomId = 4;
+    optional int32 price = 5;
+    optional int32 gameNum = 6;
+}

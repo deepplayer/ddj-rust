@@ -1,0 +1,467 @@
+syntax = "proto2";
+
+package bf.messages.game.TraderMessage;
+
+import "GmActivityCommonMessage.proto";
+import "GmActivityMessage.proto";
+import "CommonMsgMessage.proto";
+import "RankingMessage.proto";
+
+message MsgTraderPlayerData {
+    repeated int32 achievementId = 1;
+    optional bf.messages.game.GmActivityCommonMessage.MsgRankPlayerData rankData = 2;
+    optional int32 travelTimes = 3;
+    repeated MsgTraderJewllery msgJewllery = 4;
+    optional int64 money = 5;
+    optional int64 allMoney = 6;
+    optional int64 historyAllMoney = 7;
+    optional int32 reputation = 8;
+    optional int32 rTitleId = 9;
+    optional int32 mTitleId = 10;
+    optional int32 energy = 11;
+    optional int32 id = 12;
+    optional int32 age = 13;
+    optional int32 eventId = 14;
+    repeated MsgTraderJewllery gameJewllery = 15;
+    repeated MsgTraderMine estate = 16;
+    repeated MsgTraderTitle title = 17;
+}
+
+message MsgTraderTemplate {
+    repeated MsgTraderReward reward = 1;
+    repeated bf.messages.game.GmActivityMessage.MsgRank msgRank = 2;
+    repeated MsgTraderEstate estate = 3;
+    repeated MsgTraderStore store = 4;
+    repeated MsgTraderJewellerylevel jewellerylevel = 5;
+}
+
+message MsgTraderReward {
+    optional int32 taskId = 1;
+    optional string param1 = 3;
+    optional string reward = 4;
+    optional int32 typeReward = 5;
+}
+
+message MsgTraderJewllery {
+    optional int32 id = 1;
+    optional int32 lv = 2;
+}
+
+message MsgTraderGoods {
+    optional int32 id = 1;
+    optional int32 price = 2;
+    optional int32 num = 3;
+    optional int64 sid = 4;
+}
+
+message MsgTraderLog {
+    optional int32 type = 1;
+    optional int64 value = 2;
+}
+
+message MsgTraderCareer {
+    optional int32 age = 1;
+    optional int32 type = 2;
+    optional int32 param = 3;
+}
+
+message MsgTraderMine {
+    optional int32 id = 1;
+    optional bool state = 4;
+    optional int32 total = 5;
+    optional int32 mineSpeed = 6;
+    repeated int32 risk = 7;
+    optional bool buyState = 8;
+    optional int32 earnings = 9;
+    optional int32 exemp = 10;
+}
+
+message MsgTraderBank {
+    repeated MsgTraderBankPrice price = 1;
+    optional int32 curPrice = 2;
+    optional int32 buyPrice = 3;
+    optional int32 state = 4;
+    optional int32 id = 5;
+    optional int32 buyNum = 6;
+}
+
+message MsgTraderBankPrice {
+    optional int64 time = 1;
+    optional int32 curPrice = 2;
+}
+
+message MsgTraderTravel {
+    optional int32 type = 1;
+    optional int32 value = 2;
+}
+
+message MsgTraderTravelZhenBao {
+    optional int32 id = 1;
+    optional int64 npcBid = 2;
+    optional int64 money = 3;
+    optional int64 allCostMoney = 4;
+    optional bool tf = 5;
+    optional int32 num = 6;
+}
+
+message MsgTraderEstate {
+    optional int32 sid = 1;
+    optional int32 type = 2;
+    optional int32 price = 3;
+    optional int32 total = 4;
+    optional int32 risk = 5;
+    optional int32 univalent = 6;
+    optional int32 max = 7;
+    optional int32 tid = 8;
+    optional int32 buyNum = 9;
+    optional int32 ticketNum = 10;
+}
+
+message MsgTraderStore {
+    optional int32 sid = 1;
+    optional int32 originPrice = 2;
+    optional string commonPrice = 3;
+    optional string bigDrop = 4;
+    optional string bigRise = 5;
+}
+
+message MsgTraderJewellerylevel {
+    optional int32 sid = 1;
+    optional int32 pid = 2;
+    optional int32 level = 3;
+    optional string consume = 4;
+    optional int32 type = 5;
+    optional int32 number = 6;
+}
+
+message MsgTraderTitle {
+    optional int32 titleId = 1;
+    optional int32 num = 2;
+}
+
+message MsgTraderMineExempt {
+    optional int32 id = 1;
+    optional int32 exemptNum = 2;
+}
+
+message TraderUpdatePushResp_39601 {
+    optional int32 titleId1 = 2;
+    optional int32 travelTimes = 3;
+    optional int64 money = 4;
+    optional int64 allMoney = 5;
+    optional int32 energy = 6;
+    optional int32 reputation = 7;
+    optional int32 titleId2 = 8;
+    repeated MsgTraderTitle title = 9;
+}
+
+message TraderJewlleryUpgradeReq_39602 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 id = 2;
+}
+
+message TraderJewlleryUpgradeResp_39602 {
+    required int32 ret = 1;
+    optional MsgTraderJewllery msgJewllery = 2;
+}
+
+message TraderShopDealReq_39603 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 id = 2;
+    optional int32 num = 3;
+    optional int64 sid = 4;
+    optional bool sell = 5;
+}
+
+message TraderShopDealResp_39603 {
+    optional bool sell = 1;
+    optional int32 id = 2;
+    optional int32 num = 3;
+    optional int64 money = 4;
+    optional int64 sid = 5;
+    required int32 ret = 6;
+}
+
+message TraderGameStartReq_39604 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message TraderGameStartResp_39604 {
+    required int32 ret = 1;
+    optional int32 id = 2;
+    repeated MsgTraderJewllery gameJewllery = 3;
+}
+
+message TraderGameNextReq_39605 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message TraderGameNextResp_39605 {
+    required int32 ret = 1;
+    repeated MsgTraderLog costLog = 2;
+    repeated MsgTraderLog addLog = 3;
+    repeated MsgTraderGoods msgShop = 4;
+    optional int32 energy = 5;
+    optional int64 birthFeast = 6;
+    optional int32 eventId = 7;
+    optional int32 travelTime = 8;
+    repeated int32 mineClose = 9;
+    optional int32 age = 10;
+    repeated int32 mineOver = 11;
+    repeated MsgTraderMineExempt exemp = 12;
+}
+
+message TraderGameEndReq_39606 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message TraderGameEndResp_39606 {
+    required int32 ret = 1;
+    repeated MsgTraderCareer msgCareer = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+}
+
+message TraderGetShopReq_39609 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message TraderGetShopResp_39609 {
+    optional int32 maxNum = 2;
+    repeated MsgTraderGoods msgShop = 3;
+    repeated MsgTraderGoods msgWarehouse = 4;
+    optional int32 upgradeTime = 5;
+    required int32 ret = 6;
+}
+
+message TraderWarehouseUpgradeReq_39610 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message TraderWarehouseUpgradeResp_39610 {
+    required int32 ret = 1;
+    optional int32 maxNum = 2;
+    optional int32 upgradeTime = 3;
+}
+
+message TraderGameEventReq_39611 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 choice = 2;
+}
+
+message TraderGameEventResp_39611 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources goodsReward = 3;
+}
+
+message TraderGameMineReq_39612 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message TraderGameMineResp_39612 {
+    required int32 ret = 1;
+    repeated MsgTraderMine estate = 2;
+    optional int32 industryRisk = 8;
+}
+
+message TraderGameMineBuyReq_39613 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 id = 2;
+}
+
+message TraderGameMineBuyResp_39613 {
+    optional int32 ret = 1;
+    optional MsgTraderMine estate = 2;
+}
+
+message TraderGameMineSellReq_39614 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 id = 2;
+}
+
+message TraderGameMineSellResp_39614 {
+    required int32 ret = 1;
+    optional MsgTraderMine estate = 2;
+}
+
+message TraderGameMineSpeedReq_39615 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 id = 2;
+    optional int32 speed = 3;
+}
+
+message TraderGameMineSpeedResp_39615 {
+    required int32 ret = 1;
+    optional MsgTraderMine estate = 2;
+}
+
+message TraderGameBanksBuyReq_39616 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 id = 2;
+}
+
+message TraderGameBanksBuyResp_39616 {
+    required int32 ret = 1;
+    optional int32 id = 2;
+    optional int32 num = 3;
+}
+
+message TraderGameBanksBuyTicketReq_39617 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 id = 2;
+    required int32 num = 3;
+}
+
+message TraderGameBanksBuyTicketResp_39617 {
+    required int32 ret = 1;
+    required int32 id = 2;
+    required int32 num = 3;
+    optional int64 cost = 4;
+}
+
+message TraderGameBanksSellTicketReq_39618 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 id = 2;
+    required int32 num = 3;
+}
+
+message TraderGameBanksSellTicketResp_39618 {
+    required int32 ret = 1;
+    required int32 id = 2;
+    required int32 num = 3;
+    optional int32 money = 4;
+}
+
+message TraderGameBanksGetReq_39619 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message TraderGameBanksGetResp_39619 {
+    required int32 ret = 1;
+    repeated MsgTraderBank bank = 5;
+    optional int32 id = 2;
+    optional int64 money = 3;
+    optional int32 num = 4;
+}
+
+message TraderGameTownWenQianReq_39620 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message TraderGameTownWenQianResp_39620 {
+    required int32 ret = 1;
+    optional int32 energy = 2;
+}
+
+message TraderGameTownYueYangReq_39621 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message TraderGameTownYueYangResp_39621 {
+    required int32 ret = 1;
+    optional int32 id = 2;
+}
+
+message TraderGameTownYueYangAnswerReq_39622 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 choice = 2;
+}
+
+message TraderGameTownYueYangAnswerResp_39622 {
+    required int32 ret = 1;
+    optional int32 id = 2;
+    optional bool result = 3;
+    optional int32 nextId = 4;
+    optional int32 reward = 5;
+}
+
+message TraderGameTownBaXianReq_39624 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message TraderGameTownBaXianResp_39624 {
+    required int32 ret = 1;
+    optional int32 value = 2;
+    optional int32 index = 4;
+    optional int32 id = 5;
+}
+
+message TraderGameTownZhenBaoReq_39625 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message TraderGameTownZhenBaoResp_39625 {
+    required int32 ret = 1;
+    optional MsgTraderTravelZhenBao zhenBao = 2;
+}
+
+message TraderGameTownZhenBaoProcessingReq_39626 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message TraderGameTownZhenBaoProcessingResp_39626 {
+    required int32 ret = 1;
+    optional MsgTraderTravelZhenBao zhenBao = 2;
+}
+
+message TraderGameTownZhenBaoSellReq_39627 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message TraderGameTownZhenBaoSellResp_39627 {
+    required int32 ret = 1;
+    optional int64 money = 2;
+}
+
+message TraderGameTownGetReq_39628 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message TraderGameTownGetResp_39628 {
+    required int32 ret = 1;
+    repeated MsgTraderTravel travel = 2;
+    optional MsgTraderTravelZhenBao zhenBao = 4;
+    optional int32 questId = 5;
+}
+
+message TraderAchievementGetReq_39635 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 id = 2;
+}
+
+message TraderAchievementGetResp_39635 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+    required int32 id = 3;
+}
+
+message TraderGameGetOtherReq_39636 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message TraderGameGetOtherResp_39636 {
+    optional int32 ret = 1;
+    optional int32 warehouseNumMax = 11;
+    optional int32 warehouseNum = 12;
+    optional int64 shopMoney = 13;
+    optional int32 mineSize = 14;
+    optional int64 mineMoney = 15;
+    optional int64 bankMoney = 16;
+}
+
+message MsgCrossTraderPushIntegralReq_39650 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playeyrId = 2;
+    optional int64 historyOneMoney = 3;
+    optional int64 historyAllMoney = 4;
+}
+
+message MsgCrossTraderRankReq_39651 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    required string playerId = 2;
+}
+
+message MsgCrossTraderRankResp_39651 {
+    required int32 ret = 1;
+    repeated bf.messages.game.RankingMessage.MsgRankIndex msgRankIndex = 2;
+}

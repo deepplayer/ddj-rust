@@ -1,0 +1,332 @@
+syntax = "proto2";
+
+package bf.messages.game.BuildingsMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgBuildingsData {
+    repeated int32 updateFieldsList = 90;
+    optional int32 buildId = 1;
+    optional int32 staff = 2;
+    optional string speed = 4;
+    optional int64 startTime = 5;
+    optional string storedGold = 6;
+    optional int64 calcTime = 7;
+    repeated int32 talentIds = 8;
+    optional int32 staffLv = 9;
+}
+
+message MsgBuildingsResources {
+    optional int32 buildingId = 1;
+    optional int64 incomeTime = 2;
+    optional string money = 3;
+    optional bf.messages.game.CommonMsgMessage.MsgResources msgResources = 4;
+    optional bf.messages.game.CommonMsgMessage.MsgResources msgMiracleResources = 5;
+    optional bf.messages.game.CommonMsgMessage.MsgResources msgExtraSilver = 6;
+}
+
+message BuildingUpdateResp_4001 {
+    repeated MsgBuildingsData msgBuildingData = 1;
+}
+
+message BuildingConstructReq_4003 {
+    optional int32 buildingId = 1;
+}
+
+message BuildingConstructResp_4003 {
+    required int32 ret = 1;
+}
+
+message BuildingRecruitReq_4004 {
+    optional int32 buildingId = 1;
+    optional int32 num = 2;
+}
+
+message BuildingRecruitResp_4004 {
+    required int32 ret = 1;
+}
+
+message BuildingAccreditReq_4006 {
+    optional int32 buildingId = 1;
+    optional int32 talentId = 2;
+    optional int32 pos = 3;
+}
+
+message BuildingAccreditResp_4006 {
+    required int32 ret = 1;
+}
+
+message BuildingGainRewardReq_4007 {
+    optional int32 buildingId = 1;
+}
+
+message BuildingGainRewardResp_4007 {
+    required int32 ret = 1;
+    optional MsgBuildingsResources msgResources = 2;
+}
+
+message BuildingGainAllRewardReq_4008 {
+}
+
+message BuildingGainAllRewardResp_4008 {
+    required int32 ret = 1;
+    repeated MsgBuildingsResources msgResources = 2;
+}
+
+message BuildingStaffUpgradeReq_4010 {
+    optional int32 buildingId = 1;
+    optional int32 num = 2;
+}
+
+message BuildingStaffUpgradeResp_4010 {
+    required int32 ret = 1;
+}
+
+message MsgAllEventData {
+    optional int32 thiefBuyTimes = 1;
+    repeated int32 dispatchTalentToday = 2;
+    repeated MsgEventDispatch dispatchs = 5;
+    repeated MsgEventTrade trades = 6;
+    repeated MsgEventThief thiefs = 7;
+    repeated MsgEventQuestion questions = 8;
+    optional bool unlockOneKey = 9;
+    optional bool canGainReward = 10;
+    repeated MsgCommonEvent commonEvents = 11;
+    optional string custom1 = 12;
+    optional string custom2 = 13;
+    optional string custom3 = 14;
+    repeated int32 adGameIds = 20;
+    repeated int32 adGameIdsForLogin = 21;
+    optional bool gainAdGameReward = 22;
+}
+
+message MsgCommonEvent {
+    optional int32 type = 1;
+    optional int32 pos = 2;
+    optional int32 evenId = 3;
+    optional int32 status = 4;
+    optional string param1 = 5;
+    optional string param2 = 6;
+    optional string param3 = 7;
+}
+
+message MsgEventDispatch {
+    optional int32 pos = 1;
+    optional int32 evenId = 2;
+    repeated int32 talentIds = 3;
+    optional int32 status = 4;
+    optional int64 endTime = 5;
+}
+
+message MsgEventTrade {
+    optional int32 pos = 1;
+    optional int32 evenId = 2;
+    optional int32 status = 3;
+    optional int64 endTime = 4;
+}
+
+message MsgEventThief {
+    optional int32 pos = 1;
+    optional int32 evenId = 2;
+    optional int32 surplusHp = 3;
+    optional int32 status = 4;
+}
+
+message MsgEventQuestion {
+    optional int32 pos = 1;
+    optional int32 evenId = 2;
+    optional int32 status = 3;
+}
+
+message MsgQueryEventReq_4021 {
+}
+
+message MsgQueryEventResp_4021 {
+    required int32 ret = 1;
+    optional MsgAllEventData info = 2;
+}
+
+message MsgDispatchOverDialogReq_4028 {
+    optional int32 pos = 1;
+}
+
+message MsgDispatchOverDialogResp_4028 {
+    required int32 ret = 1;
+}
+
+message MsgEventDispatchReq_4024 {
+    optional int32 pos = 1;
+    repeated int32 talentIds = 2;
+}
+
+message MsgEventDispatchResp_4024 {
+    required int32 ret = 1;
+    optional int32 talentRate = 2;
+}
+
+message MsgGainRewardReq_4022 {
+    optional int32 type = 1;
+    optional int32 pos = 2;
+}
+
+message MsgGainRewardResp_4022 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+}
+
+message MsgEventTradeReq_4025 {
+    optional int32 pos = 1;
+}
+
+message MsgEventTradeResp_4025 {
+    required int32 ret = 1;
+}
+
+message MsgThiefOverDialogReq_4029 {
+    optional int32 pos = 1;
+}
+
+message MsgThiefOverDialogResp_4029 {
+    required int32 ret = 1;
+}
+
+message MsgEventThiefReq_4026 {
+    optional int32 pos = 1;
+    optional int32 type = 2;
+}
+
+message MsgEventThiefResp_4026 {
+    required int32 ret = 1;
+    optional int32 costHp = 2;
+    optional int32 surplusHp = 3;
+    optional bool extraHurt = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 5;
+    optional int32 costStrength = 6;
+}
+
+message MsgEventUpdPushResp_4027 {
+    repeated MsgEventDispatch dispatchs = 1;
+    repeated MsgEventTrade trades = 2;
+    repeated MsgEventThief thiefs = 3;
+    repeated MsgEventQuestion questions = 4;
+    repeated MsgCommonEvent commonEvents = 5;
+}
+
+message MsgThiefBuyReq_4030 {
+}
+
+message MsgThiefBuyResp_4030 {
+    required int32 ret = 1;
+}
+
+message MsgQuestionOverDialogReq_4031 {
+    optional int32 pos = 1;
+}
+
+message MsgQuestionOverDialogResp_4031 {
+    required int32 ret = 1;
+}
+
+message MsgQuestionChoiceReq_4032 {
+    optional int32 pos = 1;
+    optional int32 answer = 2;
+}
+
+message MsgQuestionChoiceResp_4032 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+}
+
+message MsgCommonOverDialogReq_4041 {
+    optional int32 type = 1;
+    optional int32 pos = 2;
+    optional string param1 = 5;
+    optional string param2 = 6;
+    optional string param3 = 7;
+}
+
+message MsgCommonOverDialogResp_4041 {
+    required int32 ret = 1;
+    optional string param1 = 5;
+    optional string param2 = 6;
+    optional string param3 = 7;
+}
+
+message MsgCommonGainRewardReq_4042 {
+    optional int32 type = 1;
+    optional int32 pos = 2;
+    optional string param1 = 5;
+    optional string param2 = 6;
+    optional string param3 = 7;
+}
+
+message MsgCommonGainRewardResp_4042 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgResources cost = 3;
+    optional string param1 = 5;
+    optional string param2 = 6;
+    optional string param3 = 7;
+}
+
+message MsgCommonCustom1Req_4043 {
+    optional int32 type = 1;
+    optional int32 pos = 2;
+    optional string param1 = 5;
+    optional string param2 = 6;
+    optional string param3 = 7;
+}
+
+message MsgCommonCustom1Resp_4043 {
+    required int32 ret = 1;
+    optional string param1 = 5;
+    optional string param2 = 6;
+    optional string param3 = 7;
+}
+
+message MsgCommonCustom2Req_4044 {
+    optional int32 type = 1;
+    optional int32 pos = 2;
+    optional string param1 = 5;
+    optional string param2 = 6;
+    optional string param3 = 7;
+}
+
+message MsgCommonCustom2Resp_4044 {
+    required int32 ret = 1;
+    optional string param1 = 5;
+    optional string param2 = 6;
+    optional string param3 = 7;
+}
+
+message MsgCommonCustom3Req_4045 {
+    optional int32 type = 1;
+    optional int32 pos = 2;
+    optional string param1 = 5;
+    optional string param2 = 6;
+    optional string param3 = 7;
+}
+
+message MsgCommonCustom3Resp_4045 {
+    required int32 ret = 1;
+    optional string param1 = 5;
+    optional string param2 = 6;
+    optional string param3 = 7;
+}
+
+message MsgGainRewardForRegReq_4046 {
+}
+
+message MsgGainRewardForRegResp_4046 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+    optional bool gainAdGameReward = 22;
+}
+
+message MsgOneKeyGainRewardReq_4047 {
+}
+
+message MsgOneKeyGainRewardResp_4047 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+}

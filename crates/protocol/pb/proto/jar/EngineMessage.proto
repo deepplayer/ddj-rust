@@ -1,0 +1,304 @@
+syntax = "proto2";
+
+package bf.messages.game.EngineMessage;
+
+import "PlayerMessage.proto";
+import "TalentMessage.proto";
+import "ItemMessage.proto";
+import "TaskMessage.proto";
+import "FriendMessage.proto";
+import "ShopMessage.proto";
+import "StageMessage.proto";
+import "BuildingsMessage.proto";
+import "FamilyMessage.proto";
+import "PetMessage.proto";
+import "CounterRecoveryMessage.proto";
+import "AccountRoomMessage.proto";
+import "TravelMessage.proto";
+import "SignMessage.proto";
+import "SysActivityMessage.proto";
+import "ChargeMessage.proto";
+import "MailMessage.proto";
+import "TradeMessage.proto";
+import "FortuneMessage.proto";
+import "FamilyTradeMessage.proto";
+import "OceanTradeMessage.proto";
+import "ChatMessage.proto";
+import "HomelandMessage.proto";
+import "FamilyFleetMessage.proto";
+import "AutoPlayMessage.proto";
+import "RankingMessage.proto";
+
+message ErrorResp_1 {
+    optional int32 msgId = 1;
+    optional int32 errorCode = 2;
+}
+
+message CoerceLogoutResp_2 {
+    optional int32 info = 1;
+}
+
+message HeartbeatConnectReq_3 {
+}
+
+message HeartbeatConnectResp_3 {
+    required int32 ret = 1;
+    optional int64 serverTime = 2;
+}
+
+message LoginReq_4 {
+    optional string openId = 1;
+    optional int32 serverId = 2;
+    optional string token = 3;
+    optional string sign = 4;
+    optional string mac = 5;
+    optional string deviceModel = 6;
+    optional string phoneModel = 7;
+    optional string clientNum = 8;
+    optional string networkType = 9;
+    optional string appId = 10;
+    optional int32 platform = 11;
+    optional string ip = 12;
+    optional string bundleId = 13;
+    optional int32 version = 14;
+    optional string timestamp = 15;
+    optional string channelId = 16;
+    optional bool isTourist = 17;
+    optional string gameDevice = 18;
+    optional string wxOpenId = 21;
+    optional int32 wxAppIdx = 22;
+    optional int32 h5Client = 31;
+    optional int32 sourceType = 41;
+    optional string lan = 42;
+}
+
+message LoginResp_4 {
+    required int32 ret = 1;
+    optional bool ok = 2;
+    repeated string names = 3;
+    optional int64 serverTime = 5;
+    optional int64 openServerTime = 6;
+    optional int64 createPlayerTime = 7;
+    optional int32 loginvar = 9;
+    optional int64 bannedTime = 8;
+    repeated bf.messages.game.PlayerMessage.MsgGmLanConfig lanConfig = 10;
+}
+
+message GetPlayerNamesReq_5 {
+    optional string lan = 1;
+}
+
+message GetPlayerNamesResp_5 {
+    required int32 ret = 1;
+    repeated string names = 2;
+}
+
+message CreatePlayerReq_6 {
+    optional string openId = 1;
+    optional int32 serverId = 2;
+    optional string name = 3;
+    optional string ico = 4;
+    optional int32 sex = 5;
+    optional string timestamp = 6;
+    optional string token = 7;
+    optional string sign = 8;
+    optional int32 h5Client = 9;
+    optional int32 platform = 10;
+    optional int32 channelId = 11;
+    optional string cid = 12;
+    optional string appId = 13;
+    optional int32 cityId = 14;
+    repeated int32 faceId = 15;
+    optional int32 vestId = 16;
+    optional string ip = 17;
+    optional string mac = 18;
+    optional string gameDevice = 19;
+    optional string invitedPid = 21;
+    optional int32 sourceType = 31;
+    optional string lan = 32;
+    optional string wxOpenId = 41;
+    optional int32 wxAppIdx = 42;
+}
+
+message CreatePlayerResp_6 {
+    required int32 ret = 1;
+}
+
+message GetQueueUpInfoReq_7 {
+}
+
+message GetQueueUpInfoResp_7 {
+    required int32 ret = 1;
+    optional int32 nowIndex = 2;
+    optional int32 maxIndex = 3;
+}
+
+message MsgSysParam {
+    optional bool openFamilyQq = 1;
+    optional string h5IOSChargeNotice = 2;
+    optional string h5Wechat = 3;
+    optional string h5WechatReward = 4;
+    optional bool h5WechatEnabled = 5;
+    optional string h5qq = 6;
+    optional string h5qqReward = 7;
+    optional bool h5qqEnabled = 8;
+    optional bool enabledAppStoreAppraise = 9;
+    repeated int32 replaceMoney = 10;
+    repeated int32 channelMobilePhoneBinds = 11;
+    optional bool h5WechatQRCode = 12;
+    repeated MsgGmConfig gmConfig = 13;
+}
+
+message MsgGmConfig {
+    optional int32 id = 1;
+    optional string value = 2;
+}
+
+message PlayerIntoGameReq_8 {
+}
+
+message PlayerIntoGameResp_8 {
+    required int32 ret = 1;
+    repeated bf.messages.game.ItemMessage.MsgItemData msgItemData = 2;
+    repeated bf.messages.game.TalentMessage.MsgTalentData msgTalentData = 3;
+    optional bf.messages.game.TaskMessage.MsgAllMissionData msgAllMissionData = 4;
+    optional bf.messages.game.PlayerMessage.MsgPlayer msgPlayer = 5;
+    optional bf.messages.game.FriendMessage.MsgFriendData msgFriendData = 6;
+    optional bf.messages.game.ShopMessage.MsgSynShopData msgSynShopData = 7;
+    optional bf.messages.game.StageMessage.MsgStageProgressData msgStageProgressData = 8;
+    repeated bf.messages.game.StageMessage.MsgStageRewardData msgStageRewardData = 9;
+    repeated bf.messages.game.BuildingsMessage.MsgBuildingsData msgBuildingData = 10;
+    optional bf.messages.game.FamilyMessage.MsgFamilyLoginData msgFamilyLoginData = 11;
+    repeated int32 chargeId = 12;
+    repeated bf.messages.game.PetMessage.MsgPetData msgPetData = 13;
+    repeated bf.messages.game.CounterRecoveryMessage.MsgCounterData msgCounterData = 14;
+    optional bf.messages.game.AccountRoomMessage.MsgAccountRoomData msgAccountRoomData = 15;
+    optional bf.messages.game.TravelMessage.MsgTravelDataResp_15001 msgTravelData = 16;
+    optional bf.messages.game.SignMessage.MsgSignResp_16001 msgSign = 17;
+    optional bf.messages.game.SysActivityMessage.MsgSevenDayGift msgSevenDayGift = 18;
+    repeated bf.messages.game.SysActivityMessage.MsgMonthCard msgMonthCard = 19;
+    optional bf.messages.game.ChargeMessage.MsgChargeData msgChargeData = 21;
+    repeated bf.messages.game.MailMessage.MsgMailData msgMailDatas = 22;
+    optional bf.messages.game.TalentMessage.MsgTalentWikiResp_3006 talentWikiIds = 23;
+    optional bf.messages.game.SysActivityMessage.MsgGrowFundSetData msgGrowFundSetData = 24;
+    repeated bf.messages.game.TradeMessage.MsgTrader msgTrader = 25;
+    optional bf.messages.game.FortuneMessage.MsgFortune msgFortune = 27;
+    optional bf.messages.game.SysActivityMessage.MsgMoneySpeed msgMoneySpeed = 28;
+    optional string moneyOfChild = 29;
+    repeated bf.messages.game.TravelMessage.MsgIntimacyData msgNpcSpouseIntimacy = 30;
+    optional bool isOpenChildSystem = 31;
+    optional bf.messages.game.FamilyTradeMessage.MsgFamilyTrade msgFamilyTrade = 32;
+    repeated bf.messages.game.SysActivityMessage.MsgPushData msgPushData = 33;
+    optional bf.messages.game.OceanTradeMessage.MsgOceanTradeData msgOceanTradeData = 34;
+    optional int32 timeZone = 35;
+    optional bf.messages.game.StageMessage.MsgStageProgressRewardData msgStageProgressRewardData = 36;
+    repeated bf.messages.game.ChatMessage.MsgBroadcastData msgBroadcastData = 37;
+    optional MsgSysParam msgSysParam = 38;
+    optional int32 talentReset = 39;
+    repeated int32 unlockEmojis = 40;
+    optional int64 serverOpenTime = 41;
+    optional bf.messages.game.SysActivityMessage.PrayData prayData = 42;
+    repeated int64 redPacketId = 43;
+    optional bf.messages.game.SysActivityMessage.PrayCidData prayCidData = 44;
+    optional bf.messages.game.SysActivityMessage.MsgAmberWelfareData amberWelfareData = 45;
+    optional bool isFeedBack = 46;
+    optional bf.messages.game.HomelandMessage.MsgHomeland homeland = 47;
+    optional bf.messages.game.SysActivityMessage.MsgVivoWelfare vivoWelfare = 48;
+    optional bool isOpenMuted = 49;
+    optional int32 opensmallGames = 50;
+    optional bf.messages.game.FamilyFleetMessage.MsgFamilyFleetData familyFleet = 51;
+    optional bool isOpenWechatOfficialAccount = 52;
+    optional bf.messages.game.AutoPlayMessage.MsgAutoPlayData autoPlay = 53;
+    optional bf.messages.game.SysActivityMessage.MsgFashionPlayerData msgFashionData = 54;
+    repeated bf.messages.game.SysActivityMessage.MsgComebackActData comeback = 55;
+    optional bf.messages.game.SysActivityMessage.AntiCheatInfo antiCheatReward = 56;
+    optional bf.messages.game.BuildingsMessage.MsgAllEventData buildingEvent = 57;
+    repeated bf.messages.game.RankingMessage.MsgRankReduceInfo rankReduceInfo = 58;
+    optional bf.messages.game.FortuneMessage.MsgKirin msgKirin = 59;
+    optional bf.messages.game.FortuneMessage.MsgPlayerTempleInfo msgPlayerTempleInfo = 60;
+    optional bf.messages.game.SysActivityMessage.MsgSkinManualPlayer skinManual = 62;
+    repeated bf.messages.game.TalentMessage.MsgTreasure msgTreasure = 63;
+    optional bf.messages.game.AutoPlayMessage.MsgStewardPlayerData stewards = 64;
+    optional bf.messages.game.SysActivityMessage.MsgSecondPsw secondPsw = 65;
+}
+
+message TestSengReq_11 {
+}
+
+message TestSengResp_11 {
+    repeated MsgTestData data = 1;
+}
+
+message MsgTestData {
+    optional int32 type = 1;
+    optional bytes data = 3;
+}
+
+message MsgForwardToPlayerReq_12 {
+    optional string playerId = 1;
+    optional int32 msgId = 2;
+    optional bytes msg = 3;
+}
+
+message MsgForwardToPlayerResp_12 {
+    required int32 ret = 1;
+}
+
+message CrossRestartReq_13 {
+    optional int32 crossId = 1;
+}
+
+message MsgIsOpenMutedResp_14 {
+    required int32 ret = 1;
+    optional bool isOpenMuted = 2;
+}
+
+message MsgIsOpenWechatOfficialAccountResp_15 {
+    required int32 ret = 1;
+    optional bool isOpenWechatOfficialAccount = 2;
+}
+
+message PlayerGetItemReq_16 {
+    optional int32 id = 1;
+    optional string itemId = 2;
+    optional string toNum = 3;
+    optional int64 var = 4;
+}
+
+message PlayerGetItemResp_16 {
+    required int32 ret = 1;
+}
+
+message PlayerGetPetReq_17 {
+    optional string itemId = 1;
+}
+
+message PlayerGetPetResp_17 {
+    required int32 ret = 1;
+}
+
+message PlayerGetMissionReq_18 {
+    optional string itemId = 1;
+    optional int64 var = 2;
+}
+
+message PlayerGetMissionResp_18 {
+    required int32 ret = 1;
+}
+
+message SDKEventResp_19 {
+    required int32 ret = 1;
+    optional int32 loginDays = 2;
+    optional int32 firstDaychargeTimes = 3;
+    optional int32 firstDayMaxVipExp = 4;
+}
+
+message isOpenCommunityResp_20 {
+    required int32 ret = 1;
+    optional bool isOpen = 2;
+}
+
+message NotifyDjOperaResp_21 {
+    required int32 ret = 1;
+    optional bool isOpen = 2;
+}

@@ -1,0 +1,149 @@
+syntax = "proto2";
+
+package bf.messages.game.GmToyHouseMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgToyLevelRewardDb {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 onlyId = 3;
+    optional int32 distance = 4;
+    optional string reward = 5;
+}
+
+message MsgToyRewardDb {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 onlyId = 3;
+    optional int32 awardType = 4;
+    optional int32 target = 5;
+    optional string reward = 6;
+}
+
+message MsgToyHouseTemplateData {
+    repeated MsgToyLevelRewardDb levelDb = 1;
+    repeated MsgToyRewardDb taskDb = 2;
+}
+
+message MsgToyHousePlayerData {
+    optional int64 topScore = 1;
+    optional MsgToyHouseGameData gameData = 2;
+    repeated int32 taskIds = 3;
+}
+
+message MsgToyHouseGameData {
+    optional int32 checkpointId = 1;
+    optional int64 currentScore = 2;
+    repeated MsgToyHouseLayer layers = 3;
+    repeated int32 storageCompartment = 4;
+    optional bool deadEnd = 5;
+    optional bool complete = 6;
+}
+
+message MsgToyHouseLayer {
+    optional int32 layer = 1;
+    optional int32 shifting = 2;
+    repeated MsgToyCard cards = 3;
+}
+
+message MsgToyCard {
+    optional int32 pos = 1;
+    optional int32 cardId = 2;
+    optional string x = 3;
+    optional string y = 4;
+    optional bool overlap = 5;
+}
+
+message MsgToyCardMovement {
+    optional MsgToyCard moveCard = 1;
+    optional int32 layer = 2;
+}
+
+message MsgToyTapResult {
+    optional MsgToyCardMovement moveCard = 1;
+    repeated int32 eliminateIdx = 3;
+    optional int32 addScore = 4;
+    optional bool complete = 5;
+}
+
+message ToyHouseStartReq_33601 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message ToyHouseStartResp_33601 {
+    required int32 ret = 1;
+    optional MsgToyHouseGameData gameData = 2;
+}
+
+message ToyHouseSettlementReq_33602 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message ToyHouseSettlementResp_33602 {
+    required int32 ret = 1;
+    optional int64 score = 2;
+    optional bool newRecord = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 4;
+}
+
+message ToyHouseTapReq_33603 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 layer = 3;
+    optional int32 posId = 4;
+}
+
+message ToyHouseTapResp_33603 {
+    required int32 ret = 1;
+    optional MsgToyTapResult result = 2;
+    optional MsgToyHouseGameData gameData = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 4;
+}
+
+message ToyHouseToNextReq_33605 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message ToyHouseToNextResp_33605 {
+    required int32 ret = 1;
+    optional MsgToyHouseGameData gameData = 2;
+}
+
+message ToyHouseShuffleReq_33606 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message ToyHouseShuffleResp_33606 {
+    required int32 ret = 1;
+    optional MsgToyHouseGameData gameData = 2;
+}
+
+message ToyHouseMoveStorageReq_33607 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message ToyHouseMoveStorageResp_33607 {
+    required int32 ret = 1;
+    repeated MsgToyCardMovement moveCards = 2;
+    optional MsgToyHouseGameData gameData = 3;
+}
+
+message ToyHouseTaskReq_33608 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 taskId = 3;
+}
+
+message ToyHouseTaskResp_33608 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 activityType = 3;
+    repeated int32 taskIds = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 5;
+}

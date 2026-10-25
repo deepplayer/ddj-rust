@@ -1,0 +1,717 @@
+syntax = "proto2";
+
+package bf.messages.game.GmActivityTopSlgMessage;
+
+import "CommonMsgMessage.proto";
+import "FamilyMessage.proto";
+import "RankingMessage.proto";
+import "GmActivityTopSlgCommonMessage.proto";
+
+message TopSlgFreeItemReq_46001 {
+    optional int32 activityId = 1;
+}
+
+message TopSlgFreeItemResp_46001 {
+    optional int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+}
+
+message TopSlgJoinDetailReq_46002 {
+    optional int32 activityId = 1;
+}
+
+message TopSlgJoinDetailResp_46002 {
+    optional int32 ret = 1;
+    repeated bf.messages.game.FamilyMessage.MsgFamilySimpleInfo infos = 2;
+}
+
+message SetDeclarationReq_46003 {
+    optional string declaration = 1;
+}
+
+message SetDeclarationResp_46003 {
+    required int32 ret = 1;
+    optional string declaration = 2;
+}
+
+message MsgTopSlgRankRewardReq_46004 {
+    optional bf.messages.game.RankingMessage.RankingGetParam param = 1;
+}
+
+message MsgTopSlgRankRewardResp_46004 {
+    required int32 ret = 1;
+    optional bf.messages.game.RankingMessage.RankingGetParam param = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+}
+
+message MsgTopSlgGetRankRewardIdReq_46005 {
+    optional int32 serverId = 1;
+    optional int32 activityId = 2;
+    optional int32 typeRank = 4;
+    optional int64 familyId = 6;
+    optional string playerId = 7;
+}
+
+message MsgTopSlgGetRankRewardTypeResp_46005 {
+    required int32 ret = 1;
+    optional MsgRankRewardInfo rewardInfo = 2;
+}
+
+message MsgRankRewardInfo {
+    optional int64 rewardId = 1;
+    optional int32 special = 2;
+    optional int32 rankIdx = 3;
+}
+
+message MsgTopSlgGetRankRewardIdForMailReq_46006 {
+    optional int32 serverId = 1;
+    optional int32 activityId = 2;
+    optional string playerId = 3;
+    optional int64 familyId = 4;
+}
+
+message MsgTopSlgGetRankRewardIdForMailResp_46006 {
+    required int32 ret = 1;
+    repeated MsgMailInfo mailInfo = 2;
+}
+
+message MsgMailInfo {
+    optional int32 typeRank = 2;
+    optional MsgRankRewardInfo rewardInfo = 4;
+}
+
+message CrossPlayerDataReq_46007 {
+    optional int32 actId = 1;
+    optional string playerId = 3;
+    optional int64 familyId = 4;
+}
+
+message CrossPlayerDataResp_46007 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgRankingData rankingData = 2;
+    repeated bf.messages.game.GmActivityTopSlgCommonMessage.MsgTurnApply applies = 3;
+}
+
+message MsgGambleReq_46008 {
+    optional int32 activityId = 1;
+    optional int32 id = 3;
+    repeated int64 familyIds = 4;
+    optional int32 anonymous = 6;
+}
+
+message MsgGambleResp_46008 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgGambleRecord msgGamble = 2;
+}
+
+message MsgGambleRewardReq_46009 {
+    optional int32 activityId = 1;
+    optional int32 id = 3;
+}
+
+message MsgGambleRewardResp_46009 {
+    optional int32 ret = 1;
+    optional int32 id = 3;
+    optional int32 rewarded = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 5;
+}
+
+message MsgShowGambleHistoryReq_46010 {
+    optional int32 activityId = 1;
+}
+
+message MsgShowGambleHistoryResp_46010 {
+    optional int32 ret = 1;
+    repeated bf.messages.game.GmActivityTopSlgCommonMessage.MsgGambleRecord records = 2;
+}
+
+message MsgGambleRankEntry {
+    optional bf.messages.game.RankingMessage.MsgRankingEntryData entryData = 1;
+    optional int64 gamble = 2;
+}
+
+message MsgGambleRankReq_46011 {
+    optional int32 activityId = 1;
+}
+
+message MsgGambleRankResp_46011 {
+    required int32 ret = 1;
+    repeated MsgGambleRankEntry entries = 2;
+    optional int64 firstFamilyId = 3;
+    optional int64 lastFamilyId = 4;
+}
+
+message MsgRankValueNotifyResp_46012 {
+    optional int32 activityId = 1;
+    optional int64 familyValue = 11;
+    optional int32 familyRank = 12;
+    optional int64 playerValue = 21;
+    optional int32 playerRank = 22;
+}
+
+message MsgTopSlgBuyLimitFreeReq_46013 {
+    optional int32 activityId = 1;
+    optional int32 giftId = 2;
+}
+
+message MsgTopSlgBuyLimitFreeResp_46013 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message TopSlgRecruitHelpReq_46031 {
+    optional int32 activityId = 1;
+    repeated string playerId = 2;
+}
+
+message TopSlgRecruitHelpResp_46031 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    repeated bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgRecruitHelpData recruitHelpData = 3;
+}
+
+message TopSlgRecruitGetHelpReq_46032 {
+    optional int32 activityId = 1;
+}
+
+message TopSlgRecruitGetHelpResp_46032 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    repeated bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgRecruitHelpData recruitHelpData = 3;
+}
+
+message TopSlgRecruitReceivingReq_46033 {
+    optional int32 activityId = 1;
+}
+
+message TopSlgRecruitReceivingResp_46033 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int64 ervant = 3;
+}
+
+message TopSlgRecruitHelpInfoNotifyResp_46034 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+}
+
+message TopSlgRecruitNotifyResp_46035 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int64 ervant = 3;
+}
+
+message TopSlgAutoSetRecruitTimeReq_46036 {
+    optional int32 activityId = 1;
+    optional int32 time = 2;
+}
+
+message TopSlgAutoSetRecruitTimeResp_46036 {
+    required int32 ret = 1;
+}
+
+message TopSlgAutoRecruitNotifyReq_46037 {
+    optional int32 activityId = 1;
+}
+
+message TopSlgAutoRecruitNotifyResp_46037 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int64 ervant = 3;
+    optional int32 autoNum = 4;
+    optional int32 allCot = 5;
+}
+
+message TopSlgRecruitResp_46039 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgServantData servantData = 3;
+}
+
+message TopSlgHeartbeatBattleFieldReq_46101 {
+    optional int32 activityId = 1;
+}
+
+message TopSlgIntoBattleFieldReq_46102 {
+    optional int32 activityId = 1;
+}
+
+message TopSlgIntoBattleFieldResp_46102 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgBattleFieldData fieldData = 3;
+}
+
+message TopSlgExitBattleFieldReq_46103 {
+    optional int32 activityId = 1;
+}
+
+message TopSlgExitBattleFieldResp_46103 {
+    required int32 ret = 1;
+}
+
+message TopSlgEditTeamReq_46104 {
+    optional int32 activityId = 1;
+    repeated bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgEditTeamData msgSlgEditTeamData = 2;
+    optional int32 reason = 3;
+}
+
+message TopSlgEditTeamResp_46104 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int64 ervant = 3;
+    repeated bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgPlayerTeamData teams = 4;
+}
+
+message TopSlgImpowerTeamReq_46105 {
+    optional int32 activityId = 1;
+    optional int32 teamId = 2;
+    optional bool bor = 3;
+}
+
+message TopSlgImpowerTeamResp_46105 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 teamId = 3;
+    optional bool bor = 4;
+}
+
+message TopSlgMarchOperationReq_46106 {
+    optional int32 activityId = 1;
+    optional int32 teamId = 2;
+    optional int32 action = 3;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgMapTileData tile = 5;
+    repeated bf.messages.game.GmActivityTopSlgCommonMessage.MsgPosData paths = 10;
+    optional int64 massId = 11;
+    optional string removeTeamPlayerId = 21;
+}
+
+message TopSlgMarchOperationResp_46106 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgMapDataUpdata msgSlgMapDataUpdata = 3;
+}
+
+message TopSlgGarrisonWaiveReq_46107 {
+    optional int32 activityId = 1;
+    optional int32 type = 2;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgMapTileData tile = 3;
+}
+
+message TopSlgGarrisonWaiveResp_46107 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 cot = 3;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgMapDataUpdata msgSlgMapDataUpdata = 4;
+}
+
+message TopSlgMassStartReq_46108 {
+    optional int32 activityId = 1;
+    optional int32 tempId = 3;
+    optional int32 type = 4;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgMapTileData tile = 5;
+    repeated bf.messages.game.GmActivityTopSlgCommonMessage.MsgPosData paths = 10;
+}
+
+message TopSlgMassStartResp_46108 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgMapDataUpdata msgSlgMapDataUpdata = 3;
+}
+
+message TopSlgMassDispatchReq_46109 {
+    optional int32 activityId = 1;
+    optional int64 massId = 2;
+    optional string toPlayerId = 3;
+    optional int32 toTeamId = 4;
+    repeated bf.messages.game.GmActivityTopSlgCommonMessage.MsgPosData paths = 10;
+}
+
+message TopSlgMassDispatchResp_46109 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgMapDataUpdata msgSlgMapDataUpdata = 3;
+}
+
+message TopSlgMassRemoveTeamReq_46110 {
+    optional int32 activityId = 1;
+    optional int64 massId = 2;
+    optional string playerId = 3;
+}
+
+message TopSlgMassRemoveTeamResp_46110 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgMapDataUpdata msgSlgMapDataUpdata = 3;
+}
+
+message TopSlgMassStartAttackReq_46111 {
+    optional int32 activityId = 1;
+    optional int64 massId = 2;
+}
+
+message TopSlgMassStartAttackResp_46111 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgMapDataUpdata msgSlgMapDataUpdata = 3;
+}
+
+message TopSlgMassDissolveReq_46112 {
+    optional int32 activityId = 1;
+    optional int64 massId = 2;
+}
+
+message TopSlgMassDissolveResp_46112 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgMapDataUpdata msgSlgMapDataUpdata = 3;
+}
+
+message TopSlgMassGetDispatchReq_46113 {
+    optional int32 activityId = 1;
+    optional int64 massId = 2;
+}
+
+message TopSlgMassGetDispatchResp_46113 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    repeated bf.messages.game.GmActivityTopSlgCommonMessage.MsgMapViewTopSlgPlayerTeamData playerTeams = 3;
+    repeated bf.messages.game.GmActivityTopSlgCommonMessage.MsgMapViewTopSlgPlayerTeamData msgSlgTeamDatas = 4;
+}
+
+message TopSlgMassDispatchNotifyResp_46114 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 type = 3;
+    optional int64 massId = 4;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgTeamData msgSlgTeamDatas = 5;
+    optional string playerName = 6;
+}
+
+message TopSlgSelectMarchDetailsDataReq_46115 {
+    optional int32 activityId = 1;
+    optional int64 id = 2;
+}
+
+message TopSlgSelectMarchDetailsDataResp_46115 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgMarchDetailsData data = 3;
+}
+
+message TopSlgSelectMassDetailsDataReq_46116 {
+    optional int32 activityId = 1;
+    optional int64 id = 2;
+}
+
+message TopSlgSelectMassDetailsDataResp_46116 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgMassDetailsData datas = 3;
+}
+
+message TopSlgMassExitReq_46117 {
+    optional int32 activityId = 1;
+    optional int64 id = 2;
+}
+
+message TopSlgMassExitResp_46117 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgMapDataUpdata msgSlgMapDataUpdata = 3;
+}
+
+message TopSlgGetGarrisonInfoReq_46118 {
+    optional int32 activityId = 1;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgMapTileData tile = 2;
+}
+
+message TopSlgGetGarrisonInfoResp_46118 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int64 familyId = 3;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgNpcData msgSlgNpcData = 4;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgFristFamilyData fristFamilyData = 5;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgGarrisonDetailsData garrisonDetailsData = 6;
+}
+
+message TopSlgGetFamilyStrongholdPlayerDataReq_46119 {
+    optional int32 activityId = 1;
+}
+
+message TopSlgGetFamilyStrongholdPlayerDataResp_46119 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    repeated bf.messages.game.GmActivityTopSlgCommonMessage.MsgFamilyStrongholdPlayerData datas = 3;
+}
+
+message TopSlgMassSetingTeampAutoAttackReq_46120 {
+    optional int32 activityId = 1;
+    optional int64 id = 2;
+    optional bool bor = 3;
+}
+
+message TopSlgMassSetingTeampAutoAttackResp_46120 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int64 id = 3;
+    optional bool bor = 4;
+}
+
+message TopSlgremoveTeamResp_46121 {
+    optional int32 teamId = 1;
+}
+
+message TopSlgGetGsRelaxDataReq_46122 {
+    optional int32 activityId = 1;
+}
+
+message TopSlgGetGsRelaxDataResp_46122 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgRelaxData relaxData = 3;
+}
+
+message TopSlgRelaxAddSeedReq_46123 {
+    optional int32 activityId = 1;
+    optional int64 money = 2;
+}
+
+message TopSlgRelaxAddSeedResp_46123 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgRelaxData relaxData = 3;
+}
+
+message TopSlgRelaxReceivingReq_46124 {
+    optional int32 activityId = 1;
+}
+
+message TopSlgRelaxReceivingResp_46124 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgRelaxData relaxData = 3;
+    optional int64 ervant = 4;
+}
+
+message TopSlgLabelReq_46125 {
+    optional int32 activityId = 1;
+    optional int32 type = 2;
+    optional bool state = 3;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgMapTileData tileData = 4;
+    optional string desc = 5;
+    optional int64 id = 6;
+}
+
+message TopSlgLabelResp_46125 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 type = 3;
+    optional bool state = 4;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgLabelData labelData = 5;
+}
+
+message TopSlgLabelFamilyAddResp_46126 {
+    optional int32 activityId = 1;
+    optional bool state = 2;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgLabelData labelData = 3;
+}
+
+message TopSlgShareReq_46127 {
+    optional int32 activityId = 1;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgMapTileData tileData = 2;
+    optional string script = 3;
+}
+
+message TopSlgShareResp_46127 {
+    required int32 ret = 1;
+    optional int64 shareTime = 16;
+}
+
+message TopSlgReceiveAwardReq_46128 {
+    optional int32 activityId = 1;
+    optional int32 type = 2;
+    optional int32 see = 3;
+}
+
+message TopSlgReceiveAwardResp_46128 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgRelaxData relaxData = 2;
+    optional int64 ervant = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 4;
+    optional int64 drawBattleLogId = 5;
+}
+
+message TopSlgGetBattlelogReq_46129 {
+    optional int32 activityId = 1;
+    optional int32 type = 2;
+}
+
+message TopSlgGetBattlelogResp_46129 {
+    required int32 ret = 1;
+    repeated bf.messages.game.GmActivityTopSlgCommonMessage.MsgBattlelogEntryData entryData = 2;
+    optional int64 drawBattleLogId = 3;
+}
+
+message TopSlgReceiveAwardTimerReq_46130 {
+    optional int32 activityId = 1;
+    optional int32 type = 2;
+}
+
+message TopSlgReceiveAwardTimerResp_46130 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+    repeated bf.messages.game.GmActivityTopSlgCommonMessage.MsgAwardTimerData data = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 4;
+}
+
+message TopSlgReceiveAwardLastBattleReq_46131 {
+    optional int32 activityId = 1;
+}
+
+message TopSlgReceiveAwardLastBattleResp_46131 {
+    required int32 ret = 1;
+    repeated bf.messages.game.GmActivityTopSlgCommonMessage.MsgFamilyLandGarrisonData data = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+    optional int32 applyFamilyCnt = 4;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopFamilyInfo topFamily = 5;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopPlayerInfo topPlayer = 6;
+    optional int32 familyCnt = 7;
+}
+
+message TopSlgGetBattlelogToReq_46132 {
+    optional int32 activityId = 1;
+    optional int64 logId = 2;
+}
+
+message TopSlgGetBattlelogToResp_46132 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgBattlelogEntryData entryData = 2;
+}
+
+message TopSlgGetToFamilyDataReq_46133 {
+    optional int32 activityId = 1;
+    optional int64 familyId = 2;
+}
+
+message TopSlgGetToFamilyDataResp_46133 {
+    required int32 ret = 1;
+    repeated bf.messages.game.GmActivityTopSlgCommonMessage.MsgLandGarrisonData datas = 2;
+    optional int64 familyTimeIntegral = 3;
+    optional int64 familyIntegral = 4;
+    optional int64 familyLv = 5;
+}
+
+message TopSlgGetBattleCotReq_46134 {
+    optional int32 activityId = 1;
+}
+
+message TopSlgGetBattleCotResp_46134 {
+    required int32 ret = 1;
+    optional int32 battleCot = 2;
+    optional int32 szOccupy = 3;
+}
+
+message TopSlgGetMassBattlelogReq_46137 {
+    optional int32 activityId = 1;
+}
+
+message TopSlgGetMassBattlelogResp_46137 {
+    required int32 ret = 1;
+    repeated bf.messages.game.GmActivityTopSlgCommonMessage.MsgMassBattlelogEntryData datas = 2;
+}
+
+message TopSlgTransformItemReq_46138 {
+    optional int32 activityId = 1;
+}
+
+message TopSlgTransformItemResp_46138 {
+    required int32 ret = 1;
+    repeated MsgTopSlgTransformItem item = 2;
+}
+
+message MsgTopSlgTransformItem {
+    required int32 templateId = 1;
+    required int64 num = 2;
+    required int64 score = 3;
+}
+
+message TopSlgSynTalentReq_46139 {
+    optional int32 activityId = 1;
+}
+
+message TopSlgSynTalentResp_46139 {
+    required int32 ret = 1;
+    repeated bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgPlayerTalentData playerTalentData = 2;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgRelaxData relaxData = 3;
+    optional int64 ervant = 4;
+    optional int64 synTalentTime = 5;
+}
+
+message TopSlgSpectatorsReq_46140 {
+    optional int32 activityId = 1;
+}
+
+message TopSlgSpectatorsResp_46140 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgSpectatorsCompetitionData competitionData = 2;
+}
+
+message TopSlgSpectatorsLastBattleReq_46141 {
+    optional int32 activityId = 1;
+}
+
+message TopSlgSpectatorsLastBattleResp_46141 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgSpectatorsCompetitionData competitionData = 2;
+    repeated bf.messages.game.GmActivityTopSlgCommonMessage.MsgFamilyLandGarrisonData landData = 3;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopFamilyInfo topFamily = 4;
+}
+
+message TopSlgRechargeReq_46142 {
+    optional int32 activityId = 1;
+    optional int32 giftId = 2;
+}
+
+message TopSlgRechargeResp_46142 {
+    optional int32 ret = 1;
+    optional int32 giftId = 2;
+}
+
+message TopSlgDataChangePushResp_46143 {
+    optional int32 activityId = 1;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgMapDataUpdata msgSlgMapDataUpdata = 2;
+}
+
+message TopSlgPlayerDataChangePushResp_46144 {
+    repeated MsgBattleTeamDataChange playerTeamData = 1;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgRelaxData relaxData = 2;
+}
+
+message MsgBattleTeamDataChange {
+    optional int32 id = 1;
+    optional int64 servant = 2;
+}
+
+message TopSlgTaskDataUpdateResp_46145 {
+    repeated bf.messages.game.GmActivityTopSlgCommonMessage.MsgTopSlgTaskData taskData = 1;
+}
+
+message TopSlgFamilyLvUpdateResp_46146 {
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgFamilyStrongholdData data = 1;
+}
+
+message TopSlgBattleResultPushResp_46147 {
+    optional int32 activityId = 1;
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgMapTileData battleTile = 2;
+    optional int32 type = 3;
+    optional int64 fromFamilyId = 4;
+    optional int64 toFamilyId = 5;
+    optional bool result = 6;
+    optional int64 logId = 7;
+    repeated string logPlayerId = 11;
+    repeated int64 logFamilyId = 12;
+    optional bool frist = 8;
+    optional string fromPlayerId = 9;
+    optional bool action = 10;
+}

@@ -1,0 +1,216 @@
+syntax = "proto2";
+
+package bf.messages.game.ActivityChessMessage;
+
+import "CommonMsgMessage.proto";
+import "GmActivityMessage.proto";
+import "PlayerMessage.proto";
+
+message MsgSelfData {
+    repeated int32 updateFieldsList = 90;
+    optional int32 stair = 1;
+    optional string curHp = 2;
+    optional string maxHp = 3;
+    optional string score = 4;
+    optional string book = 5;
+    repeated int32 eventIds = 6;
+    repeated MsgEventCompleteHist msgEventCompleteHist = 7;
+    optional MsgChessEvent msgChessEvent = 8;
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 9;
+    optional int32 useEnergyNum = 10;
+}
+
+message MsgEventCompleteHist {
+    optional int32 eventId = 1;
+    optional int32 num = 2;
+}
+
+message MsgChessEvent {
+    optional int32 eventId = 1;
+    optional MsgChessEventNpc msgChessEventNpc = 2;
+    optional MsgChessEventPlayer msgChessEventPlayer = 3;
+    optional bool isFinish = 4;
+}
+
+message MsgChessEventNpc {
+    optional int64 npcId = 1;
+    optional string curHp = 2;
+    optional string maxHp = 3;
+    optional int64 nextAtkTime = 4;
+    optional bool isSign = 5;
+    optional int32 stair = 6;
+    optional int32 restScore = 7;
+}
+
+message MsgChessEventPlayer {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer msgOfflinePlayer = 1;
+    optional string curHp = 2;
+    optional string maxHp = 3;
+    optional int64 nextAtkTime = 4;
+    optional bool isSign = 5;
+    optional int32 stair = 6;
+    optional int32 restScore = 7;
+}
+
+message MsgChessEventNotify {
+    optional int32 templateId = 1;
+    repeated string replaceStr = 2;
+    optional int64 eventTime = 3;
+    optional MsgNotifyExtra msgNotifyExtra = 4;
+    optional int64 stageEndTime = 5;
+}
+
+message MsgNotifyExtra {
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResourcesLose = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResourcesGain = 2;
+}
+
+message MsgChessMark {
+    optional MsgChessEventNpc msgChessEventNpc = 1;
+    optional MsgChessEventPlayer msgChessEventPlayer = 2;
+    optional string markPlayerId = 3;
+    optional string markPlayerName = 4;
+    optional int32 eventId = 5;
+}
+
+message MsgOneKeyResult {
+    optional int32 eventId = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer msgOfflinePlayer = 2;
+    optional string damage = 3;
+    optional bf.messages.game.CommonMsgMessage.MsgResources score = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 5;
+    optional int32 stair = 6;
+    optional bool isFinish = 7;
+}
+
+message MsgActivityChessHist {
+    optional string playerId = 1;
+    optional int32 templateId = 2;
+    repeated string replaceStr = 3;
+    optional int64 eventTime = 4;
+}
+
+message MsgDefenceHist {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer msgOfflinePlayer = 1;
+    optional string damage = 2;
+    optional int32 percent = 3;
+}
+
+message GetChessEventReq_27101 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetChessEventResp_27101 {
+    required int32 ret = 1;
+    optional MsgSelfData msgSelfData = 2;
+}
+
+message ActiveChessEventReq_27102 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message ActiveChessEventResp_27102 {
+    required int32 ret = 1;
+    optional MsgSelfData msgSelfData = 2;
+    optional string damage = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources score = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 5;
+}
+
+message SyncEventNotifyResp_27103 {
+    repeated MsgChessEventNotify msgChessEventNotify = 1;
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+}
+
+message ClearEventNotifyReq_27104 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int64 eventTime = 2;
+}
+
+message ClearEventNotifyResp_27104 {
+    required int32 ret = 1;
+}
+
+message ActivityChessExploreReq_27105 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 stair = 2;
+}
+
+message ActivityChessExploreResp_27105 {
+    required int32 ret = 1;
+    optional MsgSelfData msgSelfData = 2;
+}
+
+message ActivityChessGoUpStairReq_27106 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required bool isUseItem = 2;
+}
+
+message ActivityChessGoUpStairResp_27106 {
+    required int32 ret = 1;
+    optional MsgSelfData msgSelfData = 2;
+}
+
+message ActivityChessMarkReq_27107 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message ActivityChessMarkResp_27107 {
+    required int32 ret = 1;
+    optional MsgSelfData msgSelfData = 2;
+}
+
+message GetActivityChessMarkReq_27108 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bool isMine = 2;
+}
+
+message GetActivityChessMarkResp_27108 {
+    required int32 ret = 1;
+    repeated MsgChessMark msgChessMark = 2;
+}
+
+message AttackActivityChessMarkReq_27109 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required string ownerId = 2;
+    required bool isEventNpc = 3;
+    required string targetId = 4;
+}
+
+message AttackActivityChessMarkResp_27109 {
+    required int32 ret = 1;
+    optional string damage = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources score = 3;
+    optional string curHp = 4;
+    optional string money = 5;
+}
+
+message OneKeyActiveReq_27110 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 stair = 2;
+    optional bool isCanGoUpStair = 3;
+    optional bool isPass = 4;
+}
+
+message OneKeyActiveResp_27110 {
+    required int32 ret = 1;
+    repeated MsgOneKeyResult msgOneKeyResult = 2;
+}
+
+message GetActivityChessHistReq_27111 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetActivityChessHistResp_27111 {
+    required int32 ret = 1;
+    repeated MsgActivityChessHist msgActivityChessHist = 2;
+}
+
+message GetActivityChessDefenceHistReq_27112 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetActivityChessDefenceHistResp_27112 {
+    required int32 ret = 1;
+    repeated MsgDefenceHist msgDefenceHist = 2;
+}

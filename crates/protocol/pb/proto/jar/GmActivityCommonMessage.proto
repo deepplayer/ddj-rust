@@ -1,0 +1,383 @@
+syntax = "proto2";
+
+package bf.messages.game.GmActivityCommonMessage;
+
+import "CommonMsgMessage.proto";
+import "PlayerMessage.proto";
+import "RankingMessage.proto";
+
+message MsgGmActivityShopTemplateData {
+    optional int32 id = 1;
+    optional int32 activityType = 2;
+    optional int32 activityId = 3;
+    optional string goodsList = 4;
+    optional string price = 6;
+    optional int32 buyLimit = 7;
+    optional int32 buyType = 8;
+    optional int32 limitCondition = 9;
+    optional int32 limitValue = 10;
+    optional string shopName = 11;
+    optional string name = 12;
+    optional string icon = 13;
+    optional string originalPrice = 14;
+    optional int32 discount = 15;
+    optional int32 tab = 16;
+    optional int32 bulkBuying = 17;
+}
+
+message MsgActivityCommodityBuyData {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 id = 3;
+    optional int32 buyCot = 4;
+}
+
+message MsgActivityShopPlayerData {
+    repeated MsgActivityCommodityBuyData buyData = 1;
+}
+
+message ActivityShopBuyCommodityReq_39001 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 id = 3;
+    optional int32 num = 4;
+}
+
+message ActivityShopBuyCommodityResp_39001 {
+    required int32 ret = 1;
+}
+
+message ActivityShopGetReq_39002 {
+}
+
+message ActivityShopGetResp_39002 {
+    required int32 ret = 1;
+    repeated MsgActivityCommodityBuyData buyData = 2;
+}
+
+message ActivityRefreshShopReq_39003 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message ActivityRefreshShopResp_39003 {
+    required int32 ret = 1;
+}
+
+message MsgGmActivityTaskTemplateData {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 tab = 3;
+    optional string describe = 4;
+    optional int32 taskId = 5;
+    optional string remarks = 6;
+    optional int32 conditionType = 7;
+    optional string param1 = 8;
+    optional string param2 = 9;
+    optional int32 mailId = 10;
+    optional int32 jump = 11;
+    optional string icon = 12;
+    optional string reward = 13;
+}
+
+message MsgActivityTaskPlayerData {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 taskId = 3;
+    optional string nowNum = 4;
+    optional int32 status = 5;
+}
+
+message GmActivityTaskPlayerDataResp_31011 {
+    repeated MsgActivityTaskPlayerData msgActivityTaskPlayerData = 1;
+}
+
+message CommitActivityTaskReq_31012 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 taskId = 3;
+}
+
+message CommitActivityTaskResp_31012 {
+    required int32 ret = 1;
+}
+
+message OnekeyCommitActivityTaskReq_31013 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 conditionType = 3;
+}
+
+message OnekeyCommitActivityTaskResp_31013 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 2;
+}
+
+message RemoteActivityGetStateReq_39021 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 activityGroup = 3;
+}
+
+message RemoteActivityGetStateResp_39021 {
+    optional int32 state = 3;
+}
+
+message MsgBulletinPopup {
+    optional int64 id = 1;
+    optional int32 backImgId = 2;
+    optional int32 titleId = 3;
+    optional string content = 4;
+    optional int64 guideId = 5;
+    optional int64 startTime = 6;
+    optional int64 endTime = 7;
+}
+
+message BulletinPopupsReq_39101 {
+}
+
+message BulletinPopupsResp_39101 {
+    repeated MsgBulletinPopup popups = 1;
+}
+
+message MsgRankRewardTemplateData {
+    repeated MsgRankReward rankRewards = 1;
+}
+
+message MsgRankReward {
+    optional int32 activityId = 1;
+    optional string remarks = 2;
+    optional int32 rankIntervalBegin = 3;
+    optional int32 rankIntervalEnd = 4;
+    optional int32 rewardType = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources specialReward = 6;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 7;
+    optional int32 rankType = 8;
+}
+
+message MsgRankPlayerData {
+    repeated int32 drawType = 1;
+    optional bool join = 2;
+}
+
+message MsgPlayerRankData {
+    optional int32 rankType = 1;
+    optional int32 status = 2;
+}
+
+message MsgGainRankRewardReq_39111 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 rankType = 3;
+}
+
+message MsgGainRankRewardResp_39111 {
+    required int32 ret = 1;
+    optional int32 activityType = 2;
+    optional int32 activityId = 3;
+    optional int32 rankType = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 5;
+}
+
+message MsgGmActivity {
+    optional int32 actId = 1;
+    optional int32 actType = 2;
+    optional int32 actGroup = 3;
+}
+
+message MsgTransferItem {
+    optional int32 templateId = 1;
+    optional int64 num = 2;
+    optional string score = 3;
+}
+
+message MsgCrossPushIntegralChgReq_39112 {
+    optional MsgGmActivity activity = 1;
+    optional int32 serverId = 2;
+    optional bool updPlayer = 5;
+    optional string playerId = 6;
+    optional int64 playerValue = 7;
+    optional bool updFamily = 8;
+    optional int64 familyId = 9;
+    optional int64 familyValue = 10;
+    optional bool removeFamily = 11;
+    optional int64 removeFamilyId = 12;
+}
+
+message MsgCrossPushIntegralChgResp_39112 {
+    required int32 ret = 1;
+    optional int32 playerRank = 2;
+    optional int32 familyRank = 3;
+}
+
+message MsgQueryMyRankReq_39113 {
+    optional MsgGmActivity activity = 1;
+    optional int32 rankType = 2;
+}
+
+message MsgQueryMyRankResp_39113 {
+    required int32 ret = 1;
+    optional int32 rank = 2;
+    optional string integral = 3;
+    optional MsgGmActivity activity = 4;
+    optional int32 rankType = 5;
+}
+
+message MsgCrossQueryMyRankReq_39114 {
+    optional MsgGmActivity activity = 1;
+    repeated int32 rankType = 2;
+    repeated string key = 3;
+}
+
+message MsgCrossQueryMyRankResp_39114 {
+    required int32 ret = 1;
+    repeated int32 rank = 2;
+    repeated string integral = 3;
+}
+
+message MsgQueryRankDataReq_39115 {
+    optional MsgGmActivity activity = 1;
+    optional int32 rankType = 2;
+    optional int32 num = 3;
+}
+
+message MsgQueryRankDataResp_39115 {
+    required int32 ret = 1;
+    optional bf.messages.game.RankingMessage.MsgRankingData info = 2;
+    optional MsgGmActivity activity = 3;
+    optional int32 rankType = 4;
+}
+
+message MsgCrossQueryRankDataReq_39116 {
+    optional MsgGmActivity activity = 1;
+    optional int32 rankType = 2;
+    optional int32 num = 3;
+    optional string key = 4;
+}
+
+message MsgCrossQueryRankDataResp_39116 {
+    required int32 ret = 1;
+    optional bf.messages.game.RankingMessage.MsgRankingData info = 2;
+}
+
+message MsgSaveClientDataReq_39117 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+    optional string extId = 3;
+    optional string cacheData = 4;
+}
+
+message MsgSaveClientDataResp_39117 {
+    required int32 ret = 1;
+}
+
+message MsgQueryClientDataReq_39118 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+    optional string extId = 3;
+}
+
+message MsgQueryClientDataResp_39118 {
+    required int32 ret = 1;
+    optional int32 actType = 2;
+    optional int32 actId = 3;
+    optional string extId = 4;
+    optional string cacheData = 5;
+}
+
+message MsgDoCmdReq_39119 {
+    optional MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional string cmd = 3;
+    repeated string param = 4;
+}
+
+message MsgDoCmdResp_39119 {
+    required int32 ret = 1;
+}
+
+message MsgEnergy {
+    optional int64 id = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 2;
+    optional int32 giftId = 3;
+    optional int32 num = 4;
+    optional int64 timeStamp = 5;
+    optional bool isGain = 6;
+}
+
+message GetEnergyPanelReq_39121 {
+    required MsgGmActivity msgGmActivity = 1;
+}
+
+message GetEnergyPanelResp_39121 {
+    required int32 ret = 1;
+    repeated MsgEnergy msgEnergy = 2;
+    optional int32 energyCnt = 3;
+}
+
+message GainEnergyReq_39122 {
+    required MsgGmActivity msgGmActivity = 1;
+    required int64 id = 2;
+}
+
+message GainEnergyResp_39122 {
+    required int32 ret = 1;
+    optional MsgEnergy msgEnergy = 2;
+    optional int32 energyCnt = 3;
+}
+
+message GetGainEnergyHistReq_39123 {
+    required MsgGmActivity msgGmActivity = 1;
+    required int64 id = 2;
+}
+
+message GetGainEnergyHistResp_39123 {
+    required int32 ret = 1;
+    repeated bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 2;
+}
+
+message NotifyGiftResp_39124 {
+    optional MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 2;
+    optional int32 giftId = 3;
+}
+
+message GetFashionReq_39125 {
+    required MsgGmActivity msgGmActivity = 1;
+}
+
+message GetFashionResp_39125 {
+    required int32 ret = 1;
+    optional int32 useFashionId = 2;
+    repeated int32 fashionId = 3;
+    optional int32 totalCharge = 4;
+}
+
+message UseFashionReq_39126 {
+    required MsgGmActivity msgGmActivity = 1;
+    optional int32 fashionId = 2;
+    optional bool isActive = 3;
+}
+
+message UseFashionResp_39126 {
+    required int32 ret = 1;
+}
+
+message EnterOrExitReq_39127 {
+    required MsgGmActivity msgGmActivity = 1;
+    required bool isEnter = 2;
+}
+
+message EnterOrExitResp_39127 {
+    required int32 ret = 1;
+}
+
+message TransferItemReq_39128 {
+    required MsgGmActivity msgGmActivity = 1;
+}
+
+message TransferItemResp_39128 {
+    required int32 ret = 1;
+    optional MsgGmActivity msgGmActivity = 2;
+    repeated MsgTransferItem msgTransferItem = 3;
+}

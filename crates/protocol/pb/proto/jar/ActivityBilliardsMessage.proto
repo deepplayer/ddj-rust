@@ -1,0 +1,290 @@
+syntax = "proto2";
+
+package bf.messages.game.ActivityBilliardsMessage;
+
+import "CommonMsgMessage.proto";
+import "GmActivityMessage.proto";
+import "PlayerMessage.proto";
+
+message MsgBilliardsPlayerData {
+    optional MsgBilliardsFormation formation = 1;
+    optional int32 charge = 2;
+    repeated int32 rewardId = 3;
+    optional int32 titleId = 4;
+    optional int32 point = 5;
+    optional int32 gameNum = 6;
+    optional int64 freeTicketTime = 7;
+    repeated int32 practiceId = 8;
+    optional bool isGaming = 9;
+    optional int32 winNum = 10;
+}
+
+message MsgBilliardsTemplateData {
+    repeated MsgBilliardsRewardTemplate taskReward = 1;
+    repeated MsgBilliardsUnlockTemplate playerUnlock = 2;
+}
+
+message MsgBilliardsUnlockTemplate {
+    optional int32 playerId = 1;
+    optional int32 money = 2;
+}
+
+message MsgBilliardsRewardTemplate {
+    optional int32 taskId = 1;
+    optional string des = 2;
+    optional int32 param1 = 3;
+    optional string reward = 4;
+    optional int32 id = 5;
+}
+
+message MsgBilliardsFormation {
+    optional int32 formationId = 1;
+    repeated int32 talentId = 2;
+    optional string playerId = 3;
+}
+
+message MsgBilliardsSettle {
+    optional int32 reason = 1;
+    optional int32 score = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+}
+
+message MsgBilliardsVec {
+    optional float x = 1;
+    optional float y = 2;
+}
+
+message MsgBilliardsBattleSphere {
+    optional int32 id = 1;
+    optional MsgBilliardsVec vec = 2;
+    optional int32 talentId = 3;
+    optional int32 teamId = 4;
+    optional bool off = 5;
+    optional bool idzz = 6;
+}
+
+message MsgBilliardsLog {
+    optional int64 time = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer msgOfflinePlayer = 2;
+    optional int32 ret = 3;
+}
+
+message MsgBilliardsGameInfo {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer msgOfflinePlayerA = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer msgOfflinePlayerB = 2;
+    repeated MsgBilliardsBattleSphere sphere = 3;
+    optional int32 teamId = 4;
+    repeated int32 score = 5;
+    optional int32 winTeam = 6;
+    optional int32 nextPlay = 7;
+    optional int64 nextEndTime = 8;
+    repeated int32 nextSkillSphere = 9;
+    optional int64 startTime = 10;
+}
+
+message MsgBilliardsStepSphere {
+    optional int32 id = 1;
+    repeated int32 p = 2;
+    optional int32 s = 3;
+}
+
+message BilliardsChargeResp_39201 {
+    optional int32 ret = 1;
+    optional int32 charge = 2;
+}
+
+message BilliardsFormationReq_39202 {
+    optional int32 activityId = 1;
+    optional int32 id = 2;
+    repeated int32 talentId = 3;
+}
+
+message BilliardsFormationResp_39202 {
+    required int32 ret = 1;
+}
+
+message BilliardsTiltleReq_39203 {
+    optional int32 activityId = 1;
+}
+
+message BilliardsTiltleResp_39203 {
+    optional int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgTitle = 4;
+}
+
+message BilliardsKickReq_39210 {
+    optional int32 activityId = 1;
+    optional int32 sphereIndex = 2;
+    optional MsgBilliardsVec velocity = 3;
+    optional float deflectionParam = 4;
+}
+
+message BilliardsKickResp_39210 {
+    optional int32 ret = 1;
+    repeated MsgBilliardsBattleSphere oriSphere = 2;
+    optional MsgBilliardsVec velocity = 3;
+    optional float deflectionParam = 4;
+    optional MsgBilliardsGameInfo gameInfo = 6;
+    optional int32 sphereIndex = 8;
+    optional MsgBilliardsSettle settle = 10;
+    repeated MsgBilliardsStepSphere sphereMsg = 11;
+    repeated int32 nextSkillSphere = 12;
+}
+
+message BilliardsGameInfoReq_39211 {
+    optional int32 activityId = 1;
+}
+
+message BilliardsGameInfoResp_39211 {
+    optional int32 ret = 1;
+    optional MsgBilliardsGameInfo gameInfo = 2;
+}
+
+message BilliardsMatchReq_39230 {
+    optional int32 activityId = 1;
+    optional bool match = 2;
+}
+
+message BilliardsMatchResp_39230 {
+    required int32 ret = 1;
+    optional bool match = 2;
+}
+
+message BilliardsMatchSuccessResp_39231 {
+    optional int32 ret = 1;
+    optional MsgBilliardsGameInfo matchResult = 2;
+}
+
+message BilliardsMatchStopResp_39232 {
+    optional int32 ret = 2;
+}
+
+message BilliardsRewardReq_39240 {
+    optional int32 activityId = 1;
+    repeated int32 rewardId = 2;
+}
+
+message BilliardsRewardResp_39240 {
+    required int32 ret = 1;
+    repeated int32 rewardId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+}
+
+message BilliardsFreeTicketReq_39241 {
+    optional int32 activityId = 1;
+}
+
+message BilliardsFreeTicketResp_39241 {
+    required int32 ret = 1;
+    optional int64 time = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+}
+
+message BilliardsPracticeReq_39242 {
+    optional int32 activityId = 1;
+    optional int32 id = 2;
+}
+
+message BilliardsPracticeResp_39242 {
+    required int32 ret = 1;
+    optional int32 id = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+}
+
+message BilliardsLogGetReq_39243 {
+    optional int32 activityId = 1;
+}
+
+message BilliardsLogGetResp_39243 {
+    required int32 ret = 1;
+    repeated MsgBilliardsLog logs = 2;
+}
+
+message BilliardsChatReq_39244 {
+    required int32 actId = 1;
+    optional int32 emoji = 2;
+}
+
+message BilliardsChatResp_39244 {
+    required int32 ret = 1;
+    optional string playerId = 2;
+    optional int32 emoji = 3;
+    optional string toPlayerId = 4;
+}
+
+message MsgG2CBilliardsMatchReq_39252 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required string playerId = 2;
+    required bool match = 3;
+    optional MsgBilliardsFormation formation = 4;
+    optional int32 titleId = 5;
+}
+
+message MsgC2GBilliardsMatchResp_39252 {
+    required int32 ret = 1;
+}
+
+message MsgC2GBilliardsMatchResp_39253 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated MsgBilliardsGameInfo matchResult = 2;
+}
+
+message MsgC2GBilliardsStopMatchResp_39254 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated string playerId = 2;
+    optional int32 ret = 3;
+}
+
+message MsgG2CBilliardsChatReq_39255 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int32 emoji = 3;
+}
+
+message MsgC2GBilliardsChatResp_39255 {
+    required int32 ret = 1;
+    optional string playerId = 2;
+    optional int32 emoji = 3;
+    optional string toPlayerId = 4;
+}
+
+message MsgG2CBilliardsKickReq_39256 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int32 sphereIndex = 3;
+    optional MsgBilliardsVec velocity = 4;
+    optional float deflectionParam = 5;
+}
+
+message MsgC2GBilliardsKickResp_39256 {
+    optional int32 ret = 1;
+    repeated MsgBilliardsBattleSphere oriSphere = 2;
+    optional MsgBilliardsVec velocity = 3;
+    optional float deflectionParam = 4;
+    optional MsgBilliardsGameInfo gameInfo = 6;
+    optional int32 sphereIndex = 9;
+    optional int32 actId = 10;
+    optional string otherPlayerId = 11;
+    repeated MsgBilliardsStepSphere sphereMsg = 13;
+    repeated int32 nextSkillSphere = 14;
+}
+
+message MsgG2CBilliardsGameInfoReq_39257 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message MsgC2GBilliardsGameInfoResp_39257 {
+    optional int32 ret = 1;
+    optional MsgBilliardsGameInfo gameInfo = 2;
+}
+
+message MsgC2GBilliardsGameTimeOverResp_39258 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated MsgBilliardsGameInfo gameInfo = 2;
+}
+
+message MsgC2GBilliardsChangePlayResp_39259 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated MsgBilliardsGameInfo gameInfo = 2;
+}

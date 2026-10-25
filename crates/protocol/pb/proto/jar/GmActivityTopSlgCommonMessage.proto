@@ -1,0 +1,501 @@
+syntax = "proto2";
+
+package bf.messages.game.GmActivityTopSlgCommonMessage;
+
+import "PlayerMessage.proto";
+import "GmActivityMessage.proto";
+import "CommonMsgMessage.proto";
+
+message MsgTopSlgAllTemplateData {
+    repeated MsgTopSlgRanktypeDb msgSlgRanktypeDb = 1;
+    repeated bf.messages.game.GmActivityMessage.MsgRank msgRank = 2;
+    repeated MsgTopSlgOperateTimeDb msgSlgOperateTimeDb = 3;
+    repeated bf.messages.game.GmActivityMessage.MsgBuyLimitDb buyLimitDB = 5;
+}
+
+message MsgRankingData {
+    repeated int32 rewardRankTypes = 3;
+    optional int32 rank = 11;
+    optional int32 familyRank = 12;
+    optional int64 money = 13;
+    optional int64 familyMoney = 14;
+    optional int64 topFamilyId = 21;
+    optional int32 topFamilyServerId = 22;
+    optional string topFamilyName = 23;
+    optional int32 topFamilyIco = 24;
+    optional string topFamilyValue = 25;
+    optional string topFamilyPatriarchId = 26;
+    optional string topFamilyPatriarchName = 27;
+    optional string topId = 31;
+    optional int32 topServerId = 32;
+    optional string topName = 33;
+    optional string slgDec = 34;
+    optional string topValue = 35;
+    optional int32 topSex = 36;
+    repeated int32 topFashionIds = 37;
+    optional int32 topNpcSex = 38;
+}
+
+message MsgTopFamilyInfo {
+    optional int64 topFamilyId = 1;
+    optional int32 topFamilyServerId = 2;
+    optional string topFamilyName = 3;
+    optional int32 topFamilyIco = 4;
+    optional string topFamilyValue = 5;
+    optional string topFamilyPatriarchId = 6;
+    optional string topFamilyPatriarchName = 7;
+}
+
+message MsgTopPlayerInfo {
+    optional string topId = 1;
+    optional int32 topServerId = 2;
+    optional string topName = 3;
+    optional string slgDec = 4;
+    optional string topValue = 5;
+    optional int32 topSex = 6;
+    repeated int32 topFashionIds = 7;
+    optional int64 familyId = 8;
+    optional string familyName = 9;
+    optional int32 topNpcSex = 10;
+}
+
+message MsgTurnApply {
+    optional int32 familyApplyNum = 11;
+    optional int32 rank = 12;
+    optional int32 familyRank = 13;
+}
+
+message MsgGambleFamily {
+    optional int64 familyId = 1;
+    optional string familyName = 2;
+    optional int32 familyIco = 3;
+    optional int32 serverId = 4;
+    optional string money = 5;
+    optional int64 gamble = 7;
+}
+
+message MsgGambleRecord {
+    optional int32 activityId = 1;
+    optional int32 id = 3;
+    optional int64 gambleTime = 4;
+    repeated MsgGambleFamily gambleFamilies = 5;
+    repeated MsgGambleFamily familyResults = 7;
+    optional int32 anonymous = 8;
+    optional int32 rewarded = 9;
+}
+
+message MsgTopSlgPlayerData {
+    optional int64 ervant = 1;
+    optional MsgTopSlgServantData msgSlgServantData = 2;
+    optional bool help = 3;
+    optional bool join = 4;
+    optional int32 actId = 11;
+    optional int32 turnState = 13;
+    repeated MsgTurnApply turnApply = 14;
+    optional MsgRankingData rankingData = 15;
+    repeated int32 showedGradeOfTurn = 16;
+    optional int32 anonymous = 18;
+    optional int64 inviteTime = 19;
+    optional bool lastBattle = 20;
+    repeated MsgGambleRecord records = 21;
+    optional int32 autoRecruitTime = 22;
+    repeated MsgTopSlgGift gifts = 23;
+}
+
+message MsgTopSlgGift {
+    optional int32 giftId = 1;
+    optional int32 num = 2;
+}
+
+message MsgTopSlgRanktypeDb {
+    optional int32 actId = 1;
+    optional int32 group = 4;
+    optional string des = 5;
+    optional int32 fightNum = 6;
+    optional int32 isCapture = 7;
+}
+
+message MsgTopSlgOperateTimeDb {
+    optional int32 type = 1;
+    optional int32 actId = 2;
+    optional int32 stageType = 4;
+    repeated int32 time = 5;
+}
+
+message MsgPosData {
+    optional int32 x = 1;
+    optional int32 y = 2;
+}
+
+message MsgPixPosData {
+    optional int32 x = 1;
+    optional int32 y = 2;
+}
+
+message MsgMapTileData {
+    optional int32 type = 1;
+    optional MsgPosData pos = 2;
+    optional int32 areaId = 3;
+}
+
+message MsgTopSlgSpectatorsCompetitionData {
+    repeated MsgFamilyStrongholdData msgFamilyStrongholdData = 4;
+    repeated MsgTopSlgGarrisonData msgSlgGarrisonData = 5;
+}
+
+message MsgTopSlgBattleFieldData {
+    optional int32 applyFamilyCnt = 1;
+    optional MsgTopSlgCompetitionData msgSlgCompetitionData = 2;
+    optional MsgCompetitionPlayerData msgCompetitionPlayerData = 3;
+    optional int32 familyCnt = 4;
+}
+
+message MsgTopSlgCompetitionData {
+    repeated MsgFamilyStrongholdData msgFamilyStrongholdData = 4;
+    optional MsgTopSlgMapData msgSlgMapData = 5;
+    optional string allAverageMoney = 6;
+}
+
+message MsgTopSlgMapData {
+    repeated MsgTopSlgGarrisonData msgSlgGarrisonData = 5;
+    repeated MsgTopSlgMarchData msgSlgMarchData = 6;
+    repeated MsgTopSlgMassData massData = 7;
+}
+
+message MsgCompetitionPlayerData {
+    repeated MsgTopSlgPlayerTalentData playerTalentData = 10;
+    repeated MsgTopSlgPlayerTeamData playerTeamData = 11;
+    optional MsgCompetitionFamilyData familyData = 12;
+    repeated MsgTopSlgLabelData labelData = 13;
+    repeated MsgTopSlgLabelData familyLabelData = 14;
+    optional MsgTopSlgRelaxData relaxData = 15;
+    optional int64 shareTime = 16;
+    repeated MsgTopSlgTaskData taskDatas = 17;
+    optional bool lastBattle = 19;
+    optional bool drawEndTaskAward = 20;
+    optional int64 synTalentTime = 21;
+}
+
+message MsgFamilyStrongholdData {
+    optional MsgMapTileData msgMapTileData = 1;
+    optional int64 familyId = 2;
+    optional string familyName = 3;
+    optional int32 familyLv = 4;
+    optional int32 serverId = 5;
+}
+
+message MsgFamilyStrongholdPlayerData {
+    optional string playerId = 1;
+    optional int64 integral = 4;
+    optional int32 massCot = 5;
+}
+
+message MsgTopSlgGarrisonData {
+    optional MsgMapTileData msgMapTileData = 1;
+    optional int64 familyId = 2;
+    repeated MsgTopSlgTeamData teamData = 3;
+    optional string strength = 4;
+    optional string strengthMax = 5;
+}
+
+message MsgTopSlgMarchData {
+    optional int64 id = 1;
+    optional int64 familyId = 2;
+    optional MsgMapViewTopSlgPlayerData playerData = 3;
+    optional int32 action = 4;
+    optional MsgMapTileData initTile = 5;
+    optional MsgMapTileData endTile = 6;
+    optional MsgPixPosData startPix = 7;
+    optional int64 massId = 8;
+    optional MsgTopSlgTeamData teamData = 9;
+    optional int64 arriveTime = 10;
+    optional int32 speed = 11;
+    optional string strength = 12;
+    optional string desc = 13;
+}
+
+message MsgTopSlgMassData {
+    optional int64 id = 1;
+    optional int64 familyId = 2;
+    optional MsgMapViewTopSlgPlayerData playerData = 3;
+    optional int32 type = 4;
+    optional MsgMapTileData msgMapTileData = 5;
+    optional MsgMapTileData endTile = 6;
+    optional int64 marchId = 7;
+    repeated MsgTopSlgTeamData teamData = 9;
+    optional int64 arriveTime = 10;
+}
+
+message MsgTopSlgGarrisonDataUpdata {
+    repeated MsgTopSlgGarrisonData msgSlgGarrisonData = 1;
+}
+
+message MsgTopSlgMarchDataUpdata {
+    repeated MsgTopSlgMarchData msgSlgMarchData = 1;
+    repeated int64 id = 2;
+}
+
+message MsgTopSlgMassDataUpdata {
+    repeated MsgTopSlgMassData msgSlgMassData = 1;
+    repeated int64 id = 2;
+}
+
+message MsgTopSlgMapDataUpdata {
+    optional MsgTopSlgGarrisonDataUpdata msgSlgGarrisonDataUpdata = 1;
+    optional MsgTopSlgMarchDataUpdata msgSlgMarchDataUpdata = 2;
+    optional MsgTopSlgMassDataUpdata msgSlgMassDataUpdata = 3;
+}
+
+message MsgTopSlgTeamData {
+    optional string playerId = 1;
+    optional int32 id = 3;
+}
+
+message MsgTopSlgMassDetailsData {
+    optional int64 id = 1;
+    optional bool bor = 2;
+    repeated MsgMapViewTopSlgPlayerTeamData massTeamData = 3;
+    repeated MsgMapViewTopSlgPlayerTeamData joinMassTeamData = 4;
+}
+
+message MsgTopSlgGarrisonDetailsData {
+    repeated MsgMapViewTopSlgPlayerTeamData slgPlayerTeamData = 1;
+}
+
+message MsgTopSlgMarchDetailsData {
+    repeated MsgMapViewTopSlgPlayerTeamData slgPlayerTeamData = 1;
+}
+
+message MsgTopSlgPlayerTalentData {
+    optional int32 id = 1;
+    optional int32 lv = 2;
+    optional string money = 3;
+    optional int32 skinId = 4;
+    optional int32 skinAwake = 5;
+    optional int32 skillStarSum = 6;
+    optional int32 sumAptitude = 7;
+}
+
+message MsgTopSlgPlayerTeamData {
+    optional int32 id = 1;
+    repeated int32 talentId = 2;
+    optional int64 ervant = 3;
+    optional bool impower = 4;
+    optional int64 ervantChange = 5;
+    optional string money = 6;
+}
+
+message MsgRemoteTopSlgPlayerTeamData {
+    optional string playerId = 1;
+    optional MsgTopSlgPlayerTeamData datas = 2;
+}
+
+message MsgCompetitionFamilyData {
+}
+
+message MsgTopSlgLabelData {
+    optional int64 id = 1;
+    optional MsgMapTileData msgMapTileData = 2;
+    optional string desc = 3;
+    optional string playerId = 4;
+}
+
+message MsgTopSlgRelaxData {
+    optional int64 servant = 1;
+    optional int64 recover = 2;
+    optional int64 cot = 3;
+}
+
+message MsgMapViewTopSlgPlayerTeamData {
+    optional string playerId = 1;
+    optional string playerName = 2;
+    optional MsgMapViewTopSlgTeamData teamData = 3;
+}
+
+message MsgMapViewTopSlgTeamData {
+    optional int32 id = 1;
+    repeated MsgTopSlgPlayerTalentData talents = 2;
+    optional int64 ervant = 3;
+}
+
+message MsgMapViewTopSlgPlayerData {
+    optional string playerId = 1;
+    optional string playerName = 2;
+    optional int32 id = 3;
+    optional int32 skinId = 4;
+    optional int32 skinAwake = 5;
+    optional int32 vipLv = 6;
+    optional int32 sex = 7;
+}
+
+message MsgTopSlgEditTeamData {
+    optional int32 teamId = 2;
+    repeated int32 talentId = 3;
+    optional int64 ervant = 4;
+}
+
+message MsgTopSlgServantData {
+    optional int32 cot = 1;
+    optional int64 time = 2;
+    optional int64 receivingNum = 3;
+}
+
+message MsgTopSlgRecruitHelpData {
+    optional string playerId = 1;
+    optional int32 sumCot = 2;
+    optional int32 cot = 3;
+    optional int64 syTime = 4;
+}
+
+message MsgTopSlgFristFamilyData {
+    optional int32 serverId = 1;
+    optional int64 familyId = 2;
+    optional string playerName = 3;
+}
+
+message MsgTopSlgNpcData {
+    optional string strength = 1;
+    optional string money = 2;
+    optional int64 servant = 3;
+    optional int64 maxServant = 4;
+    optional string npcTalent = 5;
+}
+
+message MsgRemoteTopSlgDataUpdata {
+    optional MsgTopSlgMapDataUpdata data = 1;
+}
+
+message MsgBattleResultData {
+    optional MsgMapTileData msgMapTileData = 1;
+    optional int64 time = 2;
+    optional int32 type = 3;
+    optional bool frist = 4;
+    optional MsgBattleSpiritData fromSpirit = 5;
+    optional MsgBattleSpiritData toSpirit = 6;
+    optional bool result = 7;
+    optional int32 action = 10;
+}
+
+message MsgBattleSpiritData {
+    optional bool bor = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+    optional MsgBattlePlayerData playerData = 4;
+    optional MsgBattleNpcData npcData = 5;
+}
+
+message MsgBattlePlayerData {
+    optional MsgTopSlgPlayerShowData playerShowData = 1;
+    repeated MsgBattleTeamData battleTeamData = 2;
+}
+
+message MsgBattleNpcData {
+    repeated string npcTalent = 1;
+    optional MsgBattleData battleData = 2;
+}
+
+message MsgBattleTeamData {
+    optional string playerId = 1;
+    optional int32 teamId = 2;
+    optional MsgBattleData battleData = 4;
+    repeated MsgTopSlgPlayerTalentData talents = 5;
+}
+
+message MsgBattleData {
+    optional string beforeStrength = 1;
+    optional int64 beforeServant = 2;
+    optional int64 laterServantDie = 3;
+    optional int64 laterServantRelax = 4;
+    optional int64 servant = 5;
+    optional string money = 6;
+}
+
+message MsgPlayerRewardData {
+    optional string playerId = 1;
+    optional int64 integral = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+}
+
+message MsgFamilyRewardData {
+    optional int64 familyId = 1;
+    optional int64 integral = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+}
+
+message MsgTopSlgPlayerShowData {
+    optional string playerId = 1;
+    optional string name = 2;
+    optional int32 sex = 3;
+    optional int32 vipLv = 4;
+    repeated int32 fashionIds = 5;
+    optional int32 serverId = 6;
+    optional int32 npcSex = 7;
+}
+
+message MsgBattlelogEntryData {
+    optional int64 id = 1;
+    optional MsgMapTileData msgMapTileData = 2;
+    optional int64 time = 3;
+    optional int32 type = 4;
+    optional bool frist = 5;
+    optional MsgBattleSpiritData fromSpirit = 6;
+    optional MsgBattleSpiritData toSpirit = 7;
+    optional bool result = 8;
+    optional int32 action = 9;
+    repeated MsgPlayerRewardData playerRewardData = 10;
+    repeated MsgFamilyRewardData familyReward = 11;
+}
+
+message MsgLandGarrisonData {
+    optional int32 landId = 1;
+    optional int32 num = 2;
+}
+
+message MsgFamilyLandGarrisonData {
+    optional int64 familyId = 1;
+    repeated MsgLandGarrisonData data = 2;
+    optional int64 money = 3;
+    optional int64 moneyVar = 4;
+    optional MsgFamilyStrongholdData msgFamilyStrongholdData = 5;
+}
+
+message MsgTopSlgTaskData {
+    optional int32 id = 1;
+    optional int64 nowNum = 2;
+    optional int32 status = 3;
+}
+
+message MsgAwardTimerData {
+    optional int64 time = 1;
+    repeated MsgLandGarrisonData data = 2;
+}
+
+message MsgMassBattlelogEntryData {
+    optional int64 time = 1;
+    optional MsgMapTileData msgMapTileData = 2;
+    optional int32 type = 3;
+    optional string playerName = 4;
+    optional int32 teamId = 5;
+    optional int64 servant = 6;
+    optional bool bor = 7;
+}
+
+message MsgMemberApplyInfo {
+    optional bf.messages.game.PlayerMessage.MsgOtherPlayer playerData = 1;
+    optional int32 applied = 2;
+}
+
+message MsgMatchFamilyData {
+    optional int64 familyId = 1;
+    optional int32 serverId = 2;
+    optional string familyName = 3;
+    optional int32 familyIco = 4;
+    optional string familyMoney = 5;
+    optional int32 applyCnt = 6;
+    optional int64 money = 7;
+}
+
+message MsgMatchData {
+    optional int32 activityId = 1;
+    repeated MsgMatchFamilyData families = 5;
+}

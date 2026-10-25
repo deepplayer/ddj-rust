@@ -1,0 +1,100 @@
+syntax = "proto2";
+
+package bf.messages.game.GmActivityWonderlandMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgWonderlandGrid {
+    optional int32 x = 1;
+    optional int32 y = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgResources msgResource = 3;
+    optional bool coreItem = 4;
+    optional int32 onlyId = 5;
+}
+
+message MsgWonderlandCoreItemChooseNum {
+    optional int32 itemId = 1;
+    optional int32 num = 2;
+    optional int32 onlyId = 3;
+}
+
+message MsgPlayerWonderland {
+    optional int32 layer = 1;
+    optional int32 stage = 2;
+    repeated MsgWonderlandGrid grids = 3;
+    repeated MsgWonderlandCoreItemChooseNum chooseNum = 4;
+    optional bf.messages.game.CommonMsgMessage.MsgResources coreItem = 5;
+    optional int32 coreItemOnlyId = 6;
+}
+
+message MsgWonderlandGains {
+    optional int64 timestamp = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message MsgWonderlandDb {
+    optional int32 activityId = 1;
+    optional int32 onlyId = 2;
+    optional int32 itemType = 3;
+    optional string item = 4;
+    optional int32 floor = 5;
+    optional int32 selectTime = 6;
+}
+
+message MsgWonderlandTemplateDb {
+    repeated MsgWonderlandDb msgWonderlandDb = 1;
+}
+
+message WonderlandChooseCoreItemReq_32401 {
+    required int32 activityId = 1;
+    optional int32 onlyId = 2;
+}
+
+message WonderlandChooseCoreItemResp_32401 {
+    required int32 ret = 1;
+    required int32 activityId = 2;
+    optional int32 stage = 4;
+    optional bf.messages.game.CommonMsgMessage.MsgResources coreItem = 5;
+    optional int32 onlyId = 6;
+}
+
+message WonderlandStartReq_32402 {
+    required int32 activityId = 1;
+}
+
+message WonderlandStartResp_32402 {
+    required int32 ret = 1;
+    required int32 activityId = 2;
+    optional int32 stage = 3;
+}
+
+message WonderlandSearchReq_32403 {
+    required int32 activityId = 1;
+    optional int32 x = 2;
+    optional int32 y = 3;
+}
+
+message WonderlandSearchResp_32403 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional MsgWonderlandGrid grid = 3;
+}
+
+message WonderlandGoToNextLayerReq_32404 {
+    required int32 activityId = 1;
+}
+
+message WonderlandGoToNextLayerResp_32404 {
+    required int32 ret = 1;
+    optional int32 activityId = 2;
+    optional MsgPlayerWonderland msgPlayerWonderland = 3;
+}
+
+message WonderlandGainsReq_32405 {
+    optional int32 activityId = 1;
+}
+
+message WonderlandGainsResp_32405 {
+    required int32 ret = 1;
+    repeated MsgWonderlandGains gains = 2;
+}

@@ -1,0 +1,412 @@
+syntax = "proto2";
+
+package bf.messages.game.AutoPlayMessage;
+
+import "CommonMsgMessage.proto";
+import "PlayerMessage.proto";
+
+message MsgAutoPlayData {
+    repeated MsgAutoPlayParam param = 1;
+    repeated MsgAutoPlayLog logs = 2;
+    optional bool isNewLog = 3;
+}
+
+message MsgAutoPlayParam {
+    required int32 type = 1;
+    required bool open = 2;
+    optional MsgHomelandParam homeland = 17;
+    repeated bool buildingEventSwitch = 23;
+    repeated int32 familyDonate = 28;
+    optional MsgFamilyFleetParam familyFleet = 31;
+    optional MsgColiseumParam msgColiseum = 32;
+}
+
+message MsgHomelandParam {
+    optional int32 farmHarvestId = 1;
+    optional int32 pastureHarvestId = 2;
+    optional bool isAutoBuy = 3;
+}
+
+message MsgFamilyFleetParam {
+    repeated string invitedId = 1;
+    optional bool firstHigh = 2;
+    optional bool autoJoin = 3;
+}
+
+message MsgColiseumParam {
+    repeated int32 talentId = 1;
+}
+
+message MsgAutoPlayLog {
+    optional int64 id = 1;
+    optional int64 offlineTime = 2;
+    optional int64 addTime = 3;
+    repeated MsgEventResult events = 4;
+}
+
+message MsgEventResult {
+    required int32 type = 1;
+    optional MsgBuildingResult building = 11;
+    optional MsgTradeResult trade = 12;
+    optional MsgAccountRoomResult accountRoom = 13;
+    optional MsgTravelResult travel = 14;
+    optional MsgPetInteractResult petInteract = 15;
+    optional MsgPetYardResult petYard = 16;
+    optional MsgChildrenResult children = 17;
+    optional MsgHomelandResult homeland = 18;
+    optional MsgFeastShopResult feastShop = 19;
+    optional MsgAccountRoomResult accountRoomFriend = 20;
+    optional MsgFamilyTrade msgFamilyTrade = 21;
+    optional MsgHuntingAreaShopResult huntingAreaShop = 22;
+    optional MsgChildGiftResult msgChildGift = 23;
+    optional MsgBuildingEventResult buildingEvent = 24;
+    optional MsgWorshipResult worship = 25;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources signIn = 26;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources monthCard = 27;
+    optional MsgFamilyDonate familyDonate = 28;
+    optional MsgFamilyFleet familyFleet = 31;
+    optional MsgColiseumResult msgColiseum = 32;
+    optional MsgPrayResult pray = 33;
+    optional MsgFamilyHonorShop familyHonorShop = 34;
+    optional MsgHuntingAreaShopResult msgHallShop = 35;
+    optional MsgHuntingAreaShopResult msgFortuneShop = 36;
+}
+
+message MsgBuildingResult {
+    optional bf.messages.game.CommonMsgMessage.MsgResources reward = 1;
+}
+
+message MsgTradeResult {
+    optional bf.messages.game.CommonMsgMessage.MsgResources cost = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+}
+
+message MsgAccountRoomResult {
+    repeated MsgAddExp addExp = 1;
+}
+
+message MsgTravelResult {
+    repeated int32 unlockTalent = 1;
+    repeated int32 unlockPet = 2;
+    repeated int32 unlockSpouse = 3;
+    repeated int32 unlockChildren = 4;
+    repeated MsgAddExp petGrowth = 5;
+    repeated MsgAddExp spouseFavor = 6;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources items = 7;
+}
+
+message MsgPetInteractResult {
+    repeated MsgAddExp addExp = 1;
+}
+
+message MsgPetYardResult {
+    repeated int32 petId = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+}
+
+message MsgChildrenResult {
+    repeated MsgChildren children = 1;
+}
+
+message MsgChildren {
+    optional int64 id = 1;
+    repeated string name = 2;
+    optional int32 curExp = 3;
+    optional int32 maxExp = 4;
+    optional int32 addExp = 5;
+}
+
+message MsgHomelandResult {
+    optional bf.messages.game.CommonMsgMessage.MsgResources cost = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources plants = 3;
+}
+
+message MsgFeastShopResult {
+    repeated bf.messages.game.CommonMsgMessage.MsgResources boughtResources = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources costResources = 2;
+}
+
+message MsgFamilyTrade {
+    repeated bf.messages.game.CommonMsgMessage.MsgResources addResources = 1;
+    repeated MsgCityInfo cityInfo = 2;
+}
+
+message MsgCityInfo {
+    optional int32 cityId = 1;
+    repeated int32 talentId = 2;
+}
+
+message MsgAddExp {
+    optional int32 id = 1;
+    optional int32 exp = 2;
+}
+
+message MsgHuntingAreaShopResult {
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgGain = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgCost = 2;
+}
+
+message MsgChildGiftResult {
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgGain = 1;
+}
+
+message MsgBuildingEventResult {
+    optional int32 costStrength = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgResources antiqueCost = 2;
+    optional int32 dispatchTalentNum = 3;
+    optional int32 dispatchGainNum = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 5;
+}
+
+message MsgWorshipResult {
+    repeated bf.messages.game.CommonMsgMessage.MsgResources localRankReward = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources crossRankReward = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources mammonReward = 3;
+}
+
+message MsgFamilyDonate {
+    repeated bf.messages.game.CommonMsgMessage.MsgResources cost = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+}
+
+message MsgFamilyFleet {
+    repeated int64 dispatchTime = 1;
+    repeated int32 shipType = 2;
+}
+
+message MsgColiseumResult {
+    optional int32 challengeCnt = 1;
+    repeated MsgColiseumBattle msgBattle = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+}
+
+message MsgColiseumBattle {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer msgOfflinePlayer = 1;
+    optional int64 score = 2;
+}
+
+message MsgPrayResult {
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 1;
+}
+
+message MsgFamilyHonorShop {
+    repeated bf.messages.game.CommonMsgMessage.MsgResources familyShopCost = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources familyShopBuy = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources honorShopCost = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources honorShopBuy = 4;
+}
+
+message MsgSetParamReq_44202 {
+    repeated MsgAutoPlayParam param = 1;
+}
+
+message MsgSetParamResp_44202 {
+    required int32 ret = 1;
+    repeated MsgAutoPlayParam param = 2;
+}
+
+message MsgReadLogReq_44203 {
+}
+
+message MsgReadLogResp_44203 {
+    required int32 ret = 1;
+}
+
+message MsgQueryAutoPlayParamReq_44204 {
+}
+
+message MsgQueryAutoPlayParamResp_44204 {
+    required int32 ret = 1;
+    repeated MsgAutoPlayParam param = 2;
+}
+
+message MsgStewardPlayerData {
+    repeated MsgStewardTypePlay stewards = 1;
+}
+
+message MsgStewardTypePlay {
+    optional int32 typePlay = 1;
+    optional int32 activityType = 2;
+    optional bool running = 3;
+    optional MsgAutoPlaySetting setting = 4;
+    optional MsgAutoPlaySettleLog settleLog = 5;
+    optional int64 startTime = 6;
+    optional int32 activityId = 7;
+}
+
+message MsgAutoPlaySetting {
+    optional MsgGemAutoPlaySetting gemSetting = 1;
+    optional MsgEliminationAutoPlaySetting eliSetting = 2;
+    optional MsgArcheryAutoPlaySetting archerySetting = 3;
+    optional MsgGluttonyAutoPlaySetting gluttonySetting = 4;
+    optional MsgCandyAutoPlaySetting candyAutoPlaySetting = 5;
+    optional MsgSlideyAutoPlaySetting slideySetting = 6;
+    optional MsgFlowerBallAutoPlaySetting flowerBallSetting = 7;
+}
+
+message MsgAutoPlaySettleLog {
+    optional MsgGemSettleLog gemLog = 1;
+    optional MsgEliminationSettleLog eliLog = 2;
+    optional MsgArcherySettleLog archeryLog = 3;
+    optional MsgGluttonySettleLog gluttonyLog = 4;
+    optional MsgCandyAutoPlayLog candyAutoPlayLog = 5;
+    optional MsgSlideySettleLog slideyLog = 6;
+    optional MsgFlowerBallSettleLog flowerBallLog = 7;
+}
+
+message MsgGemAutoPlaySetting {
+    optional int32 counterOption = 1;
+    repeated int32 counterItemIds = 2;
+    optional int32 failOption = 3;
+}
+
+message MsgGemSettleLog {
+    optional int32 gameEndType = 1;
+    optional int32 costEnergy = 2;
+    optional int32 integral = 3;
+    optional int32 resetTimes = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources costs = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 6;
+    optional MsgGemTalent talent = 7;
+}
+
+message MsgGemTalent {
+    optional int32 talentId = 1;
+    optional int32 skillId = 2;
+    optional int32 upLv = 3;
+}
+
+message MsgEliminationAutoPlaySetting {
+    optional int32 counterOption = 1;
+    repeated int32 counterItemIds = 2;
+    optional int32 noStepOption = 3;
+    optional int32 stopStepLevel = 4;
+    optional int32 startStepLevel = 5;
+    optional int32 stepItemNum = 6;
+}
+
+message MsgEliminationSettleLog {
+    optional int32 costEnergy = 1;
+    optional int32 integral = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources costs = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources ranks = 5;
+    optional int32 gameEndType = 6;
+}
+
+message MsgArcheryAutoPlaySetting {
+    optional int32 counterOption = 1;
+    repeated int32 counterItemIds = 2;
+    optional int32 boxesOption = 3;
+}
+
+message MsgArcherySettleLog {
+    optional int32 costEnergy = 1;
+    optional int32 integral = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources costs = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources shootRewards = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources troveRewards = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources spoilRewards = 6;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources useBoxes = 7;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources boxesRewards = 8;
+    optional int32 gameEndType = 9;
+}
+
+message MsgGluttonyAutoPlaySetting {
+    repeated int32 petIds = 1;
+    optional int32 counterOption = 2;
+    repeated int32 counterItemIds = 3;
+}
+
+message MsgGluttonySettleLog {
+    optional int32 costEnergy = 1;
+    optional int32 integral = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources costs = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources petGiftRewards = 4;
+    repeated MsgGluttonyPetLog petLogs = 5;
+    optional int32 gameEndType = 6;
+}
+
+message MsgCandyAutoPlaySetting {
+    optional int32 petId = 1;
+    optional int32 counterOption = 2;
+    repeated int32 autoUseItemId = 3;
+    optional int32 fullOpt = 4;
+}
+
+message MsgCandyAutoPlayLog {
+    optional int32 endType = 1;
+    optional int32 costEnergy = 2;
+    optional int32 integral = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources costs = 4;
+    repeated MsgGluttonyPetLog rewards = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources boxesRewards = 6;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources achievementRewards = 7;
+}
+
+message MsgGluttonyPetLog {
+    optional int32 petId = 1;
+    optional int32 growth = 2;
+    optional int32 intimacy = 3;
+}
+
+message MsgSlideyAutoPlaySetting {
+    optional int32 counterOption = 1;
+    repeated int32 counterItemIds = 2;
+    optional int32 failOption = 3;
+}
+
+message MsgSlideySettleLog {
+    optional int32 gameEndType = 1;
+    optional int32 costEnergy = 2;
+    optional int32 integral = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources costs = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 5;
+}
+
+message MsgFlowerBallAutoPlaySetting {
+    optional int32 counterOption = 1;
+    repeated int32 counterItemIds = 2;
+}
+
+message MsgFlowerBallSettleLog {
+    optional int32 gameEndType = 1;
+    optional int32 costEnergy = 2;
+    optional int32 integral = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources costs = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 5;
+}
+
+message AutoPlaySaveSettingReq_44271 {
+    optional int32 typePlay = 1;
+    optional MsgAutoPlaySetting setting = 2;
+    optional int32 activityType = 3;
+    optional int32 activityId = 4;
+}
+
+message AutoPlaySaveSettingResp_44271 {
+    required int32 ret = 1;
+    optional MsgStewardTypePlay stewardTypePlay = 2;
+}
+
+message AutoPlayStopReq_44272 {
+    optional int32 typePlay = 1;
+    optional int32 activityType = 2;
+    optional int32 activityId = 3;
+}
+
+message AutoPlayStopResp_44272 {
+    required int32 ret = 1;
+    optional MsgStewardTypePlay stewardTypePlay = 2;
+}
+
+message AutoPlayLogReadReq_44273 {
+    optional int32 typePlay = 1;
+    optional int32 activityType = 2;
+    optional int32 activityId = 3;
+}
+
+message AutoPlayLogReadResp_44273 {
+    required int32 ret = 1;
+}

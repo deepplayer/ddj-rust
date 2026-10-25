@@ -1,0 +1,385 @@
+syntax = "proto2";
+
+package bf.messages.game.TalentMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgTalentData {
+    repeated int32 updateFieldsList = 99;
+    optional int32 id = 1;
+    optional int32 lv = 2;
+    optional int64 exp = 3;
+    optional int32 degree = 4;
+    repeated MsgTalentAptitudeSkillData msgTalentAptitudeSkillData = 5;
+    optional MsgTalentHaloData msgTalentHaloData = 6;
+    optional int64 bookExp = 7;
+    optional int64 book = 8;
+    repeated bf.messages.game.CommonMsgMessage.MsgTalentSkin skinids = 9;
+    optional int32 usedSkinId = 10;
+    optional string money = 11;
+    repeated MsgHomelandSkillData homelandSkillDatas = 12;
+    optional int32 rank = 13;
+    repeated MsgTalentChildSeat childSeats = 14;
+    repeated int32 treasureId = 15;
+}
+
+message MsgTalentAptitudeSkillData {
+    optional int32 id = 1;
+    optional int32 lv = 2;
+}
+
+message MsgTalentHaloData {
+    optional int32 id = 1;
+    optional int32 lv = 2;
+}
+
+message MsgTalentSetData {
+    repeated MsgTalentData msgTalentData = 1;
+}
+
+message MsgResettingTalent {
+    optional int32 id = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message MsgHomelandSkillData {
+    optional int32 id = 1;
+    optional int32 lv = 2;
+    optional int32 degree = 3;
+}
+
+message MsgTalentLinkageSkin {
+    optional int32 skinId = 1;
+    optional int32 talentId = 2;
+}
+
+message MsgTalentLinkageTheme {
+    optional int32 themeId = 1;
+    repeated int32 skinIds = 2;
+}
+
+message MsgTalentChildSeat {
+    optional string childId = 1;
+    optional int32 seatId = 2;
+    optional bool enable = 3;
+    optional string teachMoney = 4;
+}
+
+message MsgTreasure {
+    optional int32 treasureId = 1;
+    optional int32 degree = 2;
+    repeated MsgTreasureSkill msgSkill = 3;
+}
+
+message MsgTreasureSkill {
+    optional int32 skillId = 1;
+    optional int32 lv = 2;
+    optional int32 exp = 3;
+}
+
+message TalentDataUpdateResp_3001 {
+    repeated MsgTalentData msgTalentData = 2;
+}
+
+message TalentUpgradeReq_3002 {
+    optional int32 id = 1;
+    optional int32 type = 2;
+}
+
+message TalentUpgradeResp_3002 {
+    required int32 ret = 1;
+}
+
+message TalentAptitudeUpgradeReq_3003 {
+    optional int32 id = 1;
+    optional int32 aptitudeSkillId = 2;
+    optional int32 type = 3;
+}
+
+message TalentAptitudeUpgradeResp_3003 {
+    required int32 ret = 1;
+}
+
+message TalentUpgradeDegreeReq_3004 {
+    optional int32 id = 1;
+}
+
+message TalentUpgradeDegreeResp_3004 {
+    required int32 ret = 1;
+}
+
+message TalentHaloSkillUpgradeReq_3005 {
+    optional int32 id = 1;
+    optional int32 haloId = 2;
+}
+
+message TalentHaloSkillUpgradeResp_3005 {
+    required int32 ret = 1;
+}
+
+message MsgTalentWikiResp_3006 {
+    repeated int32 id = 1;
+}
+
+message MsgTalentWikiRewardReq_3007 {
+    optional int32 id = 1;
+}
+
+message MsgTalentWikiRewardResp_3007 {
+    required int32 ret = 1;
+}
+
+message MsgTalentExchangeReq_3008 {
+    optional int32 id = 1;
+}
+
+message MsgTalentExchangeResp_3008 {
+    required int32 ret = 1;
+}
+
+message MsgActivateTalentSkinReq_3009 {
+    optional int32 talentId = 1;
+    optional int32 skinId = 2;
+}
+
+message MsgActivateTalentSkinResp_3009 {
+    required int32 ret = 1;
+}
+
+message MsgSetTalentSkinReq_3011 {
+    optional int32 talentId = 1;
+    optional int32 skinId = 2;
+    optional int32 linkageType = 3;
+}
+
+message MsgSetTalentSkinResp_3011 {
+    required int32 ret = 1;
+}
+
+message MsgUpgradeTalentSkinReq_3012 {
+    optional int32 talentId = 1;
+    optional int32 skinId = 2;
+    optional int32 type = 3;
+}
+
+message MsgUpgradeTalentSkinResp_3012 {
+    required int32 ret = 1;
+}
+
+message MsgResettingTalentReq_3013 {
+}
+
+message MsgResettingTalentResp_3013 {
+    required int32 ret = 1;
+    repeated MsgResettingTalent talents = 2;
+}
+
+message MsgTalentResetReq_3014 {
+    optional int32 talentId = 1;
+    optional int32 type = 2;
+}
+
+message MsgTalentResetResp_3014 {
+    required int32 ret = 1;
+    optional int32 id = 2;
+}
+
+message MsgTalentGetBookExpConversionReq_3015 {
+    optional int32 talentId = 1;
+}
+
+message MsgTalentGetBookExpConversionResp_3015 {
+    required int32 ret = 1;
+    optional int32 talentId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+}
+
+message MsgTalentBookExpConversionReq_3016 {
+    optional int32 talentId = 1;
+}
+
+message MsgTalentBookExpConversionResp_3016 {
+    required int32 ret = 1;
+    optional int32 talentId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+}
+
+message MsgHomelandSkillUpgradeReq_3017 {
+    optional int32 talentId = 1;
+    optional int32 skillId = 2;
+}
+
+message MsgHomelandSkillUpgradeResp_3017 {
+    required int32 ret = 1;
+}
+
+message MsgHomelandSkillDegreeUpgradeReq_3018 {
+    optional int32 talentId = 1;
+    optional int32 skillId = 2;
+}
+
+message MsgHomelandSkillDegreeUpgradeResp_3018 {
+    required int32 ret = 1;
+}
+
+message MsgActivateTalentLinkageSkinReq_3019 {
+    optional int32 talentId = 1;
+    optional int32 skinId = 2;
+}
+
+message MsgActivateTalentLinkageSkinResp_3019 {
+    required int32 ret = 1;
+    optional int32 skinId = 2;
+    optional bool firstActivated = 3;
+}
+
+message MsgUpgradeTalentLinkageSkinReq_3020 {
+    optional int32 talentId = 1;
+    optional int32 skinId = 2;
+}
+
+message MsgUpgradeTalentLinkageSkinResp_3020 {
+    required int32 ret = 1;
+}
+
+message MsgAwakeTalentLinkageSkinReq_3021 {
+    optional int32 talentId = 1;
+    optional int32 skinId = 2;
+}
+
+message MsgAwakeTalentLinkageSkinResp_3021 {
+    required int32 ret = 1;
+}
+
+message TalentLinkageSkinUpdateResp_3022 {
+    repeated MsgTalentLinkageSkin talentLinkageSkins = 1;
+    repeated MsgTalentLinkageTheme talentLinkageThemes = 2;
+}
+
+message MsgUpgradeByBookTenTimesReq_3023 {
+    optional int32 id = 1;
+    optional int32 aptitudeSkillId = 2;
+}
+
+message MsgUpgradeByBookTenTimesResp_3023 {
+    required int32 ret = 1;
+    optional int32 addLevel = 2;
+}
+
+message MsgRankOfTalentReq_3024 {
+}
+
+message MsgRankOfTalentResp_3024 {
+    required int32 ret = 1;
+    repeated MsgTalentData ranks = 2;
+}
+
+message TalentLinkageSkillUpgradeReq_3025 {
+    optional int32 talentId = 1;
+    optional int32 skinId = 2;
+    optional int32 useItemType = 3;
+    optional int32 upgradeTimes = 5;
+}
+
+message TalentLinkageSkillUpgradeResp_3025 {
+    required int32 ret = 1;
+    optional int32 addLevel = 2;
+}
+
+message TalentBuyChildSeatReq_3026 {
+    optional int32 talentId = 1;
+    optional int32 seatId = 2;
+}
+
+message TalentBuyChildSeatResp_3026 {
+    required int32 ret = 1;
+    optional int32 talentId = 2;
+    optional int32 seatId = 3;
+}
+
+message TalentTeachSeatPutChildReq_3027 {
+    optional int32 talentId = 1;
+    optional int32 seatId = 2;
+    optional string childId = 3;
+}
+
+message TalentTeachSeatPutChildResp_3027 {
+    required int32 ret = 1;
+    optional int32 talentId = 2;
+    optional int32 seatId = 3;
+    optional string childId = 4;
+}
+
+message TalentTeachSeatOneClickDispatchReq_3028 {
+    optional int32 talentId = 1;
+}
+
+message TalentTeachSeatOneClickDispatchResp_3028 {
+    required int32 ret = 1;
+    repeated string upChildren = 2;
+    repeated string downChildren = 3;
+}
+
+message ResetLog {
+    optional int32 talentId = 1;
+    optional int64 resetTime = 2;
+    optional int32 skinId = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources cost = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources gain = 5;
+}
+
+message TalentResetLogReq_3029 {
+}
+
+message TalentResetLogResp_3029 {
+    required int32 ret = 1;
+    repeated ResetLog logs = 2;
+}
+
+message TalentAptitudeUpgradeByScrollTenTimesReq_3030 {
+    optional int32 id = 1;
+    optional int32 aptitudeSkillId = 2;
+}
+
+message TalentAptitudeUpgradeByScrollTenTimesResp_3030 {
+    required int32 ret = 1;
+    optional int32 aptitudeSkillId = 2;
+    optional int32 successTimes = 3;
+    optional int32 skillLevel = 4;
+    optional int32 times = 5;
+}
+
+message EquipTreasureReq_3031 {
+    required int32 talentId = 1;
+    required int32 treasureId = 2;
+}
+
+message EquipTreasureResp_3031 {
+    required int32 ret = 1;
+}
+
+message UpgradeTreasureReq_3032 {
+    required int32 treasureId = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgCost = 2;
+}
+
+message UpgradeTreasureResp_3032 {
+    required int32 ret = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgResources msgCost = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgResources msgGet = 3;
+}
+
+message LevelUpTreasureSkillReq_3033 {
+    required int32 treasureId = 1;
+    required int32 skillId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgCost = 3;
+}
+
+message LevelUpTreasureSkillResp_3033 {
+    required int32 ret = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message TreasureDataUpdateResp_3034 {
+    repeated MsgTreasure msgTreasure = 1;
+}

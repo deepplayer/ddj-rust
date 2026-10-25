@@ -1,0 +1,153 @@
+syntax = "proto2";
+
+package bf.messages.game.GmCrazyFishMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgGmActivity {
+    optional int32 actId = 1;
+    optional int32 actType = 2;
+    optional int32 actGroup = 3;
+}
+
+message MsgCrazyFishActivity {
+    repeated MsgCrazyFishReward msgReward = 1;
+}
+
+message MsgCrazyFishReward {
+    optional int32 actId = 1;
+    optional int32 onlyId = 2;
+    optional int32 awardType = 3;
+    optional int32 distance = 4;
+    optional string reward = 5;
+}
+
+message MsgCrazyFishEntrance {
+    optional bool isTaskReward = 1;
+    optional int32 mile = 2;
+    optional string totalMile = 3;
+}
+
+message MsgBattleField {
+    optional int32 step = 1;
+    optional MsgTotem msgTotem = 2;
+    repeated MsgGrid msgGrid = 3;
+    repeated MsgTeam msgTeam = 4;
+}
+
+message MsgTotem {
+    optional int32 lv = 1;
+    optional int32 exp = 2;
+}
+
+message MsgGrid {
+    optional int32 posId = 1;
+    optional int32 fish = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+}
+
+message MsgTeam {
+    optional int32 fish = 1;
+    optional string num = 2;
+}
+
+message MsgWarSituation {
+    optional int32 type = 1;
+    optional bytes data = 2;
+}
+
+message MsgWarSituationType1 {
+    optional int32 posId = 1;
+}
+
+message MsgWarSituationType2 {
+    repeated int32 passage = 1;
+    optional int32 posId = 2;
+    optional int32 fish = 3;
+}
+
+message MsgWarSituationType3 {
+    optional int32 posId = 1;
+    optional bool isFighter = 2;
+    repeated MsgFighter msgFighter = 3;
+}
+
+message MsgFighter {
+    optional int32 fish = 1;
+    optional int32 num = 2;
+}
+
+message MsgWarSituationType4 {
+    repeated MsgDropResult msgDrop = 1;
+}
+
+message MsgDropResult {
+    optional int32 startPosId = 1;
+    optional MsgGrid msgGrid = 2;
+}
+
+message MsgWarSituationType5 {
+    repeated MsgGrid msgGrid = 1;
+}
+
+message MsgBattleResult {
+    optional int32 stageId = 1;
+    optional int32 index = 2;
+    optional int32 curHp = 3;
+    optional int32 expAdd = 4;
+    optional MsgTotem msgTotem = 5;
+    optional bool isRecordBreaking = 6;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 7;
+}
+
+message GetTaskListReq_28451 {
+    required MsgGmActivity msgGmActivity = 1;
+}
+
+message GetTaskListResp_28451 {
+    required int32 ret = 1;
+    repeated int32 templateId = 2;
+}
+
+message GetTaskAwardReq_28452 {
+    required MsgGmActivity msgGmActivity = 1;
+    optional int32 templateId = 2;
+    optional int32 type = 3;
+}
+
+message GetTaskAwardResp_28452 {
+    required int32 ret = 1;
+    repeated int32 templateId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+}
+
+message GetBattleFieldReq_28453 {
+    required MsgGmActivity msgGmActivity = 1;
+}
+
+message GetBattleFieldResp_28453 {
+    required int32 ret = 1;
+    optional MsgBattleField msgBattleField = 2;
+    repeated MsgWarSituation msgWarSituation = 3;
+}
+
+message LevelUpFishReq_28454 {
+    required MsgGmActivity msgGmActivity = 1;
+    required int32 posId = 2;
+    optional bool isUpload = 3;
+}
+
+message LevelUpFishResp_28454 {
+    required int32 ret = 1;
+    repeated MsgWarSituation msgWarSituation = 2;
+}
+
+message FightReq_28455 {
+    required MsgGmActivity msgGmActivity = 1;
+}
+
+message FightResp_28455 {
+    required int32 ret = 1;
+    optional MsgBattleResult msgBattleResult = 2;
+    repeated MsgWarSituation msgWarSituation = 3;
+}

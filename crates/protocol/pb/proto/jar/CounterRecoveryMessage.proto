@@ -1,0 +1,30 @@
+syntax = "proto2";
+
+package bf.messages.game.CounterRecoveryMessage;
+
+message MsgCounterData {
+    optional int32 templateId = 1;
+    optional int64 num = 2;
+    optional int64 cdTime = 3;
+}
+
+message CounterTimeGetReq_8001 {
+}
+
+message CounterTimeGetResp_8001 {
+    required int32 ret = 1;
+    repeated MsgCounterData msgCounterData = 2;
+}
+
+message CounterGetReq_8002 {
+    optional int32 templateId = 1;
+}
+
+message CounterGetResp_8002 {
+    required int32 ret = 1;
+    optional MsgCounterData msgCounterData = 2;
+}
+
+message CounterUpdateResp_8003 {
+    repeated MsgCounterData msgCounterData = 1;
+}

@@ -1,0 +1,552 @@
+syntax = "proto2";
+
+package bf.messages.game.GmActivitySlgRemoteMessage;
+
+import "GmActivitySlgCommonMessage.proto";
+import "GmActivitySlgMessage.proto";
+import "CommonMsgMessage.proto";
+import "ActivityMysteryMessage.proto";
+
+message MsgRemoteFamilyApplyData {
+    optional int64 familyId = 1;
+    optional string money = 2;
+    optional string patriarchId = 3;
+    repeated MsgApplyPlayerInfo applyMembers = 4;
+}
+
+message MsgApplyPlayerInfo {
+    optional string playerId = 1;
+    optional string money = 2;
+}
+
+message MsgRemoteReqData {
+    optional int32 activityId = 1;
+    optional int32 activityGroup = 2;
+    optional string playerId = 4;
+    optional int64 familyId = 5;
+}
+
+message RemoteCsServerApplyReq_45801 {
+    optional int32 activityId = 1;
+    optional int32 activityGroup = 2;
+    optional int32 serverId = 3;
+    optional int32 turnId = 4;
+    repeated MsgRemoteFamilyApplyData datas = 5;
+}
+
+message RemoteCsServerApplyResp_45801 {
+    optional int32 ret = 1;
+}
+
+message RemoteCsGetCompetitionDataReq_45802 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+}
+
+message RemoteCsGetCompetitionDataResp_45802 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgSlgCompetitionData competitionData = 2;
+    optional int64 integral = 3;
+    repeated bf.messages.game.GmActivitySlgCommonMessage.MsgSlgPlayerTeamData playerTeamData = 4;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgCompetitionFamilyData familyData = 5;
+    optional int32 applyFamilyCnt = 6;
+    optional int32 familyCnt = 7;
+}
+
+message RemoteCsEditTeamReq_45803 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional bf.messages.game.GmActivitySlgMessage.SlgEditTeamReq_45712 req = 2;
+}
+
+message RemoteCsEditTeamResp_45803 {
+    required int32 ret = 1;
+    repeated bf.messages.game.GmActivitySlgCommonMessage.MsgSlgPlayerTeamData playerTeamData = 3;
+}
+
+message RemoteCsImpowerTeamReq_45804 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional bf.messages.game.GmActivitySlgMessage.SlgImpowerTeamReq_45714 req = 2;
+}
+
+message RemoteCsImpowerTeamResp_45804 {
+    required int32 ret = 1;
+}
+
+message RemoteSlgMarchOperationReq_45805 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional bf.messages.game.GmActivitySlgMessage.SlgMarchOperationReq_45715 req = 2;
+    optional int64 power = 3;
+}
+
+message RemoteSlgMarchOperationResp_45805 {
+    optional int32 ret = 1;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgRemoteSlgDataUpdata msgRemoteSlgDataUpdata = 3;
+    optional int32 vitState = 5;
+}
+
+message RemoteSlgGarrisonWaiveReq_45810 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgMapTileData tile = 2;
+}
+
+message RemoteSlgGarrisonWaiveResp_45810 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgRemoteSlgDataUpdata msgRemoteSlgDataUpdata = 2;
+}
+
+message RemoteCsMarchAddSeedReq_45806 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional int64 marchElementId = 6;
+    optional int32 pro = 7;
+}
+
+message RemoteCsMarchAddSeedResp_45806 {
+    optional int32 ret = 1;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgSlgMarchData msgSlgMarchData = 2;
+    repeated bf.messages.game.GmActivitySlgCommonMessage.MsgSlgTeamData msgSlgTeamData = 3;
+}
+
+message RemoteCsMassDataReq_45807 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional bf.messages.game.GmActivitySlgMessage.SlgMassStartReq_45716 req = 2;
+    optional bool freeCot = 3;
+}
+
+message RemoteCsMassDataResp_45807 {
+    optional int32 ret = 1;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgRemoteSlgDataUpdata msgRemoteSlgDataUpdata = 3;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgSlgMassData msgSlgMassData = 4;
+}
+
+message RemoteCsMassDispatchReq_45808 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional bf.messages.game.GmActivitySlgMessage.SlgMassDispatchReq_45717 req = 2;
+}
+
+message RemoteCsMassDispatchResp_45808 {
+    optional int32 ret = 1;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgRemoteSlgDataUpdata msgRemoteSlgDataUpdata = 3;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgSlgMassData msgSlgMassData = 4;
+}
+
+message RemoteCsMasssRemoveTeamReq_45813 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional bf.messages.game.GmActivitySlgMessage.SlgMassRemoveTeamReq_45718 req = 2;
+}
+
+message RemoteCsMasssRemoveTeamResp_45813 {
+    optional int32 ret = 1;
+    optional int64 id = 2;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgRemoteSlgDataUpdata msgRemoteSlgDataUpdata = 3;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgSlgMassData msgSlgMassData = 4;
+}
+
+message RemoteCsMassAttackReq_45809 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional bf.messages.game.GmActivitySlgMessage.SlgMassStartAttackReq_45719 req = 2;
+}
+
+message RemoteCsMassAttackResp_45809 {
+    optional int32 ret = 1;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgRemoteSlgDataUpdata msgRemoteSlgDataUpdata = 3;
+}
+
+message RemoteCsMassDissolveReq_45812 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional bf.messages.game.GmActivitySlgMessage.SlgMassDissolveReq_45720 req = 2;
+}
+
+message RemoteCsMassDissolveResp_45812 {
+    optional int32 ret = 1;
+    optional int64 id = 2;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgRemoteSlgDataUpdata msgRemoteSlgDataUpdata = 3;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgSlgMassData msgSlgMassData = 4;
+}
+
+message RemoteMassGetDispatchReq_45814 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional int64 massId = 2;
+}
+
+message RemoteMassGetDispatchResp_45814 {
+    required int32 ret = 1;
+    repeated bf.messages.game.GmActivitySlgCommonMessage.MsgMapViewSlgPlayerTeamData playerTeams = 2;
+    repeated bf.messages.game.GmActivitySlgCommonMessage.MsgMapViewSlgPlayerTeamData msgSlgTeamDatas = 3;
+}
+
+message RemoteSynTalentDataReq_45815 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    repeated bf.messages.game.GmActivitySlgCommonMessage.MsgSlgPlayerTalentData msgGsTalentData = 2;
+}
+
+message RemoteSynTalentDataResp_45815 {
+    required int32 ret = 1;
+}
+
+message RemoteSlgSelectMarchDetailsDataReq_45817 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional int64 id = 2;
+}
+
+message RemoteSlgSelectMarchDetailsDataResp_45817 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgSlgMarchDetailsData data = 3;
+}
+
+message RemoteSlgSelectMassDetailsDataReq_45818 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional int64 id = 2;
+}
+
+message RemoteSlgSelectMassDetailsDataResp_45818 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgSlgMassDetailsData datas = 3;
+}
+
+message RemoteSlgMassExitReq_45819 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional bf.messages.game.GmActivitySlgMessage.SlgMassExitReq_45725 req = 2;
+}
+
+message RemoteSlgMassExitResp_45819 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgRemoteSlgDataUpdata msgRemoteSlgDataUpdata = 2;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgSlgMassData msgSlgMassData = 4;
+}
+
+message RemoteSlgGetGarrisonInfoReq_45821 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgMapTileData tile = 2;
+}
+
+message RemoteSlgGetGarrisonInfoResp_45821 {
+    optional int64 familyId = 1;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgSlgNpcData msgSlgNpcData = 3;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgSlgGarrisonDetailsData garrisonDetailsData = 4;
+    optional int32 fristServerId = 5;
+    optional int64 fristFamilyId = 6;
+    optional string fristPlayerId = 7;
+}
+
+message RemoteSlgGetFamilyStrongholdPlayerDataReq_45822 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    repeated string playerId = 2;
+}
+
+message RemoteSlgGetFamilyStrongholdPlayerDataResp_45822 {
+    required int32 ret = 1;
+    repeated bf.messages.game.GmActivitySlgCommonMessage.MsgFamilyStrongholdPlayerData datas = 3;
+}
+
+message RemoteSlgMassSetingTeampAutoAttackReq_45824 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional int64 id = 2;
+    optional bool bor = 3;
+}
+
+message RemoteSlgMassSetingTeampAutoAttackResp_45824 {
+    required int32 ret = 1;
+    optional int64 id = 2;
+    optional bool bor = 3;
+}
+
+message RemoteSlgGetToFamilyDataReq_45825 {
+    optional int32 activityId = 1;
+    optional int32 activityGroup = 2;
+    optional int64 familyId = 3;
+}
+
+message RemoteSlgGetToFamilyDataResp_45825 {
+    required int32 ret = 1;
+    repeated bf.messages.game.GmActivitySlgCommonMessage.MsgLandGarrisonData datas = 2;
+    optional int64 familyTimeIntegral = 3;
+    optional int64 familyIntegral = 4;
+    optional int64 familyLv = 5;
+}
+
+message RemoteSlgGetBattleCotReq_45826 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+}
+
+message RemoteSlgGetBattleCotResp_45826 {
+    required int32 ret = 1;
+    optional int32 battleCot = 2;
+    optional int32 szOccupy = 3;
+}
+
+message RemoteSlgGetHongReq_45827 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    repeated int32 achimentId = 2;
+    optional int64 battleLogId = 3;
+}
+
+message RemoteSlgGetHongResp_45827 {
+    optional bool achiment = 1;
+    optional bool battleLog = 2;
+}
+
+message RemoteSlgGetOkFristAchimentReq_45828 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+}
+
+message RemoteSlgGetOkFristAchimentResp_45828 {
+    repeated bf.messages.game.ActivityMysteryMessage.MsgAchievement msgAchievement = 1;
+}
+
+message RemoteSlgFristAchimentIsOkReq_45829 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional int32 achimentId = 2;
+}
+
+message RemoteSlgFristAchimentIsOkResp_45829 {
+    optional bool ok = 1;
+}
+
+message RemoteSlgGetIntegralReq_45830 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional int32 type = 2;
+    optional string id = 3;
+}
+
+message RemoteSlgGetIntegralResp_45830 {
+    optional int64 integral = 1;
+}
+
+message RemoteGetSlgHaloNumReq_45831 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional int32 id = 2;
+}
+
+message RemoteGetSlgHaloNumResp_45831 {
+    optional int32 cot = 1;
+}
+
+message RemoteSlgGetLastAwardReq_45832 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional int32 lun = 2;
+}
+
+message RemoteSlgGetLastAwardResp_45832 {
+    required int32 ret = 5;
+    repeated bf.messages.game.GmActivitySlgCommonMessage.MsgFamilyLandGarrisonData data = 1;
+    optional int32 applyFamilyCnt = 2;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgTopFamilyInfo topFamily = 3;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgTopPlayerInfo topPlayer = 4;
+    optional int32 familyCnt = 6;
+}
+
+message RemoteSlgReceiveAwardReq_45833 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional int32 type = 2;
+    optional int32 see = 3;
+    optional int32 lun = 4;
+}
+
+message RemoteSlgReceiveAwardResp_45833 {
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 1;
+    optional int64 drawBattleLogId = 2;
+}
+
+message RemoteSlgGetBattlelogReq_45834 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional int32 type = 2;
+}
+
+message RemoteSlgGetBattlelogResp_45834 {
+    repeated bf.messages.game.GmActivitySlgCommonMessage.MsgBattlelogEntryData entryData = 1;
+    optional int64 drawBattleLogId = 2;
+}
+
+message RemoteSlgGetBattlelogToReq_45835 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional int64 logId = 2;
+}
+
+message RemoteSlgGetBattlelogToResp_45835 {
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgBattlelogEntryData entryData = 1;
+}
+
+message RemoteSlgReceiveAwardTimerReq_45836 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional int32 type = 2;
+    optional int64 time = 3;
+    optional int32 lun = 4;
+}
+
+message RemoteSlgReceiveAwardTimerResp_45836 {
+    repeated bf.messages.game.GmActivitySlgCommonMessage.MsgAwardTimerData data = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+    optional int64 time = 3;
+}
+
+message RemoteSlgGetMassBattlelogReq_45837 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+}
+
+message RemoteSlgGetMassBattlelogResp_45837 {
+    repeated bf.messages.game.GmActivitySlgCommonMessage.MsgMassBattlelogEntryData datas = 2;
+}
+
+message RemoteSlgGetFamilyLvReq_45838 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional int64 id = 2;
+}
+
+message RemoteSlgGetFamilyLvResp_45838 {
+    optional int32 lv = 1;
+}
+
+message RemoteSlgGetAchimentIdsReq_45839 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional int32 lun = 2;
+}
+
+message RemoteSlgGetAchimentIdsResp_45839 {
+    repeated int32 ids = 1;
+}
+
+message RemoteSlgClearTeamReq_45840 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+}
+
+message RemoteSlgClearTeamResp_45840 {
+    required int32 ret = 1;
+    optional int64 ervant = 2;
+}
+
+message RemoteSlgSpectatorsReq_45841 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional int32 lun = 2;
+}
+
+message RemoteSlgSpectatorsResp_45841 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgSlgSpectatorsCompetitionData competitionData = 2;
+}
+
+message RemoteSlgSpectatorsLastBattleReq_45842 {
+    optional MsgRemoteReqData msgRemoteReqData = 1;
+    optional int32 lun = 2;
+}
+
+message RemoteSlgSpectatorsLastBattleResp_45842 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgSlgSpectatorsCompetitionData competitionData = 2;
+    repeated bf.messages.game.GmActivitySlgCommonMessage.MsgFamilyLandGarrisonData landData = 3;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgTopFamilyInfo topFamily = 4;
+}
+
+message RemoteSlgDataChangePushResp_35901 {
+    optional int32 activityId = 1;
+    optional int32 lun = 2;
+    repeated int64 toFamilyId = 3;
+    optional string filterPlayerId = 4;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgRemoteSlgDataUpdata msgRemoteSlgDataUpdata = 5;
+}
+
+message RemoteSlgBattleResultPushResp_35902 {
+    optional int32 activityId = 1;
+    optional int32 lun = 2;
+    repeated int64 toFamilyId = 3;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgBattleResultData msgBattleResultData = 7;
+    optional int64 logId = 4;
+    repeated string logPlayerId = 5;
+    repeated int64 logFamilyId = 6;
+}
+
+message RemoteSlgUpatePlayerDataReq_35903 {
+    optional int32 activityId = 1;
+    optional int32 lun = 2;
+    repeated MsgRemoteUpdatePlayerData datas = 3;
+}
+
+message RemoteSlgUpatePlayerDataResp_35903 {
+    optional bool ok = 1;
+}
+
+message MsgRemoteUpdatePlayerData {
+    optional int64 id = 1;
+    optional string playerId = 2;
+    optional int32 vit = 3;
+    optional int32 freeCot = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources item = 5;
+    optional int64 relaxServant = 6;
+    optional int64 servant = 7;
+}
+
+message RemoteSlgMassDispatchNotifyResp_35904 {
+    optional int32 activityId = 1;
+    optional int32 lun = 2;
+    optional int32 type = 3;
+    optional int64 massId = 4;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgSlgTeamData msgSlgTeamDatas = 5;
+    repeated string playerId = 6;
+}
+
+message RemoteSlgKafKaBattleResp_35905 {
+    optional int32 activityId = 1;
+    optional int32 lun = 2;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgFamilyLandGarrisonData msgFamilyLandGarrisonData = 3;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgBattlelogEntryData msgBattlelogEntryData = 4;
+    optional int32 exotica_war_type = 5;
+}
+
+message RemoteSlgKafKaMarchStartResp_35906 {
+    optional int32 activityId = 1;
+    optional int32 lun = 2;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgSlgMarchData msgSlgMarchData = 3;
+    repeated bf.messages.game.GmActivitySlgCommonMessage.MsgSlgTeamData msgSlgTeamData = 4;
+    optional int32 exotica_war_type = 5;
+}
+
+message RemoteSlgKafKaMarchEndResp_35907 {
+    optional int32 activityId = 1;
+    optional int32 lun = 2;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgSlgGarrisonData msgSlgGarrisonData = 3;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgSlgMarchData msgSlgMarchData = 4;
+    repeated bf.messages.game.GmActivitySlgCommonMessage.MsgSlgTeamData msgSlgTeamData = 5;
+    repeated bf.messages.game.GmActivitySlgCommonMessage.MsgSlgTeamData msgAllSlgTeamData = 6;
+    optional int64 fristFamilyId = 7;
+    optional string fristPlayerId = 8;
+    optional int32 exotica_war_type = 9;
+}
+
+message RankChangedMsg {
+    optional string playerId = 1;
+    optional int64 familyId = 2;
+    optional int64 value = 3;
+    optional int64 groupValue = 4;
+    optional int32 gradeRank = 5;
+    optional int32 groupRank = 6;
+}
+
+message RankChangedNotifyMsgReq_35910 {
+    optional int32 activityId = 1;
+    optional int32 turnId = 2;
+    optional int32 grade = 3;
+    repeated RankChangedMsg familyMsgs = 4;
+    repeated RankChangedMsg playerMsgs = 5;
+}
+
+message RemoteSlgFamilyLvUpdateResp_35911 {
+    optional int32 activityId = 1;
+    optional int32 lun = 2;
+    repeated int64 toFamilyId = 3;
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgFamilyStrongholdData data = 4;
+}
+
+message SlgFamilyMemberNotify_35912 {
+    optional int32 type = 1;
+    optional int64 familyId = 2;
+    optional string playerId = 3;
+    optional int32 actId = 4;
+    optional int32 gsServerId = 5;
+}
+
+message MsgIntegralChanged_35913 {
+    optional int32 activityId = 1;
+    optional int32 activityGroup = 2;
+    optional string playerId = 3;
+    optional int64 changeValue = 4;
+    optional int64 integral = 5;
+    optional int64 totalIntegral = 6;
+}

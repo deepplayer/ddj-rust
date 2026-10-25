@@ -1,0 +1,485 @@
+syntax = "proto2";
+
+package bf.messages.game.GmSnowBallFightMessage;
+
+import "CommonMsgMessage.proto";
+import "PlayerMessage.proto";
+
+message MsgGmActivity {
+    optional int32 actId = 1;
+    optional int32 actType = 2;
+    optional int32 actGroup = 3;
+}
+
+message MsgSnowBallActivity {
+    repeated MsgSnowBallReward msgReward = 1;
+    repeated MsgSnowBallTitleReward msgTitle = 2;
+}
+
+message MsgSnowBallReward {
+    optional int32 actId = 1;
+    optional int32 onlyId = 2;
+    optional int32 awardType = 3;
+    optional int32 distance = 4;
+    optional string reward = 5;
+}
+
+message MsgSnowBallTitleReward {
+    optional int32 actId = 1;
+    optional int32 taskId = 2;
+    optional string reward = 3;
+}
+
+message MsgSnowBallEntrance {
+    optional bool isTaskReward = 1;
+    optional bool isHero = 2;
+    optional bool isCamp = 3;
+    optional bool isGaming = 4;
+}
+
+message MsgNotify {
+    optional string enemyName = 1;
+    optional bool isWin = 2;
+    optional string score = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 4;
+}
+
+message MsgUnlockCard {
+    optional int32 cardId = 1;
+    optional int32 lv = 2;
+}
+
+message MsgBattleResult {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgFirst = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgSecond = 2;
+    optional MsgBattleField initBattleField = 3;
+    repeated MsgBattleTurn msgBattleTurn = 4;
+    optional int64 startTime = 5;
+}
+
+message MsgBattleField {
+    optional MsgCamp msgFirst = 1;
+    optional MsgCamp msgSecond = 2;
+    repeated MsgBoard msgBoard = 3;
+}
+
+message MsgCamp {
+    optional int32 lv = 1;
+    optional int32 hp = 2;
+    repeated MsgCampBuff msgBuff = 3;
+    repeated int32 cardId = 4;
+}
+
+message MsgCampBuff {
+    optional int32 buffId = 1;
+    optional int32 buffCnt = 2;
+}
+
+message MsgBoard {
+    optional int32 posId = 1;
+    optional int32 color = 2;
+    optional int32 skillId = 3;
+    optional MsgHero msgHero = 4;
+}
+
+message MsgHero {
+    optional int32 cardId = 1;
+    optional int32 hp = 2;
+    optional int32 shield = 3;
+    repeated int32 buffId = 4;
+}
+
+message MsgBattleTurn {
+    required int32 round = 1;
+    repeated MsgWarSituation msgWar = 2;
+    optional int64 thinkingTime = 3;
+}
+
+message MsgWarSituation {
+    optional int32 type = 1;
+    optional bytes data = 2;
+}
+
+message MsgWarSituationType1 {
+    repeated int32 posId = 1;
+}
+
+message MsgWarSituationType2 {
+    repeated MsgShuffleResult msgCreate = 1;
+}
+
+message MsgWarSituationType3 {
+    repeated MsgBoard msgSpecial = 1;
+}
+
+message MsgWarSituationType4 {
+    repeated MsgAttackEvent msgAtk = 1;
+}
+
+message MsgAttackEvent {
+    optional int32 atkPosId = 1;
+    repeated MsgAttackSituation msgSituation = 2;
+}
+
+message MsgAttackSituation {
+    optional int32 defPosId = 1;
+    optional int32 damage = 2;
+    optional int32 hp = 3;
+}
+
+message MsgWarSituationType5 {
+    optional int32 skillId = 1;
+    optional bytes data = 2;
+}
+
+message MsgTypeSkill101 {
+    repeated int32 posId = 1;
+}
+
+message MsgTypeSkill102 {
+    repeated MsgBoard msgGrid = 1;
+}
+
+message MsgTypeSkill103 {
+    repeated MsgAttackEvent msgEvent = 1;
+}
+
+message MsgTypeSkill104 {
+    optional int32 posId = 1;
+    optional int32 recoverHp = 2;
+    optional int32 hp = 3;
+}
+
+message MsgTypeSkill303 {
+    repeated int32 posId = 1;
+    optional int32 damage = 2;
+    optional int32 hp = 3;
+}
+
+message MsgTypeSkill401 {
+    repeated int32 posId = 1;
+    optional int32 recoverHp = 2;
+}
+
+message MsgWarSituationType6 {
+    optional int32 buffId = 1;
+    optional bytes data = 2;
+}
+
+message MsgTypeBuff101 {
+    optional int32 posId = 1;
+}
+
+message MsgTypeBuff201 {
+    repeated int32 posId = 1;
+    optional int32 damage = 2;
+}
+
+message MsgTypeBuff301 {
+    repeated int32 posId = 1;
+}
+
+message MsgTypeBuff302 {
+    optional int32 fromPosId = 1;
+    optional int32 destPosId = 2;
+    optional int32 damage = 3;
+}
+
+message MsgWarSituationType7 {
+    repeated MsgShuffleResult msgResult = 1;
+}
+
+message MsgShuffleResult {
+    optional int32 startPosId = 1;
+    optional MsgBoard msgGrid = 2;
+}
+
+message MsgWarSituationType8 {
+    repeated MsgBuffResult msgResult = 1;
+}
+
+message MsgBuffResult {
+    repeated int32 posId = 1;
+    optional int32 buffId = 2;
+    optional int32 effectCnt = 3;
+}
+
+message MsgWarSituationType9 {
+    optional int32 buffId = 1;
+    repeated int32 posId = 2;
+}
+
+message MsgSettle {
+    optional int32 stageId = 1;
+    optional string score = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+    repeated int32 hero = 4;
+}
+
+message MsgGameStart {
+    optional string playerId = 1;
+    optional MsgBattleResult msg = 2;
+    optional string enemyPlayerId = 3;
+    optional int32 campLv = 4;
+    repeated MsgUnlockCard msgHero = 5;
+    repeated MsgUnlockCard msgCard = 6;
+}
+
+message MsgCompetitor {
+    optional string playerId = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgEnemy = 2;
+    optional bool isWin = 3;
+    optional bool isOffensive = 4;
+}
+
+message GetPanelReq_28351 {
+    required MsgGmActivity msgGmActivity = 1;
+}
+
+message GetPanelResp_28351 {
+    required int32 ret = 1;
+    optional int32 stageId = 2;
+    optional string totalScore = 3;
+    optional MsgNotify msgNotify = 4;
+    optional bool isStage = 5;
+}
+
+message GetCardSetReq_28352 {
+    required MsgGmActivity msgGmActivity = 1;
+}
+
+message GetCardSetResp_28352 {
+    required int32 ret = 1;
+    repeated MsgUnlockCard msgUnlock = 2;
+    repeated int32 cardId = 3;
+    optional int32 campLv = 4;
+}
+
+message ChangeCardSetReq_28353 {
+    required MsgGmActivity msgGmActivity = 1;
+    repeated int32 cardId = 2;
+}
+
+message ChangeCardSetResp_28353 {
+    required int32 ret = 1;
+}
+
+message LevelUpCardReq_28354 {
+    required MsgGmActivity msgGmActivity = 1;
+    optional int32 cardId = 2;
+    optional int32 lv = 3;
+}
+
+message LevelUpCardResp_28354 {
+    required int32 ret = 1;
+}
+
+message GetTaskListReq_28355 {
+    required MsgGmActivity msgGmActivity = 1;
+}
+
+message GetTaskListResp_28355 {
+    required int32 ret = 1;
+    repeated int32 templateId = 2;
+}
+
+message GetTaskAwardReq_28356 {
+    required MsgGmActivity msgGmActivity = 1;
+    optional int32 templateId = 2;
+    optional int32 type = 3;
+}
+
+message GetTaskAwardResp_28356 {
+    required int32 ret = 1;
+    repeated int32 templateId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+}
+
+message DoPracticeReq_28357 {
+    required MsgGmActivity msgGmActivity = 1;
+}
+
+message DoPracticeResp_28357 {
+    required int32 ret = 1;
+    optional int32 stageId = 2;
+    optional MsgBattleResult msgResult = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 4;
+    repeated int32 hero = 5;
+}
+
+message PracticeReq_28358 {
+    required MsgGmActivity msgGmActivity = 1;
+    repeated int32 posId = 2;
+}
+
+message PracticeResp_28358 {
+    required int32 ret = 1;
+    repeated MsgBattleTurn msgBattleTurn = 2;
+    optional MsgSettle msgSettle = 3;
+}
+
+message StartMatchReq_28359 {
+    required MsgGmActivity msgGmActivity = 1;
+}
+
+message StartMatchResp_28359 {
+    required int32 ret = 1;
+}
+
+message CancelMatchReq_28360 {
+    required MsgGmActivity msgGmActivity = 1;
+}
+
+message CancelMatchResp_28360 {
+    required int32 ret = 1;
+}
+
+message NotifyGameStartResp_28361 {
+    optional MsgGmActivity msgGmActivity = 1;
+    optional MsgBattleResult msgBattleResult = 2;
+}
+
+message NotifyPlayResultResp_28362 {
+    optional MsgGmActivity msgGmActivity = 1;
+    repeated MsgBattleTurn msgBattleTurn = 2;
+    optional MsgSettle msgSettle = 3;
+    optional bool isWin = 4;
+}
+
+message LinkReq_28363 {
+    required MsgGmActivity msgGmActivity = 1;
+    required int32 round = 2;
+    repeated int32 posId = 3;
+}
+
+message LinkResp_28363 {
+    required int32 ret = 1;
+    repeated MsgBattleTurn msgBattleTurn = 2;
+    optional MsgSettle msgSettle = 3;
+    optional MsgBattleResult msgCurrent = 4;
+}
+
+message GetPlayRecordReq_28364 {
+    required MsgGmActivity msgGmActivity = 1;
+    optional int32 round = 2;
+}
+
+message GetPlayRecordResp_28364 {
+    required int32 ret = 1;
+    optional MsgBattleResult msgBattleResult = 2;
+}
+
+message ChatReq_28365 {
+    required MsgGmActivity msgGmActivity = 1;
+    optional int32 emoji = 2;
+}
+
+message ChatResp_28365 {
+    required int32 ret = 1;
+    optional string toPlayerId = 2;
+    optional int32 emoji = 3;
+}
+
+message StartMatchCsRemote_28366 {
+    required MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional int32 title = 3;
+    repeated int32 uniqueId = 4;
+    repeated MsgUnlockCard msgUnlock = 5;
+    optional int32 campLv = 6;
+}
+
+message StartMatchGsRemote_28366 {
+    required int32 ret = 1;
+}
+
+message CancelMatchCsRemote_28367 {
+    required MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message CancelMatchGsRemote_28367 {
+    required int32 ret = 1;
+}
+
+message NotifyPlayResultGsRemote_28368 {
+    optional MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional string enemyPlayerName = 3;
+    repeated MsgBattleTurn msgBattleTurn = 4;
+    optional bool isComplete = 5;
+    optional bool isWin = 6;
+    repeated int32 uniqueId = 7;
+    optional string enemyPlayerId = 8;
+}
+
+message LinkCsRemote_28369 {
+    required MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    required int32 round = 3;
+    repeated int32 posId = 4;
+}
+
+message LinkGsRemote_28369 {
+    required int32 ret = 1;
+    optional MsgGmActivity msgGmActivity = 2;
+    optional string playerId = 3;
+    repeated MsgBattleTurn msgBattleTurn = 4;
+    optional bool isComplete = 5;
+    optional bool isWin = 6;
+    optional string enemyPlayerId = 7;
+    optional MsgBattleResult msgCurrent = 8;
+}
+
+message GetPlayRecordCsRemote_28370 {
+    required MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int32 round = 3;
+}
+
+message GetPlayRecordGsRemote_28370 {
+    optional string playerId = 1;
+    optional GetPlayRecordResp_28364 msg = 2;
+}
+
+message ChatCsRemote_28371 {
+    required MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int32 emoji = 3;
+}
+
+message ChatGsRemote_28371 {
+    required int32 ret = 1;
+    optional string toPlayerId = 2;
+    optional int32 emoji = 3;
+}
+
+message ForceStopGsRemote_28372 {
+    optional MsgGmActivity msgGmActivity = 1;
+    repeated string playerId = 2;
+}
+
+message BatchNotifyGameStartGsRemote_28373 {
+    optional MsgGmActivity msgGmActivity = 1;
+    repeated MsgGameStart msgStart = 2;
+}
+
+message CheckGamingCsRemote_28374 {
+    optional MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message CheckGamingGsRemote_28374 {
+    required int32 ret = 1;
+    optional bool isGaming = 2;
+}
+
+message OneKeyPveReq_28375 {
+    required MsgGmActivity msgGmActivity = 1;
+    required int32 times = 2;
+}
+
+message OneKeyPveResp_28375 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}

@@ -1,0 +1,272 @@
+syntax = "proto2";
+
+package bf.messages.game.FamilyFleetMessage;
+
+import "CommonMsgMessage.proto";
+import "PlayerMessage.proto";
+import "FamilyMessage.proto";
+
+message MsgFamilyFleetData {
+    optional MsgShipDetail selfShip = 1;
+    optional int32 canJoinNum = 3;
+    repeated int32 dispatchType = 4;
+    optional bool haveNewLog = 5;
+    optional bool haveInvite = 6;
+    repeated MsgShipSimple otherShips = 11;
+}
+
+message MsgShipSimple {
+    optional string shipId = 1;
+    optional int64 familyId = 3;
+    optional string familyName = 4;
+    optional int32 shipType = 5;
+    optional int32 shipNo = 6;
+    optional int64 endTime = 7;
+    optional int32 canRobNum = 8;
+}
+
+message MsgShipDetail {
+    optional string shipId = 1;
+    optional bf.messages.game.FamilyMessage.MsgFamilyData family = 2;
+    optional int32 shipType = 3;
+    optional int32 shipNo = 4;
+    optional int64 endTime = 5;
+    optional int32 canRobNum = 6;
+    repeated bf.messages.game.PlayerMessage.MsgOfflinePlayer shipmate = 7;
+    repeated MsgAttackLog log = 8;
+}
+
+message MsgSailLog {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 1;
+    optional int64 addTime = 2;
+    optional string shipId = 3;
+    optional int64 endTime = 4;
+    optional int32 shipType = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 6;
+    optional int32 type = 7;
+}
+
+message MsgAttackLog {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer attackPlayer = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer tarPlayer = 2;
+    optional int64 addTime = 3;
+    optional int32 shipType = 4;
+    optional bool result = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resource = 6;
+}
+
+message MsgFamilyFleetPlayerBattleSpirit {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 1;
+    optional int32 titleType = 2;
+    optional int32 lv = 3;
+    optional int64 exp = 4;
+    optional int32 titleFashionId = 5;
+}
+
+message MsgFamilyFleetBattleResult {
+    optional MsgFamilyFleetPlayerBattleSpirit attackPlayer = 1;
+    optional MsgFamilyFleetPlayerBattleSpirit defensePlayer = 2;
+    optional bool isWin = 3;
+    optional int32 winType = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 5;
+}
+
+message MsgPushLog {
+    optional int32 type = 1;
+    repeated MsgAttackLog log = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 3;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 4;
+}
+
+message MsgInviteMember {
+    optional bf.messages.game.FamilyMessage.MsgFamilyMemberData info = 1;
+    optional bool invited = 2;
+    optional bool numLimit = 3;
+}
+
+message MsgBeInvited {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 1;
+    optional string shipId = 2;
+    optional int32 shipType = 3;
+    optional int64 endTime = 4;
+}
+
+message MsgRefreshAllOtherShipReq_44301 {
+}
+
+message MsgRefreshAllOtherShipResp_44301 {
+    required int32 ret = 1;
+    repeated MsgShipSimple otherShips = 5;
+    optional int64 nextRefreshTime = 6;
+}
+
+message MsgQueryShipDetailReq_44302 {
+    optional string shipId = 1;
+}
+
+message MsgQueryShipDetailResp_44302 {
+    required int32 ret = 1;
+    optional MsgShipDetail info = 2;
+}
+
+message MsgShipUpdPushResp_44303 {
+    required int32 ret = 1;
+    optional MsgShipDetail selfShip = 2;
+}
+
+message MsgDispatchShipReq_44305 {
+    optional int32 type = 1;
+}
+
+message MsgDispatchShipResp_44305 {
+    required int32 ret = 1;
+    optional MsgShipDetail selfShip = 2;
+    repeated int32 dispatchType = 4;
+}
+
+message MsgInviteMemberReq_44306 {
+    optional string playerId = 1;
+}
+
+message MsgInviteMemberResp_44306 {
+    required int32 ret = 1;
+}
+
+message MsgQueryChatStatusReq_44307 {
+    repeated string shipId = 1;
+}
+
+message MsgQueryChatStatusResp_44307 {
+    required int32 ret = 1;
+    repeated string shipId = 2;
+    repeated int32 status = 3;
+}
+
+message MsgAgreeInviteReq_44308 {
+    optional string shipId = 1;
+}
+
+message MsgAgreeInviteResp_44308 {
+    required int32 ret = 1;
+    optional int32 canJoinNum = 3;
+}
+
+message MsgQueryFamilyLogReq_44311 {
+    optional int32 type = 1;
+}
+
+message MsgQueryFamilyLogResp_44311 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+    repeated MsgSailLog sailLog = 5;
+    repeated MsgAttackLog attackLog = 6;
+}
+
+message MsgRobShipReq_44315 {
+    optional string shipId = 1;
+}
+
+message MsgRobShipResp_44315 {
+    required int32 ret = 1;
+    optional MsgFamilyFleetBattleResult battleResult = 2;
+}
+
+message MsgNewLogPushResp_44316 {
+    required int32 ret = 1;
+}
+
+message MsgQueryPushLogReq_44317 {
+}
+
+message MsgQueryPushLogResp_44317 {
+    required int32 ret = 1;
+    repeated MsgPushLog log = 2;
+}
+
+message MsgQueryInviteMemberReq_44319 {
+}
+
+message MsgQueryInviteMemberResp_44319 {
+    required int32 ret = 1;
+    repeated MsgInviteMember members = 2;
+}
+
+message MsgQueryBeInviteInfoReq_44320 {
+}
+
+message MsgQueryBeInviteInfoResp_44320 {
+    required int32 ret = 1;
+    repeated MsgBeInvited infos = 2;
+}
+
+message MsgInvitedPushResp_44321 {
+    required int32 ret = 1;
+}
+
+message MsgG2CQueryMatchingShipReq_44381 {
+    optional int32 groupId = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+    optional bool refresh = 4;
+}
+
+message MsgG2CQueryMatchingShipResp_44381 {
+    required int32 ret = 1;
+    repeated MsgShipSimple otherShips = 5;
+}
+
+message MsgG2GQueryShipDetailReq_44382 {
+    optional int32 groupId = 1;
+    optional string shipId = 2;
+    optional int64 familyId = 3;
+}
+
+message MsgG2GQueryShipDetailResp_44382 {
+    required int32 ret = 1;
+    optional MsgShipDetail info = 2;
+}
+
+message MsgG2GRobShipReq_44383 {
+    optional int32 groupId = 1;
+    optional string shipId = 2;
+    optional int64 familyId = 3;
+    optional MsgFamilyFleetPlayerBattleSpirit attackPlayer = 4;
+}
+
+message MsgG2GRobShipResp_44383 {
+    required int32 ret = 1;
+    optional MsgFamilyFleetBattleResult battleResult = 2;
+    optional MsgShipDetail ship = 3;
+}
+
+message MsgG2CMatchingShipData {
+    optional int32 type = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+    optional string familyName = 4;
+    optional string shipId = 5;
+    optional int32 shipType = 6;
+    optional int32 shipNo = 7;
+    optional int64 startTime = 8;
+    optional int64 endTime = 9;
+    optional int32 surplusNum = 10;
+}
+
+message MsgG2CSyncAllMatchingDataReq_44384 {
+    optional int32 groupId = 1;
+    repeated MsgG2CMatchingShipData infos = 2;
+}
+
+message MsgG2CSyncMatchingDataReq_44385 {
+    optional int32 groupId = 1;
+    optional MsgG2CMatchingShipData info = 2;
+}
+
+message MsgG2CGetShipNoReq_44386 {
+    optional int32 groupId = 1;
+}
+
+message MsgG2CGetShipNoResp_44386 {
+    required int32 ret = 1;
+    optional int32 shipNo = 2;
+}

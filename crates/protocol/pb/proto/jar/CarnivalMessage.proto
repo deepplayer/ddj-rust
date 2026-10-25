@@ -1,0 +1,172 @@
+syntax = "proto2";
+
+package bf.messages.game.CarnivalMessage;
+
+import "CommonMsgMessage.proto";
+import "FamilyMessage.proto";
+import "FestivalMessage.proto";
+import "GmActivityMessage.proto";
+import "PlayerMessage.proto";
+import "RankingMessage.proto";
+
+message TransformItem {
+    required int32 templateId = 1;
+    required int64 num = 2;
+    required string score = 3;
+}
+
+message ScoreDataReq {
+    required int32 type = 1;
+    required string key = 2;
+    required string value = 3;
+}
+
+message getTopFiveReq_27001 {
+    required int32 actId = 1;
+}
+
+message getTopFiveResp_27001 {
+    required int32 ret = 1;
+    optional bf.messages.game.RankingMessage.MsgRankingData pRankingDatas = 2;
+    optional bf.messages.game.RankingMessage.MsgRankingData fRankingDatas = 3;
+}
+
+message getAwardReq_27002 {
+    required int32 actId = 1;
+    required int32 type = 2;
+}
+
+message getAwardResp_27002 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message UseItemCsRemote_27003 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional string score = 4;
+    optional int64 timeStamp = 5;
+}
+
+message UseItemGsRemote_27003 {
+    required int32 ret = 1;
+    optional int32 playerRank = 2;
+    optional string playerScore = 3;
+    optional int32 familyRank = 4;
+    optional string familyScore = 5;
+}
+
+message TransformItemReq_27004 {
+    required int32 actId = 1;
+    required int32 actType = 2;
+}
+
+message TransformItemResp_27004 {
+    required int32 ret = 1;
+    repeated TransformItem item = 2;
+}
+
+message GetTopFiveReq_27005 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetTopFiveResp_27005 {
+    required int32 ret = 1;
+    optional bf.messages.game.RankingMessage.MsgRankingData pRankingDatas = 2;
+    optional bf.messages.game.RankingMessage.MsgRankingData fRankingDatas = 3;
+}
+
+message GetTopFiveCsRemote_27006 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+}
+
+message GetTopFiveGsRemote_27006 {
+    required int32 ret = 1;
+    optional bf.messages.game.RankingMessage.MsgRankingData pRankingDatas = 2;
+    optional bf.messages.game.RankingMessage.MsgRankingData fRankingDatas = 3;
+}
+
+message TransformItemReq_27007 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message TransformItemResp_27007 {
+    required int32 ret = 1;
+    repeated TransformItem item = 2;
+}
+
+message SyncTopFiveGsRemote_27008 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional bf.messages.game.RankingMessage.MsgRankingData pRankingDatas = 3;
+    optional bf.messages.game.RankingMessage.MsgRankingData fRankingDatas = 4;
+}
+
+message GetPlayerRankScoreResp_27009 {
+    required int32 actId = 1;
+    required int32 actType = 2;
+    required string rankScore = 3;
+    required string score = 4;
+}
+
+message GetRankReq_27010 {
+    required int32 actId = 1;
+    required int32 actType = 2;
+    repeated int32 rankType = 3;
+}
+
+message GetRankResp_27010 {
+    required int32 ret = 1;
+    repeated bf.messages.game.RankingMessage.MsgRankingData msgRankingDatas = 2;
+}
+
+message GetRankCsRemote_27011 {
+    required string playerId = 1;
+    required int64 familyId = 2;
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 3;
+}
+
+message GetRankGsRemote_27011 {
+    required int32 ret = 1;
+    repeated bf.messages.game.FestivalMessage.MsgRankIndex msgRankIndex = 2;
+    optional int64 oldFamilyId = 3;
+}
+
+message GetRedDotCsRemote_27012 {
+    optional string playerId = 1;
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+    repeated int32 rankType = 3;
+    optional int64 familyId = 4;
+}
+
+message GetRedDotGsRemote_27012 {
+    required int32 ret = 1;
+    repeated bf.messages.game.RankingMessage.MsgRankIndex msgRankIndex = 2;
+    optional bool isJoin = 3;
+}
+
+message GetTaskDataReq_27013 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetTaskDataResp_27013 {
+    repeated int32 updateFieldsList = 90;
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+    optional int32 charge = 3;
+    repeated int32 chargeTask = 4;
+}
+
+message ReceiveTaskRewardReq_27014 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 type = 2;
+    required int32 taskId = 3;
+}
+
+message ReceiveTaskRewardResp_27014 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}

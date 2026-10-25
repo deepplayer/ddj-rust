@@ -1,0 +1,75 @@
+syntax = "proto2";
+
+package bf.messages.game.CornucopiaActMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgCornucopiaAllTemplate {
+    repeated MsgCornucopiaItemDbTemplate items = 1;
+}
+
+message MsgCornucopiaItemDbTemplate {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 onlyId = 3;
+    optional int32 itemType = 4;
+    optional string item = 5;
+    optional int32 weight = 6;
+    optional int32 selectTime = 7;
+    optional int32 tag = 8;
+}
+
+message MsgCornucopiaPlayerData {
+    optional int32 stage = 1;
+    repeated MsgCornucopiaItemCell itemCells = 2;
+}
+
+message MsgCornucopiaItemCell {
+    optional int32 onlyId = 1;
+    optional int32 pos = 2;
+}
+
+message MsgCornucopiaLuckRecord {
+    optional string playerName = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgResources resource = 2;
+}
+
+message CornucopiaStartReq_38301 {
+    optional int32 activityId = 1;
+}
+
+message CornucopiaStartResp_38301 {
+    required int32 ret = 1;
+    optional MsgCornucopiaPlayerData playerData = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgResources resource = 3;
+}
+
+message CornucopiaDrawReq_38302 {
+    optional int32 activityId = 1;
+    optional int32 pos = 2;
+}
+
+message CornucopiaDrawResp_38302 {
+    required int32 ret = 1;
+    optional int32 pos = 2;
+    optional int32 onlyId = 3;
+    optional MsgCornucopiaPlayerData playerData = 4;
+}
+
+message CornucopiaSelfRecordReq_38303 {
+    optional int32 activityId = 1;
+}
+
+message CornucopiaSelfRecordResp_38303 {
+    required int32 ret = 1;
+    repeated MsgCornucopiaLuckRecord records = 2;
+}
+
+message CornucopiaRecordReq_38304 {
+    optional int32 activityId = 1;
+}
+
+message CornucopiaRecordResp_38304 {
+    required int32 ret = 1;
+    repeated MsgCornucopiaLuckRecord records = 2;
+}

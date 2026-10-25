@@ -1,0 +1,119 @@
+syntax = "proto2";
+
+package bf.messages.game.TravelMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgTravelProgress {
+    optional int32 id = 1;
+    optional int32 progress = 2;
+}
+
+message MsgTravelEventData {
+    optional int32 eventId = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+    optional MsgTravelProgress progress = 3;
+}
+
+message MsgIntimacyData {
+    required int32 targetId = 1;
+    required int64 intimacy = 2;
+    repeated MsgPartnerSkin skins = 3;
+    repeated MsgPartnerTeachSkill skills = 4;
+    optional int32 useSkinId = 5;
+}
+
+message MsgPartnerSkin {
+    optional int32 skinId = 1;
+    optional int32 skinLv = 2;
+}
+
+message MsgPartnerTeachSkill {
+    optional int32 skillId = 1;
+    optional int32 skillLv = 2;
+}
+
+message MsgTravelDataResp_15001 {
+    optional int32 place = 1;
+    repeated MsgTravelProgress msgTravelProgress = 2;
+}
+
+message MsgTravelReq_15002 {
+    optional int32 place = 1;
+    optional int32 allTimes = 2;
+    optional int32 travelCnt = 3;
+}
+
+message MsgTravelResp_15002 {
+    required int32 ret = 1;
+    repeated MsgTravelEventData msgTravelEventData = 2;
+}
+
+message MsgNpcSpouseIntimacyReq_15003 {
+}
+
+message MsgNpcSpouseIntimacyResp_15003 {
+    repeated MsgIntimacyData msgNpcSpouseIntimacy = 1;
+}
+
+message MsgTravelTenReq_15004 {
+}
+
+message MsgTravelTenResp_15004 {
+    required int32 ret = 1;
+    repeated MsgTravelEventData msgTravelEventData = 2;
+    repeated MsgTravelEventData msgChildTravelEventData = 3;
+}
+
+message PartnerSkinActivateReq_15005 {
+    optional int32 npcId = 1;
+    optional int32 skinId = 2;
+}
+
+message PartnerSkinActivateResp_15005 {
+    required int32 ret = 1;
+    optional int32 npcId = 2;
+    optional int32 skinId = 3;
+}
+
+message PartnerSkinUpgradeReq_15006 {
+    optional int32 npcId = 1;
+    optional int32 skinId = 2;
+}
+
+message PartnerSkinUpgradeResp_15006 {
+    required int32 ret = 1;
+    optional int32 npcId = 2;
+    optional int32 skinId = 3;
+}
+
+message PartnerTeachSkillUpgradeReq_15007 {
+    optional int32 npcId = 1;
+    optional int32 skillId = 2;
+}
+
+message PartnerTeachSkillUpgradeResp_15007 {
+    required int32 ret = 1;
+    optional int32 npcId = 2;
+    optional int32 skillId = 3;
+}
+
+message PartnerSkinSetReq_15008 {
+    optional int32 npcId = 1;
+    optional int32 skinId = 2;
+}
+
+message PartnerSkinSetResp_15008 {
+    required int32 ret = 1;
+    optional int32 npcId = 2;
+    optional int32 skinId = 3;
+}
+
+message PartnerSexReq_15009 {
+    optional int32 sex = 1;
+}
+
+message PartnerSexResp_15009 {
+    required int32 ret = 1;
+    optional int32 sex = 2;
+}

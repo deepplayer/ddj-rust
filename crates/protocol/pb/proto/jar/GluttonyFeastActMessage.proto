@@ -1,0 +1,335 @@
+syntax = "proto2";
+
+package bf.messages.game.GluttonyFeastActMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgGluttonyPlayerData {
+    optional int32 level = 1;
+    optional int32 rateType = 2;
+    repeated MsgGluttonyFeastPlace places = 3;
+    optional int32 bbqValue = 4;
+    repeated MsgGluttonyPetGift gifts = 5;
+    optional int32 randomCode = 6;
+    optional bool keepPetSeat = 7;
+}
+
+message MsgGluttonyFeastPlace {
+    optional int32 rateType = 1;
+    repeated MsgGluttonyFeastPet pets = 2;
+    repeated MsgGluttonyFeastFood foods = 3;
+    optional bool fixedPosition = 4;
+}
+
+message MsgGluttonyFeastFood {
+    optional int32 id = 1;
+    optional int32 foodId = 2;
+    optional string client = 3;
+}
+
+message MsgGluttonyFeastPet {
+    optional int32 petId = 1;
+    repeated MsgPetFavoriteFood petFoods = 2;
+}
+
+message MsgPetFavoriteFood {
+    optional int32 foodId = 1;
+    optional int32 collectNum = 2;
+    optional int32 needNum = 3;
+}
+
+message MsgGluttonyPetGift {
+    optional int32 level = 1;
+    optional int32 num = 2;
+}
+
+message MsgGluttonyPetGiftResources {
+    optional int32 level = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 2;
+}
+
+message GluttonySaveFoodPositionReq_37201 {
+    optional int32 activityId = 1;
+    repeated MsgGluttonyFeastFood foods = 2;
+    optional int32 activityType = 3;
+}
+
+message GluttonySaveFoodPositionResp_37201 {
+    required int32 ret = 1;
+    repeated MsgGluttonyFeastFood foods = 2;
+    optional int32 rateType = 3;
+}
+
+message GluttonySetPetReq_37202 {
+    optional int32 activityId = 1;
+    optional int32 petId = 2;
+    optional int32 index = 3;
+    optional int32 activityType = 4;
+}
+
+message GluttonySetPetResp_37202 {
+    required int32 ret = 1;
+    optional MsgGluttonyFeastPet feastPet = 2;
+    optional int32 index = 3;
+}
+
+message GluttonyChangeRateTypeReq_37203 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message GluttonyChangeRateTypeResp_37203 {
+    required int32 ret = 1;
+    optional MsgGluttonyPlayerData gluttonyData = 2;
+}
+
+message GluttonyReceivePetGiftReq_37204 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message GluttonyReceivePetGiftResp_37204 {
+    required int32 ret = 1;
+    repeated MsgGluttonyPetGiftResources gifts = 2;
+}
+
+message GluttonyUpgradeReq_37205 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message GluttonyUpgradeResp_37205 {
+    required int32 ret = 1;
+    optional MsgGluttonyPlayerData gluttonyData = 2;
+}
+
+message GluttonyLinkFoodReq_37206 {
+    optional int32 activityId = 1;
+    repeated int32 linkIds = 2;
+    repeated MsgGluttonyFeastFood evolutionFoods = 3;
+    optional string md5 = 4;
+    repeated MsgGluttonyFeastFood foods = 5;
+    optional bool auto = 6;
+    optional int64 timestamp = 7;
+    repeated int32 explosionIds = 8;
+    optional int32 activityType = 9;
+}
+
+message GluttonyLinkFoodResp_37206 {
+    optional int32 ret = 1;
+    repeated MsgGluttonyFeastFood dropFoods = 2;
+    repeated MsgGluttonyFeastPet feastPets = 3;
+    repeated MsgGluttonyPetGift petGifts = 4;
+    repeated int32 completePetIndex = 5;
+    optional int32 linkSpiceNum = 6;
+    optional bool auto = 7;
+    repeated int32 removeIds = 8;
+    repeated MsgGluttonyFeastFood evolutionFoods = 9;
+    optional int32 addScore = 10;
+    optional bool useSpoon = 11;
+    optional int32 randomCode = 12;
+    repeated int32 foodIds = 13;
+}
+
+message GluttonyBarbecueReq_37207 {
+    optional int32 activityId = 1;
+    optional bool bigHeat = 2;
+    optional int32 activityType = 3;
+}
+
+message GluttonyBarbecueResp_37207 {
+    required int32 ret = 1;
+    optional int32 addVal = 2;
+    optional int32 bbqValue = 3;
+}
+
+message GluttonyBarbecueEndReq_37208 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message GluttonyBarbecueEndResp_37208 {
+    required int32 ret = 1;
+    optional int32 heatId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 3;
+}
+
+message GluttonyUseSpoonReq_37209 {
+    optional int32 activityId = 1;
+    optional int32 id = 2;
+    repeated int32 linkIds = 3;
+    optional int32 activityType = 4;
+}
+
+message GluttonyUseSpoonResp_37209 {
+    required int32 ret = 1;
+}
+
+message GluttonyChangeKeepPetSeatReq_37210 {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+}
+
+message GluttonyChangeKeepPetSeatResp_37210 {
+    required int32 ret = 1;
+    optional bool keepPetSeat = 2;
+}
+
+message MsgGluttonyEliminatePlayerData {
+    optional int32 level = 1;
+    optional int32 rateType = 2;
+    repeated MsgGluttonyEliminatePlace places = 3;
+    optional int32 bbqValue = 4;
+    repeated MsgGluttonyPetGift gifts = 5;
+    optional bool keepPetSeat = 6;
+}
+
+message MsgGluttonyEliminatePlace {
+    repeated MsgGluttonyFoodGrid grids = 1;
+    repeated MsgGluttonyFeastPet pets = 2;
+    optional int32 rateType = 3;
+}
+
+message MsgGluttonyCoordinate {
+    optional int32 x = 1;
+    optional int32 y = 2;
+}
+
+message MsgGluttonyFoodGrid {
+    optional MsgGluttonyCoordinate coordinate = 1;
+    optional int32 foodId = 2;
+}
+
+message MsgGluttonyGridExplode {
+    optional MsgGluttonyFoodGrid grid = 1;
+    optional MsgGluttonyCoordinate movePoint = 2;
+    optional int32 explodeType = 3;
+}
+
+message MsgGluttonyGridFallen {
+    optional MsgGluttonyFoodGrid grid = 1;
+    optional MsgGluttonyCoordinate startPoint = 2;
+    optional bool evolution = 3;
+    optional bool bubble = 4;
+}
+
+message MsgGluttonyPetGiftComplete {
+    optional int32 index = 1;
+    optional int32 petId = 2;
+}
+
+message MsgGluttonyEliminateCombo {
+    repeated MsgGluttonyGridExplode explosions = 1;
+    repeated MsgGluttonyGridFallen downs = 2;
+    optional int32 addScore = 3;
+    repeated MsgGluttonyFeastPet pets = 4;
+    repeated MsgGluttonyPetGift petGifts = 5;
+    repeated MsgGluttonyPetGiftComplete completeGifts = 6;
+    optional int32 eliminateType = 7;
+    repeated MsgGluttonyGridFallen refillDowns = 8;
+    repeated MsgGluttonyFoodGrid infectFailedGrids = 9;
+}
+
+message MsgGluttonyEliminateResult {
+    repeated MsgGluttonyEliminateCombo combos = 1;
+    optional bool reload = 2;
+    repeated MsgGluttonyFoodGrid grids = 3;
+    optional int32 score = 4;
+}
+
+message Gluttony2EliminateLinkReq_37251 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    repeated MsgGluttonyFoodGrid grids = 3;
+}
+
+message Gluttony2EliminateLinkResp_37251 {
+    required int32 ret = 1;
+    optional MsgGluttonyEliminateResult linkResult = 2;
+}
+
+message Gluttony2SetPetReq_37252 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional int32 petId = 3;
+    optional int32 index = 4;
+}
+
+message Gluttony2SetPetResp_37252 {
+    required int32 ret = 1;
+    optional MsgGluttonyFeastPet feastPet = 2;
+    optional int32 index = 3;
+}
+
+message Gluttony2ChangeRateTypeReq_37253 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message Gluttony2ChangeRateTypeResp_37253 {
+    required int32 ret = 1;
+    optional MsgGluttonyEliminatePlayerData gluttonyData = 2;
+}
+
+message Gluttony2RevPetGiftsReq_37254 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message Gluttony2RevPetGiftsResp_37254 {
+    required int32 ret = 1;
+    repeated MsgGluttonyPetGiftResources gifts = 2;
+}
+
+message Gluttony2UpgradeReq_37255 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message Gluttony2UpgradeResp_37255 {
+    required int32 ret = 1;
+    optional MsgGluttonyEliminatePlayerData gluttonyData = 2;
+}
+
+message Gluttony2UseSpoonReq_37256 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional MsgGluttonyFoodGrid targetGrid = 3;
+}
+
+message Gluttony2UseSpoonResp_37256 {
+    required int32 ret = 1;
+}
+
+message Gluttony2ChangeKeepPetSeatReq_37257 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message Gluttony2ChangeKeepPetSeatResp_37257 {
+    required int32 ret = 1;
+    optional bool keepPetSeat = 2;
+}
+
+message Gluttony2BarbecueReq_37258 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+    optional bool bigHeat = 3;
+}
+
+message Gluttony2BarbecueResp_37258 {
+    required int32 ret = 1;
+    optional int32 addValue = 2;
+    optional int32 bbqValue = 3;
+}
+
+message Gluttony2BarbecueEndReq_37259 {
+    optional int32 activityType = 1;
+    optional int32 activityId = 2;
+}
+
+message Gluttony2BarbecueEndResp_37259 {
+    required int32 ret = 1;
+    optional int32 heatId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 3;
+}

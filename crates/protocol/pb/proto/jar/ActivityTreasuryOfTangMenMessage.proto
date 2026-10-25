@@ -1,0 +1,167 @@
+syntax = "proto2";
+
+package bf.messages.game.ActivityTreasuryOfTangMenMessage;
+
+import "CommonMsgMessage.proto";
+import "GmActivityMessage.proto";
+import "PlayerMessage.proto";
+
+message MsgTreasuryOfTangMenActivity {
+    repeated MsgTreasuryGrade msgGrade = 1;
+    repeated MsgTreasuryMultiple msgMultiple = 2;
+    repeated MsgTreasuryStage msgStage = 3;
+}
+
+message MsgTreasuryGrade {
+    optional int32 actId = 1;
+    optional int32 actType = 2;
+    optional int32 gradeId = 3;
+    optional int32 isBest = 4;
+    optional int32 rewardNum = 5;
+    optional string rewardItem = 6;
+}
+
+message MsgTreasuryMultiple {
+    optional int32 actId = 1;
+    optional int32 actType = 2;
+    optional int32 multId = 3;
+    optional int32 isBest = 4;
+    optional int32 ratio = 5;
+}
+
+message MsgTreasuryStage {
+    optional int32 actId = 1;
+    optional int32 actType = 2;
+    optional int32 stageId = 3;
+    optional int32 drawNum = 4;
+    optional string reward = 5;
+}
+
+message MsgTreasuryOfTangMenEntrance {
+    optional bool isStage = 1;
+}
+
+message MsgPanel {
+    repeated MsgTurntable msgTable = 1;
+    optional int32 outSideIndex = 2;
+    optional int32 insideIndex = 3;
+    optional int64 totalCnt = 4;
+    repeated int32 templateId = 5;
+}
+
+message MsgTurntable {
+    optional int32 tableId = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message MsgSettings {
+    optional int32 gradeId = 1;
+    repeated int32 index = 2;
+}
+
+message MsgAward {
+    optional int32 outSideIndex = 1;
+    optional int32 insideIndex = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+}
+
+message MsgDrawHist {
+    optional int32 templateId = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message MsgSelfRecord {
+    repeated MsgDrawHist msgHist = 1;
+    optional int64 timeStamp = 2;
+}
+
+message MsgGroupRecord {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message MsgGroupReport {
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 1;
+}
+
+message GetPanelReq_28201 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetPanelResp_28201 {
+    required int32 ret = 1;
+    optional MsgPanel msgPanel = 2;
+}
+
+message GetSettingsReq_28202 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetSettingsResp_28202 {
+    required int32 ret = 1;
+    repeated MsgSettings msgSettings = 2;
+}
+
+message SetRewardReq_28203 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated MsgSettings msgSettings = 2;
+}
+
+message SetRewardResp_28203 {
+    required int32 ret = 1;
+    optional MsgPanel msgPanel = 2;
+}
+
+message DrawReq_28204 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bool isMultiple = 2;
+}
+
+message DrawResp_28204 {
+    required int32 ret = 1;
+    repeated MsgAward msgAward = 2;
+    optional MsgPanel msgPanel = 3;
+}
+
+message GetDrawRecordReq_28205 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bool isSelf = 2;
+}
+
+message GetDrawRecordResp_28205 {
+    required int32 ret = 1;
+    repeated MsgSelfRecord msgSelf = 2;
+    repeated MsgGroupRecord msgGroup = 3;
+}
+
+message GetStageAwardReq_28206 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 stageId = 2;
+}
+
+message GetStageAwardResp_28206 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+    repeated int32 stageId = 3;
+}
+
+message PushResultCsRemote_28207 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    repeated MsgGroupReport msgReport = 3;
+}
+
+message WorldNotifyGsRemote_28208 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated string playerId = 2;
+    repeated MsgGroupRecord msgRecord = 3;
+}
+
+message GetDrawRecordCsRemote_28209 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetDrawRecordGsRemote_28209 {
+    required int32 ret = 1;
+    repeated MsgGroupRecord msgGroup = 2;
+}

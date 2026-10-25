@@ -1,0 +1,250 @@
+syntax = "proto2";
+
+package bf.messages.game.FamilyTradeMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgTalent {
+    optional int32 talentId = 1;
+    optional string money = 2;
+    optional int32 status = 3;
+    optional int32 atkTimes = 4;
+    optional int32 usedSkinId = 5;
+    optional int32 skinAwake = 6;
+}
+
+message MsgPlayer {
+    repeated int32 updateFieldsList = 90;
+    optional string playerId = 1;
+    optional string name = 2;
+    repeated int32 fashionIds = 3;
+    optional int32 sex = 4;
+    optional int64 lv = 5;
+    optional int32 vipLv = 6;
+    optional bf.messages.game.CommonMsgMessage.MsgAddress address = 7;
+    repeated MsgTalent msgTalents = 8;
+    optional int64 joinTime = 9;
+    repeated MsgTalent msgAtkTalents = 10;
+    optional int32 npcSex = 11;
+}
+
+message MsgCity {
+    repeated int32 updateFieldsList = 90;
+    optional int32 cityId = 1;
+    optional int32 cityState = 2;
+    optional int64 lastOpenTime = 3;
+    optional int64 lastNodeTime = 4;
+    optional int32 nextNodePos = 5;
+    optional int32 nextNodeState = 6;
+    optional int32 randEventId = 7;
+    optional int64 lastInviteTime = 8;
+    repeated MsgPlayer msgPlayers = 11;
+    optional string curHp = 12;
+    optional string maxHp = 13;
+    optional int32 targetNum = 14;
+    optional int32 restExp = 15;
+    optional int32 restContribute = 16;
+}
+
+message MsgPlayerSettle {
+    optional int32 cityId = 1;
+    optional int32 nodeNum = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+    optional int32 robPer = 4;
+}
+
+message MsgFamilyTrade {
+    repeated int32 updateFieldsList = 90;
+    repeated MsgCity msgCitys = 1;
+    repeated MsgTalent msgTalents = 2;
+    repeated int64 lastJoinTimes = 3;
+    optional bool reward = 4;
+    repeated MsgTalent msgAtkTalents = 5;
+    repeated MsgPresetTeam msgPresetTeam = 6;
+}
+
+message MsgFamilyTradeEvent {
+    optional int32 eventType = 1;
+    optional int64 time = 2;
+    optional string familyName = 3;
+    optional int32 cityId = 4;
+    optional string playerName = 5;
+    optional int32 talentId = 6;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources award = 7;
+    optional string enemyFamilyName = 8;
+    optional MsgPlayer enemyPlayer = 9;
+    optional int32 enemyTalentNum = 10;
+    optional int32 damagePer = 11;
+    optional int32 robPer = 12;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources robAward = 13;
+    optional int32 randEventId = 14;
+}
+
+message MsgFamilyCarriage {
+    repeated int32 updateFieldsList = 90;
+    optional int64 id = 1;
+    optional string curHp = 2;
+    optional string maxHp = 3;
+    optional string familyName = 4;
+    optional int32 cityId = 5;
+    optional int32 targetNum = 6;
+    optional int64 backTime = 7;
+    optional int32 restExp = 8;
+    optional int32 restContribute = 9;
+    optional bool isFamily = 10;
+    optional int32 defNum = 11;
+    optional bool isMine = 12;
+}
+
+message MsgFamilyTradeLog {
+    optional int32 type = 1;
+    repeated MsgFamilyTradeEvent msgFamilyTradeEvents = 2;
+}
+
+message MsgTalentResp_26001 {
+    repeated MsgTalent msgTalents = 1;
+}
+
+message MsgCityResp_26002 {
+    optional MsgCity msgCity = 1;
+}
+
+message MsgEventResp_26004 {
+    optional MsgFamilyTradeLog msgFamilyTradeLog = 1;
+}
+
+message MsgCityPlayerResp_26005 {
+    optional int32 cityId = 1;
+    optional MsgPlayer msgPlayer = 2;
+}
+
+message MsgCityTalentResp_26006 {
+    optional int32 cityId = 1;
+    optional string playerId = 2;
+    repeated MsgTalent msgTalent = 3;
+}
+
+message MsgFamilyTradeResp_26007 {
+    optional MsgFamilyTrade msgFamilyTrade = 1;
+}
+
+message MsgStartReq_26011 {
+    optional int32 cityId = 1;
+}
+
+message MsgStartResp_26011 {
+    required int32 ret = 1;
+}
+
+message MsgJoinReq_26012 {
+    optional int32 cityId = 1;
+    optional int32 talentId = 2;
+}
+
+message MsgJoinResp_26012 {
+    required int32 ret = 1;
+}
+
+message MsgInviteReq_26013 {
+    optional int32 cityId = 1;
+}
+
+message MsgInviteResp_26013 {
+    required int32 ret = 1;
+}
+
+message LoadEventReq_26015 {
+    optional int32 cityId = 1;
+}
+
+message LoadEventResp_26015 {
+    required int32 ret = 1;
+    repeated MsgFamilyTradeLog msgFamilyTradeLog = 2;
+}
+
+message MsgSettleRewardReq_26016 {
+}
+
+message MsgSettleRewardResp_26016 {
+    required int32 ret = 1;
+    repeated MsgPlayerSettle msgPlayerSettles = 2;
+}
+
+message ExploreReq_26017 {
+    optional int32 type = 1;
+}
+
+message ExploreResp_26017 {
+    required int32 ret = 1;
+}
+
+message GetExploreReq_26018 {
+}
+
+message GetExploreResp_26018 {
+    required int32 ret = 1;
+    repeated MsgFamilyCarriage msgFamilyCarriage = 2;
+}
+
+message MarkCarriageReq_26019 {
+    optional int64 id = 1;
+}
+
+message MarkCarriageResp_26019 {
+    required int32 ret = 1;
+}
+
+message GetMarksReq_26020 {
+}
+
+message GetMarksResp_26020 {
+    required int32 ret = 1;
+    repeated MsgFamilyCarriage msgFamilyCarriage = 2;
+}
+
+message AttackCarriageReq_26021 {
+    optional int64 id = 1;
+    repeated int32 talentId = 2;
+}
+
+message AttackCarriageResp_26021 {
+    required int32 ret = 1;
+    optional MsgFamilyCarriage msgFamilyCarriage = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+}
+
+message SyncTalentAtkResp_26022 {
+    repeated MsgTalent msgTalent = 1;
+}
+
+message MsgPresetTeam {
+    optional int32 cityId = 1;
+    repeated MsgTalent msgTalent = 2;
+}
+
+message MsgSetPresetTeamReq_26023 {
+    optional int32 cityId = 1;
+    optional int32 operation = 2;
+    optional int32 talentId = 3;
+}
+
+message MsgSetPresetTeamResp_26023 {
+    required int32 ret = 1;
+}
+
+message MsgPresetTeamJoinReq_26024 {
+}
+
+message MsgPresetTeamJoinResp_26024 {
+    required int32 ret = 1;
+}
+
+message MsgCityPlayerInfoResp_26025 {
+    repeated MsgCityInfo msgCityInfo = 1;
+}
+
+message MsgCityInfo {
+    optional int32 cityId = 1;
+    optional MsgPlayer msgPlayer = 2;
+    optional MsgFamilyTradeLog msgFamilyTradeLog = 3;
+}

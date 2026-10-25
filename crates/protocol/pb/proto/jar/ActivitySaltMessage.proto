@@ -1,0 +1,287 @@
+syntax = "proto2";
+
+package bf.messages.game.ActivitySaltMessage;
+
+import "GmActivityCommonMessage.proto";
+import "FamilyMessage.proto";
+import "PlayerMessage.proto";
+import "GmActivityMessage.proto";
+import "CommonMsgMessage.proto";
+import "RankingMessage.proto";
+
+message MsgSaltPlayerData {
+    optional bool ownReward = 1;
+    optional bool areaReward = 2;
+    repeated bf.messages.game.GmActivityCommonMessage.MsgPlayerRankData rankData = 3;
+    optional string playerScore = 4;
+    optional int32 playerRank = 5;
+    optional string familyScore = 6;
+    optional int32 familyRank = 7;
+    optional bool join = 8;
+    optional bool joinRed = 9;
+    optional bool isBuy = 10;
+    optional bool passRed = 11;
+}
+
+message MsgSaltTemplate {
+    repeated bf.messages.game.GmActivityMessage.MsgRank msgRank = 2;
+    repeated MsgSaltGamble gambles = 3;
+    optional MsgSaltRecharge recharges = 4;
+    repeated MsgSaltPass passs = 5;
+}
+
+message MsgSaltBuild {
+    optional int32 levelId = 1;
+    optional string hp = 3;
+    optional string maxHp = 4;
+    optional string baseCost = 5;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData fromFamily = 10;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 11;
+    optional string totalCost = 12;
+    optional bool ownReward = 13;
+}
+
+message MsgSaltHit {
+    optional string playerName = 1;
+    optional string hp = 2;
+    optional string playerId = 3;
+}
+
+message MsgSaltBuildPlayer {
+    optional int32 levelId = 1;
+    optional int32 ownReward = 2;
+    optional int32 time = 5;
+}
+
+message MsgSaltAreaPlayer {
+    optional int32 areaId = 1;
+    optional int32 state = 2;
+}
+
+message MsgSaltGamble {
+    optional string countList = 1;
+    optional string awards = 2;
+}
+
+message MsgSaltOwn {
+    optional string playerId = 1;
+    optional int32 buildId = 2;
+}
+
+message MsgSaltRecharge {
+    optional int32 actId = 1;
+    optional int32 giftId = 2;
+    optional int32 rmb = 5;
+    optional string originalPrice = 6;
+    optional string price = 7;
+    optional int32 discount = 8;
+    optional int32 overseasPayId = 9;
+    optional int32 vipExp = 10;
+    optional string voucher = 11;
+    optional string name = 13;
+}
+
+message MsgSaltPass {
+    optional int32 actId = 1;
+    optional int32 lv = 3;
+    optional int32 integral = 5;
+    optional string reward1 = 6;
+    optional string reward2 = 7;
+}
+
+message MsgPass {
+    optional int32 lv = 1;
+    optional bool isFree = 2;
+    optional bool isPay = 3;
+}
+
+message MsgSaltGetReq_39701 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message MsgSaltGetResp_39701 {
+    required int32 ret = 1;
+    repeated MsgSaltBuild builds = 2;
+    repeated MsgSaltBuildPlayer players = 3;
+    repeated MsgSaltAreaPlayer areas = 4;
+}
+
+message MsgSaltTraderEnterReq_39702 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 levelId = 2;
+}
+
+message MsgSaltTraderEnterResp_39702 {
+    required int32 ret = 1;
+    repeated MsgSaltBuild builds = 2;
+    repeated MsgSaltBuildPlayer players = 3;
+}
+
+message MsgSaltTraderExitReq_39703 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message MsgSaltTraderExitResp_39703 {
+    optional int32 ret = 1;
+}
+
+message MsgSaltTraderReq_39704 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 buildId = 2;
+}
+
+message MsgSaltTraderResp_39704 {
+    optional int32 ret = 1;
+    optional string score = 2;
+    optional string allScore = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 4;
+    repeated MsgSaltBuild builds = 5;
+    repeated MsgSaltBuildPlayer players = 6;
+    optional string finalScore = 7;
+}
+
+message MsgSaltHitPushResp_39705 {
+    optional MsgSaltHit hit = 1;
+    repeated MsgSaltBuild builds = 4;
+}
+
+message MsgSaltNewBuildPushResp_39706 {
+    optional MsgSaltBuild build = 1;
+}
+
+message MsgSaltAllStaffRewardReq_39710 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 areaId = 2;
+}
+
+message MsgSaltAllStaffRewardResp_39710 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+    repeated MsgSaltAreaPlayer areas = 4;
+}
+
+message MsgSaltOwnRewardReq_39711 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 buildId = 2;
+}
+
+message MsgSaltOwnRewardResp_39711 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 3;
+    optional MsgSaltBuildPlayer player = 6;
+}
+
+message MsgSaltFinalPlayerResp_39712 {
+    optional int32 levelId = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 2;
+}
+
+message MsgSaltGetPassReq_39713 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message MsgSaltGetPassResp_39713 {
+    optional int32 ret = 1;
+    optional int32 passLv = 2;
+    optional int32 passExp = 3;
+    optional bool isBuy = 4;
+    repeated MsgPass msgPass = 7;
+}
+
+message MsgSaltPassAwardsReq_39714 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 lv = 3;
+    optional bool isOneKey = 4;
+}
+
+message MsgSaltPassAwardsResp_39714 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+    repeated MsgPass msgPass = 4;
+}
+
+message MsgG2CSaltGetReq_39751 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 levelId = 2;
+}
+
+message MsgC2GSaltGetResp_39751 {
+    required int32 ret = 1;
+    repeated MsgSaltBuild builds = 2;
+}
+
+message MsgC2GSaltResp_39752 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional MsgSaltBuild newBuild = 2;
+}
+
+message MsgG2CSaltTraderReq_39753 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 levelId = 2;
+    optional int32 cutNum = 3;
+    optional string playerId = 4;
+    optional int64 familyId = 5;
+    optional string playerName = 6;
+    optional string costMoney = 7;
+    optional bool gmseckill = 8;
+}
+
+message MsgG2CSaltTraderResp_39753 {
+    optional int32 ret = 1;
+    optional string score = 2;
+    optional string allScore = 3;
+    optional MsgSaltBuild build = 4;
+    optional string finalValue = 5;
+    optional string output = 6;
+    optional string familyScore = 7;
+    optional int32 rank = 8;
+    optional int32 family_rank = 9;
+    optional string ownPlayerId = 10;
+    optional int64 family_id = 11;
+}
+
+message MsgC2GSaltTraderHitResp_39754 {
+    optional MsgSaltHit hit = 1;
+    optional int32 actId = 3;
+    optional MsgSaltBuild build = 4;
+}
+
+message MsgG2CSaltFamilyChangeReq_39755 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+    optional int32 eventType = 4;
+}
+
+message MsgG2CSaltDataToBuildReq_39756 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 5;
+    optional bool ownReward = 6;
+}
+
+message MsgG2CSaltDataToBuildResp_39756 {
+    required int32 ret = 1;
+    repeated bf.messages.game.RankingMessage.MsgRankIndex msgRankIndex = 2;
+    optional int64 oldFamilyId = 3;
+    optional string score = 4;
+    optional string familyScore = 5;
+    repeated MsgSaltBuild builds = 6;
+    repeated int32 ownBuildId = 7;
+}
+
+message MsgG2CSaltOwnRewardReq_39757 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int32 buildId = 3;
+}
+
+message MsgG2CSaltOwnRewardResp_39757 {
+    required int32 ret = 1;
+}
+
+message MsgC2GSaltFinalPlayerResp_39758 {
+    optional int32 levelId = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 2;
+    optional int32 actId = 3;
+}

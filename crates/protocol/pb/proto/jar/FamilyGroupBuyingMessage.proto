@@ -1,0 +1,84 @@
+syntax = "proto2";
+
+package bf.messages.game.FamilyGroupBuyingMessage;
+
+import "CommonMsgMessage.proto";
+import "RankingMessage.proto";
+
+message MsgFamilyGroupBuyAllTemplateData {
+    repeated MsgFamilyBuyTemplateData familyBuyGiftDbs = 1;
+    repeated MsgFamilyRewardTemplateData rewardDbs = 2;
+}
+
+message MsgFamilyBuyTemplateData {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 giftId = 3;
+    optional int32 limitType = 4;
+    optional int32 limitNum = 5;
+    optional int32 rmb = 6;
+    optional int32 overseasPayId = 7;
+    optional int32 vipExp = 8;
+    optional string voucher = 9;
+    optional int32 discount = 10;
+    optional string name = 11;
+    optional string reward = 12;
+    optional int32 integral = 13;
+    optional string res = 14;
+}
+
+message MsgFamilyRewardTemplateData {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 onlyId = 3;
+    optional int32 integral = 4;
+    optional string reward = 5;
+}
+
+message MsgFamilyBuyPlayerData {
+    optional int32 integral = 1;
+    repeated MsgFamilyGiftBuyTimes giftBuyTimes = 2;
+    repeated int32 blessingBagDraws = 3;
+    optional int64 familyIntegral = 4;
+    repeated MsgFamilyBlessBagRevNum memberDraws = 5;
+}
+
+message MsgFamilyGiftBuyTimes {
+    optional int32 giftId = 1;
+    optional int32 num = 2;
+}
+
+message MsgFamilyBlessBagRevNum {
+    optional int32 onlyId = 1;
+    optional int32 num = 2;
+}
+
+message FamilyGroupBuyReceiveRewardReq_37401 {
+    optional int32 activityId = 1;
+    repeated int32 onlyIds = 2;
+}
+
+message FamilyGroupBuyReceiveRewardResp_37401 {
+    required int32 ret = 1;
+    repeated int32 blessingBagDraws = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 3;
+}
+
+message FamilyGroupBuyMemberIntegralReq_37402 {
+    optional int32 activityId = 1;
+}
+
+message FamilyGroupBuyMemberIntegralResp_37402 {
+    required int32 ret = 1;
+    repeated bf.messages.game.RankingMessage.MsgRankingEntryData entries = 2;
+}
+
+message FamilyGroupFreeReq_37403 {
+    optional int32 activityId = 1;
+    optional int32 giftId = 2;
+}
+
+message FamilyGroupFreeResp_37403 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 2;
+}

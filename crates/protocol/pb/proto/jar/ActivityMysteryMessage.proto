@@ -1,0 +1,1579 @@
+syntax = "proto2";
+
+package bf.messages.game.ActivityMysteryMessage;
+
+import "ActivityWesternRegionsMessage.proto";
+import "CommonMsgMessage.proto";
+import "FamilyMessage.proto";
+import "FestivalMessage.proto";
+import "GmActivityMessage.proto";
+import "PetMessage.proto";
+import "PlayerMessage.proto";
+import "RankingMessage.proto";
+import "TalentMessage.proto";
+
+message MsgPass {
+    optional int32 lv = 1;
+    optional bool isFree = 2;
+    optional bool isPay = 3;
+}
+
+message MsgAchievement {
+    optional int32 templateId = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgFamilyData = 3;
+    optional bool isGet = 4;
+}
+
+message MsgMapData {
+    repeated int32 updateFieldsList = 99;
+    optional int32 floor = 1;
+    repeated int32 markPosId = 2;
+    repeated MsgCompleteEvent msgCompleteEvent = 3;
+    repeated int32 fog = 4;
+    repeated MsgMapBrief msgMapBrief = 5;
+    repeated MsgPlayerBrief msgPlayerBrief = 6;
+    optional MsgNextFloor msgNextFloor = 7;
+    optional bool isNextFloor = 8;
+}
+
+message MsgEvent {
+    repeated int32 updateFieldsList = 99;
+    optional int32 eventId = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 2;
+    optional int64 lastShareTime = 3;
+    optional bool isMark = 4;
+    optional MsgNatural msgNatural = 5;
+    optional MsgBusinessman msgBusinessman = 6;
+    optional MsgMonster msgMonster = 7;
+    optional MsgShop msgShop = 8;
+}
+
+message MsgNatural {
+    optional int32 collectCnt = 4;
+}
+
+message MsgBusinessman {
+    repeated MsgGoods msgGoods = 1;
+}
+
+message MsgGoods {
+    optional int32 templateId = 1;
+    optional int32 submitCnt = 2;
+}
+
+message MsgMonster {
+    optional string curHp = 1;
+    optional string maxHp = 2;
+    optional int32 robScore = 3;
+}
+
+message MsgShop {
+    repeated int32 updateFieldsList = 99;
+    repeated int32 templateId = 1;
+    optional int32 buy = 2;
+}
+
+message MsgCompleteEvent {
+    optional int32 eventType = 1;
+    optional int32 count = 2;
+}
+
+message MsgMapBrief {
+    optional int32 posId = 1;
+    optional MsgEvent msgEvent = 2;
+    optional int32 fieldType = 3;
+    optional bool isComplete = 4;
+}
+
+message MsgPlayerBrief {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 1;
+    optional int32 fashionId = 2;
+    optional int32 beginPosId = 3;
+    optional int32 endPosId = 4;
+    optional int32 direction = 5;
+    optional int64 timeStamp = 6;
+}
+
+message MsgBoss {
+    optional int32 bossId = 1;
+    optional string curHp = 2;
+    optional string maxHp = 3;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgFamilyData = 4;
+    repeated bf.messages.game.RankingMessage.MsgRankingEntryData msgRankingEntryDatas = 5;
+    optional int32 playerRank = 6;
+    optional string damage = 7;
+    optional string money = 8;
+    optional int32 energyCnt = 9;
+    optional int64 energyTime = 10;
+    optional int32 itemCnt = 11;
+    optional int64 itemTime = 12;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 13;
+    optional int64 killTime = 14;
+    optional bool isReward = 15;
+}
+
+message MsgBossState {
+    optional int32 bossId = 1;
+    optional int32 energyCnt = 2;
+    optional int64 energyTime = 3;
+    optional int32 itemCnt = 4;
+    optional int64 itemTime = 5;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 6;
+    optional int64 killTime = 7;
+    optional bool isReward = 8;
+}
+
+message MsgTalent {
+    repeated int32 updateFieldsList = 99;
+    optional int32 talentId = 1;
+    optional int32 lv = 2;
+    optional int32 useSkinId = 3;
+    optional int32 skinAwaken = 4;
+    optional string money = 5;
+    optional int32 state = 6;
+}
+
+message MsgEquip {
+    optional int32 templateId = 1;
+    optional int32 lv = 2;
+}
+
+message MsgEquipChip {
+    optional int32 templateId = 1;
+    optional int64 num = 2;
+}
+
+message MsgReport {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 1;
+    optional int32 floor = 2;
+    optional int32 posId = 3;
+    optional int32 eventId = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 5;
+    optional int64 timeStamp = 6;
+}
+
+message MsgNextFloor {
+    optional string playerId = 1;
+    optional int64 endTime = 2;
+}
+
+message MsgShare {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 1;
+    optional int32 floor = 2;
+    optional int32 posId = 3;
+    optional int32 eventId = 4;
+    optional bool isFinish = 5;
+    optional int64 timeStamp = 6;
+}
+
+message MsgMemberBrief {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 1;
+    optional int32 playerRank = 2;
+    optional string playerScore = 3;
+    optional string submitScore = 4;
+}
+
+message MsgPalaceRank {
+    repeated MsgPalaceRankEntry msgPalaceRankEntry = 1;
+    optional int32 playerRank = 2;
+    optional string score = 3;
+}
+
+message MsgPalaceRankEntry {
+    optional bf.messages.game.RankingMessage.MsgRankingEntryData msgRankingEntryData = 1;
+    optional int32 fashionId = 2;
+    optional bool isRobot = 3;
+}
+
+message MsgEnemy {
+    optional int32 playerRank = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 2;
+    optional string robotId = 3;
+}
+
+message MsgPalaceHist {
+    optional int64 id = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 2;
+    optional bool isAttack = 3;
+    optional int32 winCnt = 4;
+    optional string score = 5;
+    optional int64 timeStamp = 6;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData msgPvPBattleData = 7;
+}
+
+message MsgPalaceSettle {
+    optional int32 stageId = 1;
+    optional int32 rank = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+}
+
+message MsgMysteryBattleExtra {
+    repeated MsgTalent msgTalent = 1;
+    repeated MsgTalent msgAfter = 2;
+    optional string damage = 3;
+    optional string curHp = 4;
+    optional string scoreOfMine = 5;
+    optional string scoreOfEnemy = 6;
+}
+
+message MsgJail {
+    repeated MsgJailBrief msgJailBrief = 1;
+    optional int32 prisonerCnt = 2;
+}
+
+message MsgJailBrief {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 1;
+    optional string personalSpeed = 2;
+    optional string branchCnt = 3;
+}
+
+message MsgPrisoner {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 1;
+    optional MsgTalent msgTalent = 2;
+    optional int64 freeTime = 3;
+}
+
+message MsgUnderArrest {
+    optional MsgPrisoner msgPrisoner = 1;
+    optional int32 state = 2;
+    repeated bf.messages.game.PlayerMessage.MsgCrossUser msgHelp = 3;
+    optional bool isHelp = 4;
+}
+
+message MsgTransferItem {
+    optional int32 templateId = 1;
+    optional int64 num = 2;
+    optional string score = 3;
+}
+
+message MsgBranchBrief {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 1;
+    optional string speed = 2;
+    optional string totalCnt = 3;
+}
+
+message MsgBattleGroup {
+    optional bf.messages.game.TalentMessage.MsgTalentData msgTalent = 1;
+    optional bf.messages.game.PetMessage.MsgPetData msgPetData = 2;
+}
+
+message MsgNotifyEvent {
+    repeated int32 updateFieldsList = 99;
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated MsgMapBrief msgMapBrief = 2;
+    optional MsgPlayerBrief msgPlayerBrief = 3;
+    optional MsgNextFloor msgNextFloor = 4;
+    optional int32 floor = 5;
+    optional bool isBoss = 6;
+    optional bool isGift = 7;
+    optional bool isFashion = 8;
+    optional bool isShare = 9;
+}
+
+message MsgEventProgress {
+    optional int32 eventType = 1;
+    optional int32 completeCnt = 2;
+}
+
+message MsgAutoSettle {
+    optional string playerId = 1;
+    optional int32 playerRank = 2;
+    optional int32 familyRank = 3;
+    optional string playerScore = 4;
+    optional string familyScore = 5;
+    optional string playerScoreChange = 6;
+    optional string familyScoreChange = 7;
+    optional int32 palaceRank = 8;
+    optional string palaceScore = 9;
+    optional bool isInMap = 10;
+}
+
+message MsgBossRank {
+    optional string playerId = 1;
+    optional int32 playerRank = 2;
+    optional int32 familyRank = 3;
+    optional string playerScore = 4;
+    optional string familyScore = 5;
+    optional string playerScoreChange = 6;
+    optional string familyScoreChange = 7;
+    optional int32 bossRank = 8;
+    optional string damage = 9;
+    optional bool isInMap = 10;
+}
+
+message MsgBossDeadNotify {
+    optional string playerId = 1;
+    optional MsgBossState msgBossState = 2;
+}
+
+message MsgBossDamageRank {
+    optional int32 bossId = 1;
+    optional int32 rank = 2;
+}
+
+message MsgUnGetRankAward {
+    optional string playerId = 1;
+    repeated MsgBossDamageRank msgBossDamageRank = 2;
+    repeated MsgPalaceSettle msgPalaceSettle = 3;
+}
+
+message GetTopFamilyReq_27501 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetTopFamilyResp_27501 {
+    required int32 ret = 1;
+    repeated bf.messages.game.RankingMessage.MsgRankingEntryData msgRankingEntryDatas = 2;
+}
+
+message GetPassReq_27502 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetPassResp_27502 {
+    required int32 ret = 1;
+    optional int32 lv = 2;
+    optional int32 exp = 3;
+    optional bool isBuy = 4;
+    repeated MsgPass msgPass = 5;
+}
+
+message GainPassAwardReq_27503 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 lv = 2;
+    optional bool isOneKey = 3;
+}
+
+message GainPassAwardResp_27503 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+    repeated MsgPass msgPass = 3;
+}
+
+message GetFashionReq_27504 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetFashionResp_27504 {
+    required int32 ret = 1;
+    optional int32 useFashionId = 2;
+    repeated int32 fashionId = 3;
+    optional int32 totalCharge = 4;
+}
+
+message UseFashionReq_27505 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 fashionId = 2;
+    optional bool isActive = 3;
+}
+
+message UseFashionResp_27505 {
+    required int32 ret = 1;
+}
+
+message GetAchievementListReq_27506 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 type = 2;
+}
+
+message GetAchievementListResp_27506 {
+    required int32 ret = 1;
+    repeated MsgAchievement msgAchievement = 2;
+    optional bool isJoin = 3;
+}
+
+message GetAchievementAwardReq_27507 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 templateId = 2;
+}
+
+message GetAchievementAwardResp_27507 {
+    required int32 ret = 1;
+    optional int32 templateId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+}
+
+message GetMapReq_27508 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetMapResp_27508 {
+    required int32 ret = 1;
+    optional MsgMapData msgMapData = 2;
+    optional bool isLock = 3;
+    optional string playerScore = 4;
+    optional string familyScore = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgBag = 6;
+    optional string equipRate = 7;
+    repeated MsgEquip msgEquip = 8;
+    repeated MsgEquipChip msgEquipChip = 9;
+}
+
+message DispelReq_27509 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 floor = 2;
+    optional int32 posId = 3;
+    optional int32 direction = 4;
+}
+
+message DispelResp_27509 {
+    required int32 ret = 1;
+    repeated MsgMapBrief msgMapBrief = 2;
+    optional string playerScore = 3;
+    optional string familyScore = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 5;
+    optional bool isBoss = 6;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgItem = 7;
+}
+
+message NotifyEventResp_27510 {
+    optional MsgNotifyEvent msgNotifyEvent = 1;
+}
+
+message MoveReq_27511 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 floor = 2;
+    repeated int32 posId = 3;
+    optional int32 direction = 4;
+    optional int64 timeStamp = 5;
+}
+
+message MoveResp_27511 {
+    required int32 ret = 1;
+    optional int32 beginPosId = 2;
+    optional int32 endPosId = 3;
+    optional int32 direction = 4;
+    optional int64 timeStamp = 5;
+}
+
+message ActiveEventReq_27512 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 floor = 2;
+    optional int32 posId = 3;
+    optional int32 templateId = 4;
+    optional int32 direction = 5;
+    repeated int32 talentId = 6;
+}
+
+message ActiveEventResp_27512 {
+    required int32 ret = 1;
+    optional MsgMapBrief msgMapBrief = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData msgPvPBattleData = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources completeResources = 5;
+    optional int32 multiple = 6;
+    optional string playerScore = 7;
+    optional string familyScore = 8;
+    repeated int32 talentId = 9;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgBag = 10;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgDiscover = 11;
+    repeated MsgEquipChip msgEquipChip = 12;
+}
+
+message ShareReq_27513 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 floor = 2;
+    optional int32 posId = 3;
+}
+
+message ShareResp_27513 {
+    required int32 ret = 1;
+    optional MsgMapBrief msgMapBrief = 2;
+}
+
+message MarkReq_27514 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 floor = 2;
+    optional int32 posId = 3;
+    optional bool isMark = 4;
+}
+
+message MarkResp_27514 {
+    required int32 ret = 1;
+    optional MsgMapBrief msgMapBrief = 2;
+}
+
+message GetBattleTalentReq_27515 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetBattleTalentResp_27515 {
+    required int32 ret = 1;
+    repeated int32 talentId = 2;
+}
+
+message GetBossReq_27516 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 bossId = 2;
+}
+
+message GetBossResp_27516 {
+    required int32 ret = 1;
+    optional MsgBoss msgBoss = 2;
+    repeated int32 talentId = 3;
+    repeated MsgBossState msgBossState = 4;
+}
+
+message GetBossDamageRankReq_27517 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 bossId = 2;
+}
+
+message GetBossDamageRankResp_27517 {
+    required int32 ret = 1;
+    optional bf.messages.game.RankingMessage.MsgRankingData msgRankingData = 2;
+}
+
+message AttackBossReq_27518 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 floor = 2;
+    optional int32 type = 3;
+    repeated int32 talentId = 4;
+}
+
+message AttackBossResp_27518 {
+    required int32 ret = 1;
+    optional MsgBoss msgBoss = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData msgPvPBattleData = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources completeResources = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rankResources = 6;
+    repeated int32 talentId = 7;
+    optional string playerScore = 8;
+    optional string familyScore = 9;
+}
+
+message GetUseTalentReq_27519 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetUseTalentResp_27519 {
+    required int32 ret = 1;
+    repeated MsgTalent msgTalent = 2;
+}
+
+message ForgeReq_27520 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 templateId = 2;
+    optional int32 lv = 3;
+}
+
+message ForgeResp_27520 {
+    required int32 ret = 1;
+    optional MsgEquip msgEquip = 2;
+    repeated MsgEquipChip msgEquipChip = 3;
+}
+
+message GetPlayerInfoReq_27521 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string toPlayerId = 2;
+}
+
+message GetPlayerInfoResp_27521 {
+    required int32 ret = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 2;
+    optional int32 playerRank = 3;
+    optional int32 familyRank = 4;
+    optional int32 palaceRank = 5;
+    repeated MsgTalent msgTalent = 6;
+    optional int32 fashionId = 7;
+}
+
+message GetReportReq_27522 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 type = 2;
+}
+
+message GetReportResp_27522 {
+    required int32 ret = 1;
+    repeated MsgReport msgReport = 2;
+}
+
+message GotoNextFloorReq_27523 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GotoNextFloorResp_27523 {
+    required int32 ret = 1;
+    optional int64 timeStamp = 2;
+}
+
+message GetSharePosReq_27524 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetSharePosResp_27524 {
+    required int32 ret = 1;
+    repeated MsgShare msgShare = 2;
+}
+
+message NotifyEventCompleteResp_27525 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 eventId = 2;
+    optional int32 posId = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 4;
+}
+
+message GetFamilyInfoReq_27526 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetFamilyInfoResp_27526 {
+    required int32 ret = 1;
+    optional int32 familyRank = 2;
+    optional string familyScore = 3;
+    repeated MsgMemberBrief msgMemberBrief = 4;
+}
+
+message GetPalaceRankReq_27527 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetPalaceRankResp_27527 {
+    optional int32 ret = 1;
+    optional MsgPalaceRank msgPalaceRank = 2;
+}
+
+message GetEnemyReq_27528 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetEnemyResp_27528 {
+    required int32 ret = 1;
+    repeated MsgEnemy msgEnemy = 2;
+    optional int32 playerRank = 3;
+    optional string money = 4;
+}
+
+message RefreshEnemyReq_27529 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message RefreshEnemyResp_27529 {
+    required int32 ret = 1;
+    repeated MsgEnemy msgEnemy = 2;
+}
+
+message BattleReq_27530 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string key = 2;
+    repeated int32 talentId = 3;
+}
+
+message BattleResp_27530 {
+    required int32 ret = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData msgPvPBattleData = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+    optional MsgPrisoner msgPrisoner = 4;
+    optional MsgPalaceRank msgPalaceRank = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgKill = 6;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgBag = 7;
+}
+
+message GetPalaceHistReq_27531 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetPalaceHistResp_27531 {
+    required int32 ret = 1;
+    repeated MsgPalaceHist msgPalaceHist = 2;
+}
+
+message PalaceSettleReq_27532 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message PalaceSettleResp_27532 {
+    required int32 ret = 1;
+    repeated MsgPalaceSettle msgPalaceSettle = 2;
+}
+
+message GetJailReq_27533 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetJailResp_27533 {
+    required int32 ret = 1;
+    optional MsgJail msgJail = 2;
+    optional bool isBranch = 3;
+    optional int64 lastHarvestTime = 4;
+}
+
+message GetPrisonerReq_27534 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required string toPlayerId = 2;
+}
+
+message GetPrisonerResp_27534 {
+    required int32 ret = 1;
+    repeated MsgPrisoner msgPrisoner = 2;
+    optional string branchCnt = 3;
+}
+
+message HarvestReq_27535 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message HarvestResp_27535 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message GetUnderArrestReq_27536 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetUnderArrestResp_27536 {
+    required int32 ret = 1;
+    repeated MsgUnderArrest msgUnderArrest = 2;
+}
+
+message RescueReq_27537 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 talentId = 2;
+    optional bool isOrganize = 3;
+}
+
+message RescueResp_27537 {
+    required int32 ret = 1;
+    repeated MsgUnderArrest msgUnderArrest = 2;
+    repeated int32 talentId = 3;
+}
+
+message GetRescueListReq_27538 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetRescueListResp_27538 {
+    required int32 ret = 1;
+    repeated MsgUnderArrest msgUnderArrest = 2;
+}
+
+message HelpRescueReq_27539 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string toPlayerId = 2;
+    optional int32 talentId = 3;
+}
+
+message HelpRescueResp_27539 {
+    required int32 ret = 1;
+    repeated MsgUnderArrest msgUnderArrest = 2;
+}
+
+message GetForestHistReq_27540 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetForestHistResp_27540 {
+    required int32 ret = 1;
+    repeated MsgPrisoner arrest = 2;
+    repeated MsgPrisoner rescue = 3;
+    repeated MsgPrisoner free = 4;
+    optional string preSpeed = 5;
+    optional string curSpeed = 6;
+}
+
+message GetTalentStateReq_27541 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 type = 2;
+}
+
+message GetTalentStateResp_27541 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+    repeated MsgPrisoner msgPrisoner = 3;
+}
+
+message NotifyTalentResp_27542 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bool isArrest = 2;
+    optional bool isGoBack = 3;
+}
+
+message TransferItemReq_27543 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message TransferItemResp_27543 {
+    required int32 ret = 1;
+    repeated MsgTransferItem msgTransferItem = 2;
+}
+
+message ExitReq_27544 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bool isExitMap = 2;
+    optional bool isExitPalace = 3;
+    optional bool isExitForest = 4;
+    optional bool isExitBoss = 5;
+}
+
+message ExitResp_27544 {
+    required int32 ret = 1;
+}
+
+message NotifyResp_27545 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 2;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOtherPlayer = 3;
+    optional int32 talentId = 4;
+    optional int32 templateId = 5;
+}
+
+message GetEnemyBriefReq_27546 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required string key = 2;
+}
+
+message GetEnemyBriefResp_27546 {
+    required int32 ret = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData msgPvPBattleData = 2;
+    optional string fromScore = 3;
+    optional string toScore = 4;
+}
+
+message GetRedDotCsRemote_27547 {
+    optional string playerId = 1;
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+    repeated int32 rankType = 3;
+    optional int64 familyId = 4;
+    optional bool isMaxEnergy = 5;
+    repeated int32 achievementId = 6;
+    optional bool isPower = 7;
+    optional bool isGift = 8;
+}
+
+message GetRedDotGsRemote_27547 {
+    required int32 ret = 1;
+    repeated bf.messages.game.RankingMessage.MsgRankIndex msgRankIndex = 2;
+    optional bool isMaxEnergy = 3;
+    optional bool isFreeCnt = 4;
+    optional bool isGoNextFloor = 5;
+    optional bool isPalaceSettle = 6;
+    optional bool isArrest = 7;
+    optional bool isGoBack = 8;
+    repeated int32 isAchievement = 9;
+    optional bool isBattle = 10;
+    optional string playerScore = 11;
+    optional bool isGift = 12;
+    optional bool isEquip = 13;
+    optional bool isBranch = 14;
+    optional bool isHelp = 15;
+}
+
+message GetTopFamilyCsRemote_27548 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetTopFamilyGsRemote_27548 {
+    required int32 ret = 1;
+    repeated bf.messages.game.RankingMessage.MsgRankingEntryData msgRankingEntryDatas = 2;
+}
+
+message UseFashionCsRemote_27549 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int32 fashionId = 4;
+}
+
+message UseFashionGsRemote_27549 {
+    required int32 ret = 1;
+}
+
+message GetAchievementListCsRemote_27550 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int32 type = 4;
+    repeated int32 templateId = 5;
+}
+
+message GetAchievementListGsRemote_27550 {
+    required int32 ret = 1;
+    repeated MsgAchievement msgAchievement = 2;
+    optional bool isJoin = 3;
+}
+
+message GetAchievementAwardCsRemote_27551 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int32 templateId = 4;
+}
+
+message GetAchievementAwardGsRemote_27551 {
+    required int32 ret = 1;
+}
+
+message GetMapCsRemote_27552 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    repeated MsgBattleGroup msgBattleGroup = 4;
+    optional int32 fashionId = 5;
+}
+
+message GetMapGsRemote_27552 {
+    required int32 ret = 1;
+    optional MsgMapData msgMapData = 2;
+    optional bool isLock = 3;
+    optional string playerScore = 4;
+    optional string familyScore = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgBag = 6;
+    optional string equipRate = 7;
+    repeated MsgEquip msgEquip = 8;
+    repeated MsgEquipChip msgEquipChip = 9;
+}
+
+message DispelCsRemote_27553 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int32 floor = 4;
+    optional int32 posId = 5;
+    optional int32 direction = 6;
+}
+
+message DispelGsRemote_27553 {
+    required int32 ret = 1;
+    repeated MsgMapBrief msgMapBrief = 2;
+    optional bool isLock = 3;
+    optional string playerScore = 4;
+    optional string familyScore = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 6;
+    optional int32 playerRank = 7;
+    optional int32 familyRank = 8;
+    optional string pScoreChange = 9;
+    optional string fScoreChange = 10;
+    optional int32 playerPos = 11;
+    repeated int32 itemEventId = 12;
+    optional bool isBoss = 13;
+}
+
+message MoveCsRemote_27554 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int32 floor = 4;
+    repeated int32 posId = 5;
+    optional int32 direction = 6;
+    optional int64 timeStamp = 7;
+}
+
+message MoveGsRemote_27554 {
+    required int32 ret = 1;
+    optional int32 beginPosId = 2;
+    optional int32 endPosId = 3;
+    optional int32 direction = 4;
+    optional int64 timeStamp = 5;
+}
+
+message ActiveEventCsRemote_27555 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int64 energy = 4;
+    optional int32 floor = 5;
+    optional int32 posId = 6;
+    optional int32 templateId = 7;
+    optional int32 direction = 8;
+    repeated int32 talentId = 9;
+}
+
+message ActiveEventGsRemote_27555 {
+    required int32 ret = 1;
+    optional MsgMapBrief msgMapBrief = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData msgPvPBattleData = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources completeResources = 5;
+    optional int32 multiple = 6;
+    optional string playerScore = 7;
+    optional string familyScore = 8;
+    optional int64 energyUse = 9;
+    repeated int32 talentId = 10;
+    optional int32 playerPosId = 11;
+    repeated MsgEventProgress msgEventProgress = 12;
+    optional int32 playerRank = 13;
+    optional int32 familyRank = 14;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgCost = 15;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgBag = 16;
+    repeated MsgEquipChip msgEquipChip = 17;
+    optional string playerScoreChange = 18;
+    optional string familyScoreChange = 19;
+    repeated MsgEquip msgEquip = 20;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgDiscover = 21;
+}
+
+message ShareCsRemote_27556 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int32 floor = 4;
+    optional int32 posId = 5;
+}
+
+message ShareGsRemote_27556 {
+    required int32 ret = 1;
+    optional MsgMapBrief msgMapBrief = 2;
+}
+
+message MarkCsRemote_27557 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int32 floor = 4;
+    optional int32 posId = 5;
+    optional bool isMark = 6;
+}
+
+message MarkGsRemote_27557 {
+    required int32 ret = 1;
+    optional MsgMapBrief msgMapBrief = 2;
+}
+
+message GetBattleTalentCsRemote_27558 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+}
+
+message GetBattleTalentGsRemote_27558 {
+    required int32 ret = 1;
+    repeated int32 talentId = 2;
+}
+
+message GetBossCsRemote_27559 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int32 bossId = 4;
+}
+
+message GetBossGsRemote_27559 {
+    required int32 ret = 1;
+    optional MsgBoss msgBoss = 2;
+    repeated int32 talentId = 3;
+    repeated MsgBossState msgBossState = 4;
+}
+
+message GetBossDamageRankCsRemote_27560 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int32 bossId = 4;
+}
+
+message GetBossDamageRankGsRemote_27560 {
+    required int32 ret = 1;
+    optional bf.messages.game.RankingMessage.MsgRankingData msgRankingData = 2;
+}
+
+message AttackBossCsRemote_27561 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int32 floor = 4;
+    optional int32 type = 5;
+    repeated int32 talentId = 6;
+    optional int64 num = 7;
+}
+
+message AttackBossGsRemote_27561 {
+    required int32 ret = 1;
+    optional MsgBoss msgBoss = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData msgPvPBattleData = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources completeResources = 5;
+    optional int32 bossRank = 6;
+    optional string totalDamage = 7;
+    optional int32 atkCnt = 8;
+    repeated int32 talentId = 9;
+    optional int32 playerRank = 10;
+    optional int32 familyRank = 11;
+    optional int32 energyCnt = 12;
+    optional int32 itemCnt = 13;
+    repeated MsgEquip msgEquip = 14;
+    optional string playerScore = 15;
+    optional string familyScore = 16;
+    optional string playerScoreChange = 17;
+    optional string familyScoreChange = 18;
+}
+
+message GetUseTalentCsRemote_27562 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+}
+
+message GetUseTalentGsRemote_27562 {
+    required int32 ret = 1;
+    repeated MsgTalent msgTalent = 2;
+}
+
+message ForgeCsRemote_27563 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int32 templateId = 4;
+    optional int32 lv = 5;
+}
+
+message ForgeGsRemote_27563 {
+    required int32 ret = 1;
+    optional MsgEquip msgEquip = 2;
+    repeated MsgEquipChip msgEquipChip = 3;
+    repeated MsgEquip totalEquip = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgCost = 5;
+}
+
+message GetPlayerInfoCsRemote_27564 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional string toPlayerId = 4;
+}
+
+message GetPlayerInfoGsRemote_27564 {
+    required int32 ret = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 2;
+    optional int32 playerRank = 3;
+    optional int32 familyRank = 4;
+    optional int32 palaceRank = 5;
+    repeated MsgTalent msgTalent = 6;
+    optional int32 fashionId = 7;
+}
+
+message GotoNextFloorCsRemote_27565 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+}
+
+message GotoNextFloorGsRemote_27565 {
+    required int32 ret = 1;
+    optional int32 floor = 2;
+    optional int64 timeStamp = 3;
+    repeated MsgEventProgress msgEventProgress = 4;
+}
+
+message GetSharePosCsRemote_27566 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+}
+
+message GetSharePosGsRemote_27566 {
+    required int32 ret = 1;
+    repeated MsgShare msgShare = 2;
+}
+
+message GetFamilyInfoCsRemote_27567 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+}
+
+message GetFamilyInfoGsRemote_27567 {
+    required int32 ret = 1;
+    optional int32 familyRank = 2;
+    optional string familyScore = 3;
+    repeated MsgMemberBrief msgMemberBrief = 4;
+}
+
+message GetPalaceRankCsRemote_27568 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int64 extId = 4;
+}
+
+message GetPalaceRankGsRemote_27568 {
+    optional int32 ret = 1;
+    optional MsgPalaceRank msgPalaceRank = 2;
+}
+
+message GetEnemyCsRemote_27569 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+}
+
+message GetEnemyGsRemote_27569 {
+    required int32 ret = 1;
+    repeated MsgEnemy msgEnemy = 2;
+    optional int32 playerRank = 3;
+    optional string money = 4;
+}
+
+message RefreshEnemyCsRemote_27570 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+}
+
+message RefreshEnemyGsRemote_27570 {
+    required int32 ret = 1;
+    repeated MsgEnemy msgEnemy = 2;
+}
+
+message BattleCsRemote_27571 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional string key = 4;
+    repeated int32 talentId = 5;
+}
+
+message BattleGsRemote_27571 {
+    required int32 ret = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData msgPvPBattleData = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgKill = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgBag = 5;
+    optional MsgPrisoner msgPrisoner = 6;
+    optional MsgPalaceRank msgPalaceRank = 7;
+    optional int32 playerRank = 8;
+    optional int32 familyRank = 9;
+    repeated MsgEquip msgEquip = 10;
+    optional string playerScore = 11;
+    optional string familyScore = 12;
+    optional string playerScoreChange = 13;
+    optional string familyScoreChange = 14;
+    optional int32 palaceRank = 15;
+    optional string palaceScore = 16;
+    optional string palaceScoreChange = 17;
+    repeated string toPlayerIds = 18;
+}
+
+message PalaceSettleCsRemote_27572 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+}
+
+message PalaceSettleGsRemote_27572 {
+    required int32 ret = 1;
+    repeated MsgPalaceSettle msgPalaceSettle = 2;
+}
+
+message GetJailCsRemote_27573 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+}
+
+message GetJailGsRemote_27573 {
+    required int32 ret = 1;
+    optional MsgJail msgJail = 2;
+    optional bool isBranch = 3;
+    optional int64 lastHarvestTime = 4;
+}
+
+message GetPrisonerCsRemote_27574 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    required string toPlayerId = 4;
+}
+
+message GetPrisonerGsRemote_27574 {
+    required int32 ret = 1;
+    repeated MsgPrisoner msgPrisoner = 2;
+    optional string branchCnt = 3;
+}
+
+message HarvestCsRemote_27575 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+}
+
+message HarvestGsRemote_27575 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message GetUnderArrestCsRemote_27576 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+}
+
+message GetUnderArrestGsRemote_27576 {
+    required int32 ret = 1;
+    repeated MsgUnderArrest msgUnderArrest = 2;
+}
+
+message RescueCsRemote_27577 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int32 talentId = 4;
+    optional bool isOrganize = 5;
+}
+
+message RescueGsRemote_27577 {
+    required int32 ret = 1;
+    repeated MsgUnderArrest msgUnderArrest = 2;
+    repeated int32 talentId = 3;
+}
+
+message GetRescueListCsRemote_27578 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+}
+
+message GetRescueListGsRemote_27578 {
+    required int32 ret = 1;
+    repeated MsgUnderArrest msgUnderArrest = 2;
+}
+
+message HelpRescueCsRemote_27579 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional string toPlayerId = 4;
+    optional int32 talentId = 5;
+}
+
+message HelpRescueGsRemote_27579 {
+    required int32 ret = 1;
+    repeated MsgUnderArrest msgUnderArrest = 2;
+    repeated MsgPrisoner msgRescue = 3;
+}
+
+message GetForestHistCsRemote_27580 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+}
+
+message GetForestHistGsRemote_27580 {
+    required int32 ret = 1;
+    repeated MsgPrisoner arrest = 2;
+    repeated MsgPrisoner rescue = 3;
+    repeated MsgPrisoner free = 4;
+    optional string preSpeed = 5;
+    optional string curSpeed = 6;
+}
+
+message GetTalentStateCsRemote_27581 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int32 type = 4;
+}
+
+message GetTalentStateGsRemote_27581 {
+    required int32 ret = 1;
+    repeated MsgPrisoner msgPrisoner = 2;
+}
+
+message ExitCsRemote_27582 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional bool isExitMap = 3;
+    optional bool isExitPalace = 4;
+    optional bool isExitForest = 5;
+    optional bool isExitBoss = 6;
+}
+
+message NotifyGsRemote_27583 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 2;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOtherPlayer = 3;
+    optional int32 talentId = 4;
+    optional int32 templateId = 5;
+    repeated string toPlayerId = 6;
+}
+
+message NotifyPalaceDefenceGsRemote_27584 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string toPlayerId = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData msgPvPBattleData = 3;
+    optional bool isArrest = 4;
+    optional MsgPrisoner msgPrisoner = 5;
+    repeated MsgPrisoner arrest = 6;
+    repeated MsgEquip msgEquip = 7;
+    optional int32 palaceRank = 8;
+    optional string palaceScore = 9;
+    optional string palaceScoreChange = 10;
+}
+
+message NotifyEventGsRemote_27585 {
+    optional MsgNotifyEvent msgNotifyEvent = 1;
+    repeated string toPlayerId = 2;
+}
+
+message NotifyFreeTalentGsRemote_27586 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated string toPlayerId = 2;
+}
+
+message CheckPayCsRemote_27587 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int32 giftId = 3;
+}
+
+message CheckPayGsRemote_27587 {
+    required int32 ret = 1;
+}
+
+message PayCsRemote_27588 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int32 giftId = 3;
+}
+
+message PayGsRemote_27588 {
+    required int32 ret = 1;
+    optional int32 floor = 2;
+    optional int32 posId = 3;
+    optional MsgNotifyEvent msgNotifyEvent = 4;
+}
+
+message GetRankCsRemote_27589 {
+    required string playerId = 1;
+    required int64 familyId = 2;
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 3;
+    repeated int32 achievementId = 4;
+}
+
+message GetRankGsRemote_27589 {
+    required int32 ret = 1;
+    repeated bf.messages.game.FestivalMessage.MsgRankIndex msgRankIndex = 2;
+    optional int64 oldFamilyId = 3;
+    repeated int32 achievementId = 4;
+}
+
+message GetEnemyBriefCsRemote_27590 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional string key = 4;
+}
+
+message GetEnemyBriefGsRemote_27590 {
+    required int32 ret = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData msgPvPBattleData = 2;
+    optional string fromScore = 3;
+    optional string toScore = 4;
+}
+
+message NotifyDiscoverRewardGsRemote_27591 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional string playerScore = 3;
+    optional string familyScore = 4;
+    optional bool isInMap = 5;
+    optional MsgMapBrief msgMapBrief = 6;
+    optional int32 floor = 7;
+    optional int32 playerRank = 8;
+    optional int32 familyRank = 9;
+    optional string playerScoreChange = 10;
+    optional string familyScoreChange = 11;
+}
+
+message NotifyDiscoverRewardResp_27592 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerScore = 2;
+    optional string familyScore = 3;
+}
+
+message PalaceAutoSettleGsRemote_27593 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated MsgAutoSettle msgAutoSettle = 2;
+}
+
+message GetEnergyPanelReq_27594 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetEnergyPanelResp_27594 {
+    required int32 ret = 1;
+    repeated bf.messages.game.ActivityWesternRegionsMessage.MsgEnergy msgEnergy = 2;
+    optional int32 energyCnt = 3;
+}
+
+message GainEnergyReq_27595 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int64 id = 2;
+}
+
+message GainEnergyResp_27595 {
+    required int32 ret = 1;
+    optional bf.messages.game.ActivityWesternRegionsMessage.MsgEnergy msgEnergy = 2;
+    optional int32 energyCnt = 3;
+}
+
+message GetGainEnergyHistReq_27596 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int64 id = 2;
+}
+
+message GetGainEnergyHistResp_27596 {
+    required int32 ret = 1;
+    repeated bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 2;
+}
+
+message GetBossRankAwardReq_27597 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 bossId = 2;
+}
+
+message GetBossRankAwardResp_27597 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rankResources = 2;
+}
+
+message GetBossRankAwardCsRemote_27598 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    required int32 bossId = 4;
+}
+
+message GetBossRankAwardGsRemote_27598 {
+    required int32 ret = 1;
+    optional int32 rank = 2;
+    optional string damage = 3;
+}
+
+message NotifyBossDamageRankGsRemote_27599 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated MsgBossRank msgBossRank = 2;
+    optional int32 bossId = 3;
+}
+
+message NotifyGiftResp_27600 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 2;
+    optional int32 giftId = 3;
+}
+
+message NotifyBossDeadGsRemote_27601 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated MsgBossDeadNotify msgNotify = 2;
+}
+
+message NotifyBossDeadResp_27602 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional MsgBossState msgBossState = 2;
+}
+
+message NotifyUnGetAwardGsRemote_27603 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated MsgUnGetRankAward msgUnGetRankAward = 2;
+}
+
+message SetAutoReceiveReq_27604 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bool isAutoReceive = 2;
+}
+
+message SetAutoReceiveResp_27604 {
+    required int32 ret = 1;
+}

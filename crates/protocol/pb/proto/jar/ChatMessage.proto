@@ -1,0 +1,366 @@
+syntax = "proto2";
+
+package bf.messages.game.ChatMessage;
+
+import "CommonMsgMessage.proto";
+import "GmActivitySlgCommonMessage.proto";
+import "PlayerMessage.proto";
+import "GmActivityTopSlgCommonMessage.proto";
+
+message MsgChatContent {
+    optional int32 channelType = 1;
+    optional int32 activityType = 2;
+    optional int32 activityId = 3;
+    optional int64 fromTime = 4;
+    optional MsgChatPlayer fromChatPlayer = 5;
+    optional int32 templateId = 6;
+    repeated string replaceStr = 7;
+    optional string content = 8;
+    optional MsgChatPlayer toChatPlayer = 9;
+    optional bytes msgChatData = 10;
+}
+
+message MsgChatData13 {
+    optional int64 id = 1;
+    optional string name = 2;
+    optional int32 image = 3;
+    optional string money = 4;
+    optional int32 sex = 5;
+}
+
+message MsgChatData23 {
+    optional string playerId = 1;
+    optional int32 sex = 2;
+    repeated int32 fashionIds = 3;
+    optional int32 activityType = 4;
+    optional int32 activityId = 5;
+    optional int32 npcSex = 6;
+}
+
+message MsgChatData24 {
+    optional int64 familyId = 1;
+    optional int32 iconId = 2;
+    optional int32 activityType = 3;
+    optional int32 activityId = 4;
+}
+
+message MsgChatData80 {
+    optional int64 familyId = 1;
+    optional int32 iconId = 2;
+    optional int32 activityType = 3;
+    optional int32 activityId = 4;
+}
+
+message MsgChatData30 {
+    optional string playerId = 1;
+    optional int32 sex = 2;
+    repeated int32 fashionIds = 3;
+    optional int32 activityType = 4;
+    optional int32 activityId = 5;
+    optional int32 npcSex = 6;
+}
+
+message MsgChatData28 {
+    optional string onlyId = 1;
+    optional int64 overTime = 2;
+    optional int32 status = 3;
+    optional int32 feastType = 4;
+}
+
+message MsgChatData29 {
+    optional string onlyId = 1;
+    optional int64 feastId = 2;
+    optional int32 status = 3;
+    optional int32 feastType = 4;
+    optional string hostId = 5;
+}
+
+message MsgChatData31 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+    optional int64 inviteId = 3;
+    optional int64 inviteTime = 4;
+}
+
+message MsgChatData68 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+    optional int32 shopId = 3;
+    optional int32 seatId = 4;
+}
+
+message MsgChatData79 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+    optional int32 shopId = 3;
+    optional int32 seatId = 4;
+}
+
+message MsgChatData63 {
+    optional int32 stair = 1;
+    optional int32 eventId = 2;
+    optional string defPlayerName = 3;
+    optional int32 actId = 4;
+    optional int32 actType = 5;
+}
+
+message MsgChatData102 {
+    optional bf.messages.game.GmActivitySlgCommonMessage.MsgMapTileData tileData = 1;
+    optional string script = 2;
+}
+
+message MsgChatData193 {
+    optional bf.messages.game.GmActivityTopSlgCommonMessage.MsgMapTileData tileData = 1;
+    optional string script = 2;
+}
+
+message MsgChatData93 {
+    optional int32 emoji = 1;
+}
+
+message MsgChatData118 {
+    optional int32 activityId = 1;
+    optional int32 giftId = 2;
+}
+
+message MsgChatData119 {
+    optional int32 sex = 1;
+    repeated int32 fashionIds = 2;
+    optional string playerId = 3;
+    optional int32 npcSex = 4;
+}
+
+message MsgChatData122 {
+    optional int32 familyIcon = 1;
+}
+
+message MsgChatData123 {
+    optional int32 familyIcon = 1;
+}
+
+message MsgChatData134 {
+    optional int32 areaId = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 2;
+}
+
+message MsgChatData177 {
+    optional string onlyId = 1;
+    optional int64 overTime = 2;
+    optional int32 status = 3;
+    optional int32 feastType = 4;
+}
+
+message MsgChatData178 {
+    optional int64 id = 1;
+    optional int32 serverId = 2;
+    optional string name = 3;
+    optional int32 image = 4;
+    optional string money = 5;
+    optional int32 sex = 6;
+}
+
+message MsgChatData185 {
+    optional int32 actType = 1;
+    optional int32 actId = 2;
+    optional int64 inviteId = 3;
+    optional int64 inviteTime = 4;
+}
+
+message MsgChatData186 {
+    optional int32 stair = 1;
+    optional int32 eventId = 2;
+    optional string defPlayerName = 3;
+    optional int32 actId = 4;
+    optional int32 actType = 5;
+}
+
+message MsgChatPlayer {
+    optional string playerId = 1;
+    optional string playerName = 2;
+    optional int32 sex = 3;
+    optional int32 vip = 4;
+    repeated int32 fashionIds = 5;
+    optional int32 lv = 6;
+    optional bf.messages.game.CommonMsgMessage.MsgAddress address = 7;
+    optional int32 serverId = 8;
+    optional int32 npcSex = 9;
+}
+
+message MsgBroadcastData {
+    optional int64 bid = 1;
+    optional string content = 2;
+    optional int64 sTime = 3;
+    optional int64 eTime = 4;
+    optional int32 interval = 5;
+    optional int32 type = 6;
+}
+
+message MsgChatReloadParam {
+    optional int32 channelType = 1;
+    optional int32 activityType = 2;
+    optional int32 activityId = 3;
+}
+
+message MsgChatDeletePlayerParam {
+    optional string playerId = 1;
+    optional int64 startTime = 2;
+    optional int64 endTime = 3;
+}
+
+message MsgChatData155 {
+    optional int32 hallId = 1;
+    optional int32 channelId = 2;
+    optional int64 roomId = 3;
+    optional int32 gameId = 4;
+    optional int32 seatCnt = 5;
+}
+
+message MsgExtHall {
+    optional int32 hallId = 1;
+    optional int32 channel = 2;
+    repeated string playerId = 3;
+}
+
+message MsgExtCrossMarriage {
+    optional int32 groupId = 1;
+}
+
+message SendChatReq_2001 {
+    optional int32 channelType = 1;
+    optional string content = 2;
+    optional string toPlayerId = 3;
+    optional int32 activityType = 4;
+    optional int32 activityId = 5;
+    optional int32 templateId = 6;
+    optional bytes msgChatData = 7;
+    optional int32 channel = 8;
+}
+
+message SendChatResp_2001 {
+    required int32 ret = 1;
+    repeated MsgChatContent msgChatContent = 2;
+}
+
+message SendBroadcastResp_2003 {
+    repeated MsgBroadcastData msgBroadcastData = 1;
+}
+
+message SendAddBroadcastResp_2004 {
+    optional MsgBroadcastData msgBroadcastData = 1;
+}
+
+message SendRemoveBroadcastResp_2005 {
+    optional int64 bid = 1;
+}
+
+message ChatGetCacheReq_2006 {
+    optional int32 channelType = 1;
+    optional int64 time = 2;
+    optional int32 activityType = 3;
+    optional int32 activityId = 4;
+    optional int32 channel = 5;
+}
+
+message ChatGetCacheResp_2006 {
+    required int32 ret = 1;
+    repeated MsgChatContent msgChatContent = 2;
+}
+
+message ChatViewPlayerOnlineReq_2007 {
+    repeated string playerId = 1;
+}
+
+message ChatViewPlayerOnlineResp_2007 {
+    required int32 ret = 1;
+    repeated string playerId = 2;
+    repeated bool online = 3;
+}
+
+message ChatRemoveCacheReq_2008 {
+    optional string playerId = 1;
+}
+
+message ChatRemoveCacheResp_2008 {
+    required int32 ret = 1;
+}
+
+message ChatRecordsReloadResp_2009 {
+    required int32 ret = 1;
+    repeated MsgChatReloadParam reloadParams = 2;
+    optional MsgChatDeletePlayerParam playerParam = 3;
+}
+
+message ChatTranslateReq_2010 {
+    optional string content = 1;
+}
+
+message ChatTranslateResp_2010 {
+    required int32 ret = 1;
+    optional string content = 2;
+    optional string translateContent = 3;
+}
+
+message SendGmCommandReq_2100 {
+    optional string command = 1;
+}
+
+message SendGmCommandResp_2100 {
+    required int32 ret = 1;
+}
+
+message MsgSendActivityChatReq_2201 {
+    optional int32 channelType = 1;
+    optional int32 activityType = 2;
+    optional int32 activityId = 3;
+    optional int32 activityGroup = 4;
+    optional string fromPlayerId = 5;
+    optional string toPlayerId = 6;
+    optional int32 templateId = 7;
+    repeated string replaceStr = 8;
+    optional string content = 9;
+    optional bytes msgChatData = 10;
+    optional bytes msgExt = 11;
+    optional int64 extId = 12;
+}
+
+message MsgSendActivityChatResp_2201 {
+}
+
+message MsgActivityChatNotifyReq_2202 {
+    optional int32 channelType = 1;
+    optional int32 activityType = 2;
+    optional int32 activityId = 3;
+    optional int32 activityGroup = 4;
+    optional string fromPlayerId = 5;
+    optional string toPlayerId = 6;
+    optional int32 templateId = 7;
+    repeated string replaceStr = 8;
+    optional string content = 9;
+    optional int64 fromTime = 10;
+    optional bytes msgChatData = 11;
+    optional int32 fromServerId = 12;
+    optional bytes msgExt = 13;
+    optional int64 extId = 14;
+}
+
+message MsgActivityChatNotifyResp_2202 {
+}
+
+message MsgUnlockEmojiReq_2203 {
+    optional int32 id = 1;
+}
+
+message MsgUnlockEmojiResp_2203 {
+    required int32 ret = 1;
+    repeated int32 unlockEmojis = 2;
+}
+
+message MsgRemoveRemoteActivityChatReq_2204 {
+    optional string playerId = 1;
+    optional int64 startTime = 2;
+    optional int64 endTime = 3;
+    optional int32 activityType = 4;
+    optional int32 activityId = 5;
+    optional int32 activityGroup = 6;
+    optional int32 channelType = 7;
+}

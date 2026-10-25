@@ -1,0 +1,638 @@
+syntax = "proto2";
+
+package bf.messages.game.FestivalMessage;
+
+import "CommonMsgMessage.proto";
+import "FamilyMessage.proto";
+import "GmActivityMessage.proto";
+import "PlayerMessage.proto";
+import "RankingMessage.proto";
+import "GmActivityCommonMessage.proto";
+
+message MsgRankIndex {
+    optional int32 rankType = 1;
+    optional int32 index = 2;
+    optional string score = 3;
+}
+
+message MsgRankIndexWithExtId {
+    optional int32 rankType = 1;
+    optional int64 extId = 2;
+    optional int32 index = 3;
+    optional string score = 4;
+}
+
+message MsgDrawLotteryChip {
+    optional int32 illustrationId = 1;
+    optional int32 num = 2;
+}
+
+message MsgDrawLotteryExchange {
+    optional int32 taskId = 1;
+    optional int32 exchangeCnt = 2;
+}
+
+message MsgFestivalTaskTemplateData {
+    optional int32 taskId = 1;
+    optional string reward = 2;
+}
+
+message MsgFestivalPayTemplateData {
+    optional int32 id = 1;
+    optional int32 payValue = 2;
+    optional string reward = 3;
+}
+
+message MsgDrawResult {
+    optional int32 illustrationId = 1;
+    optional int32 num = 2;
+}
+
+message getTopFiveReq_43001 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message getTopFiveResp_43001 {
+    required int32 ret = 1;
+    optional bf.messages.game.RankingMessage.MsgRankingData pRankingDatas = 2;
+    optional bf.messages.game.RankingMessage.MsgRankingData fRankingDatas = 3;
+}
+
+message getTopFiveCsRemoteReq_43002 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required string playerId = 2;
+    required int64 familyId = 3;
+}
+
+message getTopFiveGsRemoteResp_43002 {
+    required int32 ret = 1;
+    optional bf.messages.game.RankingMessage.MsgRankingData pRankingDatas = 2;
+    optional bf.messages.game.RankingMessage.MsgRankingData fRankingDatas = 3;
+}
+
+message UseItemReq_43003 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 type = 2;
+}
+
+message UseItemResp_43003 {
+    required int32 ret = 1;
+    repeated MsgDrawResult msgResult = 2;
+    optional int32 type = 3;
+}
+
+message UseItemCsRemoteReq_43004 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional string score = 4;
+}
+
+message UseItemGsRemoteResp_43004 {
+    required int32 ret = 1;
+    optional string familyScore = 2;
+    optional int32 familyRank = 3;
+    optional string playerScore = 4;
+    optional int32 playerRank = 5;
+}
+
+message ReceiveTaskRewardReq_43005 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 type = 2;
+    required int32 taskId = 3;
+}
+
+message ReceiveTaskRewardResp_43005 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message GetRankCsRemoteReq_43006 {
+    required string playerId = 1;
+    required int64 familyId = 2;
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 3;
+}
+
+message GetRankGsRemoteResp_43006 {
+    required int32 ret = 1;
+    repeated MsgRankIndex msgRankIndex = 2;
+    optional int64 oldFamilyId = 3;
+}
+
+message GetPlayerRankIndexReq_43007 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetPlayerRankIndexResp_43007 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+    optional int32 index = 3;
+    optional string score = 4;
+}
+
+message GetDrawLotteryDataReq_43008 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetDrawLotteryDataResp_43008 {
+    repeated int32 updateFieldsList = 90;
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+    optional int32 charge = 3;
+    repeated int32 chargeTask = 4;
+    repeated MsgDrawLotteryChip msgDrawLotteryChip = 5;
+    repeated MsgDrawLotteryExchange msgDrawLotteryExchange = 6;
+}
+
+message NotifyTopFiveDataGsRemoteResp_43009 {
+    optional string playerId = 1;
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+    optional bf.messages.game.RankingMessage.MsgRankingData pRankingDatas = 3;
+    optional bf.messages.game.RankingMessage.MsgRankingData fRankingDatas = 4;
+}
+
+message ExchangeDrawLotteryReq_43010 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 taskId = 2;
+    required int32 num = 3;
+}
+
+message ExchangeDrawLotteryResp_43010 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+    repeated MsgDrawLotteryChip msgDrawLotteryChip = 4;
+    optional MsgDrawLotteryExchange msgDrawLotteryExchange = 5;
+}
+
+message MsgAllTemplateData {
+    repeated bf.messages.game.GmActivityCommonMessage.MsgRankReward rankDatas = 1;
+    repeated MsgBoBingRewardTemplateData rewardDatas = 2;
+    repeated MsgBoBingAchievementTemplateData achievementDatas = 3;
+    repeated MsgFestivalTaskTemplateData taskDatas = 4;
+    repeated MsgFestivalPayTemplateData payDatas = 5;
+}
+
+message MsgAllPlayerData {
+    optional bf.messages.game.GmActivityCommonMessage.MsgRankPlayerData rankData = 1;
+    repeated MsgBoBingAchievement achievementData = 2;
+    repeated int32 gainAchievementIds = 3;
+    optional int32 chargeNum = 5;
+    repeated int32 gainPayIds = 6;
+}
+
+message MsgBoBingRewardTemplateData {
+    optional int32 cakeId = 1;
+    optional string reward = 2;
+}
+
+message MsgBoBingAchievementTemplateData {
+    optional int32 id = 1;
+    optional int32 cakeId = 2;
+    optional int32 collectNum = 3;
+    optional string reward = 4;
+}
+
+message MsgBoBingAchievement {
+    optional int32 cakeId = 1;
+    optional int32 num = 2;
+}
+
+message MsgBoBingResult {
+    optional int32 cakeId = 1;
+    repeated int32 points = 2;
+    optional int32 integral = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 4;
+}
+
+message MsgBoBingPlayReq_43021 {
+    optional int32 actId = 1;
+    optional int32 num = 2;
+}
+
+message MsgBoBingPlayResp_43021 {
+    required int32 ret = 1;
+    repeated MsgBoBingResult infos = 2;
+}
+
+message MsgBoBingGainAchievementReq_43022 {
+    optional int32 actId = 1;
+    optional int32 id = 2;
+}
+
+message MsgBoBingGainAchievementResp_43022 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 4;
+}
+
+message MsgBoBingGainTaskReq_43023 {
+    optional int32 actId = 1;
+    optional int32 id = 2;
+}
+
+message MsgBoBingGainTaskResp_43023 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 4;
+}
+
+message MsgBoBingGainChargeReq_43024 {
+    optional int32 actId = 1;
+    optional int32 id = 2;
+}
+
+message MsgBoBingGainChargeResp_43024 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 4;
+}
+
+message MsgBoBingChargeNumChgPushResp_43025 {
+    optional int32 actId = 1;
+    optional int32 chargeNum = 2;
+}
+
+message MsgSkyLanternNotify {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message MsgLuckyDog {
+    optional int64 index = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+    repeated int32 block = 4;
+    optional int64 timeStamp = 5;
+}
+
+message GetSkyLanternDataReq_43051 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetSkyLanternDataResp_43051 {
+    required int32 ret = 1;
+    optional int32 totalCnt = 2;
+    repeated MsgSkyLanternNotify mgSkyLanternNotify = 3;
+    repeated int32 taskId = 4;
+}
+
+message PrayReq_43052 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 type = 2;
+}
+
+message PrayResp_43052 {
+    required int32 ret = 1;
+    optional int32 totalCnt = 2;
+    optional string score = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 4;
+    repeated int32 block = 5;
+    optional bool isLuckyDog = 6;
+}
+
+message GetSkyLanternPrayHistReq_43053 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetSkyLanternPrayHistResp_43053 {
+    required int32 ret = 1;
+    repeated MsgLuckyDog msgLuckyDog = 2;
+}
+
+message GetPrayTaskAwardReq_43054 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 taskId = 2;
+}
+
+message GetPrayTaskAwardResp_43054 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message SkyLanternNotifyResp_43055 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional MsgSkyLanternNotify mgSkyLanternNotify = 2;
+    optional int32 totalCnt = 3;
+}
+
+message GetLuckyDogReq_43056 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetLuckyDogResp_43056 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message GetSkyLanternDataCsRemoteReq_43057 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+}
+
+message GetSkyLanternDataGsRemoteResp_43057 {
+    required int32 ret = 1;
+    optional int32 totalCnt = 2;
+    repeated MsgSkyLanternNotify mgSkyLanternNotify = 3;
+}
+
+message PrayCsRemoteReq_43058 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int32 num = 4;
+}
+
+message PrayGsRemoteResp_43058 {
+    required int32 ret = 1;
+    optional int32 totalCnt = 2;
+    optional string score = 3;
+    repeated int32 block = 4;
+    optional int64 timeStamp = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 6;
+    optional string playerScore = 7;
+    optional int32 playerRank = 8;
+    optional string familyScore = 9;
+    optional int32 familyRank = 10;
+}
+
+message SkyLanternNotifyGsRemoteReq_43059 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional MsgSkyLanternNotify mgSkyLanternNotify = 2;
+    optional int32 totalCnt = 3;
+}
+
+message SkyLanternLuckyDogGsRemoteReq_43060 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+}
+
+message GetSkyLanternHistCsRemoteReq_43061 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+    optional int64 index = 4;
+}
+
+message GetSkyLanternHistGsRemoteResp_43061 {
+    required int32 ret = 1;
+    repeated MsgLuckyDog msgLuckyDog = 2;
+}
+
+message GetSkyLanternTotalPrayCountCsRemoteReq_43062 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 2;
+    optional bf.messages.game.FamilyMessage.MsgCrossFamilyData msgCrossFamilyData = 3;
+}
+
+message GetSkyLanternTotalPrayCountGsRemoteResp_43062 {
+    required int32 ret = 1;
+    optional int32 totalCnt = 2;
+}
+
+message GetLuckDogHistReq_43063 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int64 index = 2;
+}
+
+message GetLuckDogHistResp_43063 {
+    required int32 ret = 1;
+    repeated MsgLuckyDog msgLuckyDog = 2;
+}
+
+message GetRedDotCsRemoteReq_43064 {
+    optional string playerId = 1;
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+    repeated int32 rankType = 3;
+    optional int64 familyId = 4;
+}
+
+message GetRedDotGsRemoteResp_43064 {
+    required int32 ret = 1;
+    repeated bf.messages.game.RankingMessage.MsgRankIndex msgRankIndex = 2;
+    optional int32 totalCnt = 3;
+    optional bool isJoin = 4;
+}
+
+message GetRankCsRemoteReq_43065 {
+    required string playerId = 1;
+    required int64 familyId = 2;
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 3;
+}
+
+message GetRankGsRemoteResp_43065 {
+    required int32 ret = 1;
+    repeated MsgRankIndex msgRankIndex = 2;
+    optional int64 oldFamilyId = 3;
+    optional int32 totalCnt = 4;
+}
+
+message MsgCelebrationPlayerData {
+    optional int32 totalPray = 1;
+    repeated MsgCelebrationSimpleRecord records = 2;
+    repeated int32 taskIds = 3;
+    repeated int32 drawType = 4;
+    optional bool join = 5;
+}
+
+message MsgCelebrationSimpleRecord {
+    optional string playerName = 1;
+    optional int32 serverId = 2;
+    optional int32 rewardType = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 4;
+}
+
+message MsgCelebrationRecord {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer offlinePlayer = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+    optional int32 rewardType = 3;
+    repeated int32 drawTimes = 4;
+    optional int64 timestamp = 5;
+    optional int32 index = 6;
+}
+
+message CelebrationPrayReq_43151 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 type = 2;
+}
+
+message CelebrationPrayResp_43151 {
+    required int32 ret = 1;
+    optional int32 totalCnt = 2;
+    optional string score = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 4;
+    repeated int32 drawTimes = 5;
+    optional int32 rewardType = 6;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources luckyRewards = 7;
+}
+
+message CelebrationRecordsReq_43152 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message CelebrationRecordsResp_43152 {
+    required int32 ret = 1;
+    repeated MsgCelebrationRecord prayRecords = 2;
+}
+
+message CelebrationLuckyRecordsReq_43153 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 index = 2;
+}
+
+message CelebrationLuckyRecordsResp_43153 {
+    required int32 ret = 1;
+    repeated MsgCelebrationRecord luckyRecords = 2;
+}
+
+message CelebrationNotifyResp_43154 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+    optional MsgCelebrationSimpleRecord simpleRecord = 3;
+    optional int32 totalPray = 4;
+}
+
+message CelebrationTaskRewardReq_43155 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 taskId = 2;
+}
+
+message CelebrationTaskRewardResp_43155 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 2;
+    repeated int32 taskIds = 3;
+}
+
+message MsgCelebrationPrayResult {
+    repeated int32 praySequences = 1;
+    repeated MsgCelebrationPrayLucky luckyPrays = 2;
+    optional int32 totalPray = 3;
+    optional int64 prayTime = 4;
+}
+
+message MsgCelebrationPrayLucky {
+    optional int32 luckyType = 1;
+    optional int32 luckyTimes = 2;
+}
+
+message CelebrationPrayGCReq_43191 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 times = 2;
+    optional string playerId = 3;
+}
+
+message CelebrationPrayCGResp_43191 {
+    required int32 ret = 1;
+    optional MsgCelebrationPrayResult prayResult = 2;
+}
+
+message CelebrationLuckyRecordsGCReq_43192 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 index = 2;
+}
+
+message CelebrationLuckyRecordsCGResp_43192 {
+    required int32 ret = 1;
+    repeated MsgCelebrationRecord luckyRecords = 2;
+}
+
+message CelebrationPushNotifyCGReq_43193 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional MsgCelebrationSimpleRecord simpleRecord = 2;
+    optional int32 totalPray = 3;
+}
+
+message CelebrationGetDataGCReq_43194 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bool needRecord = 2;
+}
+
+message CelebrationGetDataCGResp_43194 {
+    required int32 ret = 1;
+    repeated MsgCelebrationSimpleRecord simpleRecords = 2;
+    optional int32 totalPray = 3;
+}
+
+message MsgKlotskiDb {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 day = 3;
+    optional int32 picId = 4;
+    optional string reward = 5;
+}
+
+message MsgKlotskiTemplateData {
+    repeated MsgKlotskiDb msgKlotskiDbs = 1;
+}
+
+message MsgKlotskiPlayerData {
+    repeated MsgKlotskiPicture pictures = 1;
+    optional int32 day = 2;
+}
+
+message MsgKlotskiPicture {
+    optional int32 picId = 1;
+    optional bool running = 2;
+    optional bool gainReward = 3;
+    optional int32 currentStep = 4;
+    optional int32 fastStep = 5;
+    repeated MsgKlotskiGrid grids = 6;
+    optional bool perfect = 7;
+}
+
+message MsgKlotskiGrid {
+    optional int32 x = 1;
+    optional int32 y = 2;
+    optional int32 pieceId = 3;
+    optional bool dashed = 4;
+}
+
+message KlotskiStartReq_43301 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 picId = 2;
+}
+
+message KlotskiStartResp_43301 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+    optional int32 picId = 3;
+    optional MsgKlotskiPicture picture = 4;
+}
+
+message KlotskiTapReq_43302 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 picId = 2;
+    optional int32 x = 3;
+    optional int32 y = 4;
+}
+
+message KlotskiTapResp_43302 {
+    required int32 ret = 1;
+    optional int32 x = 2;
+    optional int32 y = 3;
+    optional int32 moveToX = 4;
+    optional int32 moveToY = 5;
+    optional MsgKlotskiPicture picture = 6;
+}
+
+message KlotskiEndReq_43303 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 picId = 2;
+}
+
+message KlotskiEndResp_43303 {
+    required int32 ret = 1;
+    optional bool complete = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 3;
+    optional MsgKlotskiPicture picture = 4;
+}
+
+message KlotskiBreakRecordGCReq_43351 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int32 picId = 3;
+    optional int32 fastStep = 4;
+}
+
+message KlotskiBreakRecordCGResp_43351 {
+    required int32 ret = 1;
+}

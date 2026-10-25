@@ -1,0 +1,475 @@
+syntax = "proto2";
+
+package bf.messages.game.ChildrenMessage;
+
+import "CommonMsgMessage.proto";
+import "FamilyMessage.proto";
+import "PlayerMessage.proto";
+
+message MsgChildrenData {
+    repeated int32 updateFieldsList = 90;
+    optional string childId = 1;
+    optional string name = 2;
+    optional int32 sex = 3;
+    optional int32 parentId = 4;
+    optional int32 quality = 5;
+    optional int32 lv = 6;
+    optional int32 exp = 7;
+    optional string money = 8;
+    optional int32 posId = 9;
+    optional int32 image = 10;
+    optional int64 energy = 11;
+    optional int64 cdTime = 12;
+    optional int64 intimacy = 13;
+    optional MsgProposal msgProposal = 14;
+    optional int32 talentId = 15;
+}
+
+message MsgChildName {
+    optional string childId = 1;
+    optional string name = 2;
+}
+
+message MsgProposal {
+    optional string nickName = 1;
+    optional int64 endTime = 2;
+    optional int32 type = 3;
+}
+
+message MsgMarriageProposeData {
+    repeated int32 updateFieldsList = 90;
+    optional int64 id = 1;
+    optional string nickName = 2;
+    optional string childName = 3;
+    optional int32 image = 4;
+    optional string money = 5;
+    optional int64 endTime = 6;
+    optional int32 sex = 7;
+    optional string familyName = 8;
+    optional int32 serverId = 9;
+    optional bool isFromChat = 10;
+    optional string toPlayerId = 11;
+}
+
+message MsgCoupleData {
+    repeated MsgAdult msgAdult = 1;
+    required string nickName = 2;
+    required int64 weddingTime = 3;
+    required int64 id = 4;
+    optional string otherPlayerId = 5;
+    optional int32 serverId = 6;
+}
+
+message MsgAdult {
+    required string childId = 1;
+    required string name = 2;
+    required int32 sex = 3;
+    required int32 image = 4;
+    required string money = 5;
+    required bool isMine = 6;
+}
+
+message MsgAdultVisit {
+    optional int32 visitNum = 1;
+    optional int64 resetTime = 2;
+    optional int32 recoveryNum = 3;
+}
+
+message MsgNewlywed {
+    required MsgCoupleData msgCoupleData = 1;
+}
+
+message MsgAdvertisementState {
+    optional int64 advertisementId = 1;
+    optional bool isCross = 2;
+}
+
+message MsgWorldNoticeState {
+    optional MsgAdvertisementState msgState = 1;
+    optional int64 endTime = 2;
+}
+
+message MsgTrainMiracle {
+    optional string childId = 1;
+    optional int32 multiple = 2;
+}
+
+message MsgRecentlyPlayer {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer msgPlayer = 1;
+    optional bf.messages.game.FamilyMessage.MsgFamilyData msgFamily = 2;
+}
+
+message MsgMarriageParam {
+    optional bool isRefuseCross = 1;
+    optional bool isOpen = 2;
+    optional string money = 3;
+}
+
+message MsgReject {
+    optional string fromPlayerId = 1;
+    repeated int64 advertisementId = 2;
+}
+
+message MsgTurnBack {
+    optional int32 groupId = 1;
+    repeated int64 uniqueId = 2;
+    optional int32 type = 3;
+}
+
+message GetChildReq_24001 {
+}
+
+message GetChildResp_24001 {
+    required int32 ret = 1;
+    repeated MsgChildrenData data = 2;
+    optional string lastName = 3;
+    optional int32 activeNum = 4;
+}
+
+message NameChildReq_24002 {
+    required int32 type = 1;
+    repeated MsgChildName msgChildName = 2;
+}
+
+message NameChildResp_24002 {
+    required int32 ret = 1;
+}
+
+message BuyChildPositionReq_24003 {
+    required int32 posId = 1;
+}
+
+message BuyChildPositionResp_24003 {
+    required int32 ret = 1;
+}
+
+message TrainChildReq_24004 {
+    required string childId = 1;
+}
+
+message TrainChildResp_24004 {
+    required int32 ret = 1;
+}
+
+message RecoveryEnergyReq_24005 {
+    required string childId = 1;
+}
+
+message RecoveryEnergyResp_24005 {
+    required int32 ret = 1;
+}
+
+message GraduateReq_24006 {
+    required string childId = 1;
+}
+
+message GraduateResp_24006 {
+    required int32 ret = 1;
+    repeated string childId = 2;
+    optional bool isOneKey = 3;
+}
+
+message ProposeMarriageReq_24007 {
+    required string childId = 1;
+    required string toPlayerId = 2;
+    required int32 type = 3;
+    optional bool isSendNotice = 4;
+    optional bool isSendFamily = 5;
+    optional bool isSendCross = 6;
+}
+
+message ProposeMarriageResp_24007 {
+    required int32 ret = 1;
+}
+
+message GetMarriageRequestListReq_24008 {
+}
+
+message GetMarriageRequestListResp_24008 {
+    repeated MsgMarriageProposeData msgMarriagePropose = 1;
+}
+
+message DealWithRequestReq_24009 {
+    required bool isAccept = 1;
+    optional int64 id = 2;
+    optional string childId = 3;
+    optional int32 type = 4;
+    optional bool isFromChat = 5;
+}
+
+message DealWithRequestResp_24009 {
+    required int32 ret = 1;
+    optional MsgNewlywed msgNewlywed = 3;
+}
+
+message cancelMarriageProposeReq_24010 {
+    required string childId = 1;
+}
+
+message cancelMarriageProposeResp_24010 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 2;
+}
+
+message getGraduateReq_24011 {
+}
+
+message getGraduateResp_24011 {
+    required int32 ret = 1;
+    repeated MsgChildrenData msgChildrenData = 2;
+}
+
+message matchAdsReq_24012 {
+    required string childId = 1;
+    required bool isUseItem = 2;
+}
+
+message matchAdsResp_24012 {
+    required int32 ret = 1;
+    optional MsgMarriageProposeData msgMarriageProposeData = 2;
+}
+
+message getCoupleReq_24013 {
+}
+
+message getCoupleResp_24013 {
+    required int32 ret = 1;
+    repeated MsgCoupleData msgCoupleData = 2;
+    optional MsgAdultVisit msgAdultVisit = 3;
+}
+
+message receiveGiftReq_24014 {
+}
+
+message receiveGiftResp_24014 {
+    required int32 ret = 1;
+    optional MsgAdultVisit msgAdultVisit = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+}
+
+message syncGradeResp_24015 {
+    repeated MsgChildrenData msgChildrenData = 1;
+}
+
+message getMarriedReq_24016 {
+    required int64 id = 1;
+    required string childId = 2;
+    required int32 type = 3;
+}
+
+message getMarriedResp_24016 {
+    required int32 ret = 1;
+    optional MsgMarriageProposeData msgMarriageProposeData = 2;
+    optional MsgNewlywed msgNewlywed = 3;
+}
+
+message syncNewlywedResp_24017 {
+    required MsgNewlywed msgNewlywed = 1;
+}
+
+message getRedDotResp_24018 {
+    repeated int32 updateFieldsList = 90;
+    optional bool isRequest = 1;
+    optional bool isSetApplyMoney = 2;
+    optional bool isHaveCouple = 3;
+}
+
+message syncNewlywedResp_24019 {
+    repeated MsgNewlywed msgNewlywed = 1;
+}
+
+message getWorldNoticeStateReq_24020 {
+    repeated MsgAdvertisementState msgState = 1;
+}
+
+message getWorldNoticeStateResp_24020 {
+    repeated MsgWorldNoticeState msgNotice = 1;
+}
+
+message syncTrainResp_24021 {
+    repeated MsgTrainMiracle msgTrainMiracle = 1;
+}
+
+message GetRecentlyRelativesReq_24022 {
+}
+
+message GetRecentlyRelativesResp_24022 {
+    required int32 ret = 1;
+    repeated MsgRecentlyPlayer msgRecentlyPlayer = 2;
+}
+
+message OneKeyTrainReq_24023 {
+    required string childId = 1;
+    required int32 num = 2;
+}
+
+message OneKeyTrainResp_24023 {
+    required int32 ret = 1;
+    optional int32 num = 2;
+}
+
+message GetAcceptParamReq_24024 {
+}
+
+message GetAcceptParamResp_24024 {
+    required int32 ret = 1;
+    optional MsgMarriageParam msgParam = 2;
+}
+
+message SetAcceptParamReq_24025 {
+    required MsgMarriageParam msgParam = 1;
+}
+
+message SetAcceptParamResp_24025 {
+    required int32 ret = 1;
+}
+
+message SyncChildMoneyResp_24026 {
+    optional string moneyOfChild = 1;
+}
+
+message SendMarriageApplyOsRemote_24027 {
+    optional string toPlayerId = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgUser = 2;
+    optional MsgChildrenData msgChild = 3;
+    optional int64 timeStamp = 4;
+    optional int32 crossGroupId = 5;
+}
+
+message SendMarriageApplyGsRemote_24027 {
+    required int32 ret = 1;
+    optional int64 uniqueId = 2;
+    optional string toPlayerName = 3;
+}
+
+message ProposeMarriageCsRemote_24028 {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgUser = 1;
+    optional MsgChildrenData msgChild = 2;
+    optional int64 timeStamp = 3;
+    optional int32 crossGroupId = 4;
+    optional bool isSendCross = 5;
+}
+
+message ProposeMarriageGsRemote_24028 {
+    required int32 ret = 1;
+    optional int64 uniqueId = 2;
+}
+
+message SyncNewlyWedOsRemote_24029 {
+    optional int32 groupId = 1;
+    optional int64 uniqueId = 2;
+    optional string fromPlayerId = 3;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOther = 4;
+    optional MsgChildrenData msgFromChild = 5;
+    optional MsgChildrenData msgToChild = 6;
+    optional int64 timeStamp = 7;
+}
+
+message SyncNewlyWedGsRemote_24029 {
+    required int32 ret = 1;
+}
+
+message CheckAdvertisementGsRemote_24030 {
+    optional int32 groupId = 1;
+    optional int64 uniqueId = 2;
+    optional string fromPlayerId = 3;
+    optional string toPlayerId = 4;
+    optional string childId = 5;
+    optional bool isApply = 6;
+}
+
+message CheckAdvertisementCsRemote_24030 {
+    required int32 ret = 1;
+}
+
+message RejectApplyGsRemote_24031 {
+    optional int32 groupId = 1;
+    optional string toPlayerId = 2;
+    optional string toPlayerName = 3;
+    repeated MsgReject msgReject = 4;
+}
+
+message RejectApplyOsRemote_24031 {
+    required int32 ret = 1;
+    repeated MsgReject msgReject = 2;
+}
+
+message CancelAdvertisementCsRemote_24032 {
+    optional int32 groupId = 1;
+    optional int64 uniqueId = 2;
+    optional string fromPlayerId = 3;
+    optional string toPlayerId = 4;
+    optional string childId = 5;
+}
+
+message CancelAdvertisementGsRemote_24032 {
+    required int32 ret = 1;
+}
+
+message CheckAdvertisementCsRemote_24033 {
+    optional int32 groupId = 1;
+    optional int64 advertisementId = 2;
+}
+
+message CheckAdvertisementGsRemote_24033 {
+    required int32 ret = 1;
+    optional bool isReload = 2;
+    optional MsgMarriageProposeData msgPropose = 3;
+}
+
+message RandomMatchCsRemote_24034 {
+    optional int32 groupId = 1;
+    optional string playerId = 2;
+    optional int32 sex = 3;
+    optional int32 statusId = 4;
+    optional int32 previousGroupId = 5;
+    optional int64 previousAdvertisementId = 6;
+    optional bool isUseItem = 7;
+}
+
+message RandomMatchGsRemote_24034 {
+    required int32 ret = 1;
+    optional MsgMarriageProposeData msgPropose = 2;
+}
+
+message GetMarriedCsRemote_24035 {
+    optional int32 groupId = 1;
+    optional int64 advertisementId = 2;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgTo = 3;
+    optional MsgChildrenData msgToChild = 4;
+}
+
+message GetMarriedGsRemote_24035 {
+    required int32 ret = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgFrom = 2;
+    optional MsgChildrenData msgFromChild = 3;
+}
+
+message TurnBackGsRemote_24036 {
+    repeated MsgTurnBack msgBack = 1;
+    optional bool isFromCross = 2;
+}
+
+message TurnBackCsRemote_24036 {
+    required int32 ret = 1;
+    repeated MsgTurnBack msgBack = 2;
+}
+
+message SyncNewlyWedAgainGsRemote_24037 {
+    repeated SyncNewlyWedOsRemote_24029 msg = 1;
+}
+
+message SyncNewlyWedAgainOsRemote_24037 {
+    required int32 ret = 1;
+    repeated SyncNewlyWedOsRemote_24029 msg = 2;
+}
+
+message getWorldNoticeStateCsRemote_24038 {
+    optional int32 groupId = 1;
+    repeated MsgAdvertisementState msgState = 2;
+}
+
+message getWorldNoticeStateGsRemote_24038 {
+    required int32 ret = 1;
+    repeated MsgWorldNoticeState msgNotice = 2;
+}

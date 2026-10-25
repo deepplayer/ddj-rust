@@ -1,0 +1,267 @@
+syntax = "proto2";
+
+package bf.messages.game.GmActivityXiuXianMessage;
+
+import "CommonMsgMessage.proto";
+import "GmActivityCommonMessage.proto";
+import "PlayerMessage.proto";
+
+message MsgXiuXianAllTemplateData {
+    repeated bf.messages.game.GmActivityCommonMessage.MsgRankReward rankRewards = 1;
+    repeated MsgTaskRewardTemplate rewards = 2;
+    repeated MsgImageTemplate images = 3;
+    repeated MsgFloorTemplate floors = 4;
+    repeated MsgBossTemplate boss = 5;
+}
+
+message MsgTaskRewardTemplate {
+    optional int32 id = 1;
+    optional int32 type = 2;
+    optional int32 value = 3;
+    optional string reward = 4;
+}
+
+message MsgImageTemplate {
+    optional int32 id = 1;
+    optional int32 condition = 2;
+    optional int32 param = 3;
+    optional int32 effect = 4;
+}
+
+message MsgFloorTemplate {
+    optional int32 id = 1;
+    optional string rewardView = 2;
+    optional int32 integral = 3;
+    optional string attack = 4;
+    optional string mustRewardView = 5;
+}
+
+message MsgBossTemplate {
+    optional int32 id = 1;
+    optional int32 mileage = 2;
+    optional string rewardView = 3;
+}
+
+message MsgPlayerSimpleData {
+    optional int32 useImageId = 1;
+    optional int32 chargeNum = 2;
+    repeated int32 redAchieve = 3;
+    optional int32 playerRank = 4;
+    optional int32 familyRank = 5;
+    repeated bf.messages.game.GmActivityCommonMessage.MsgPlayerRankData rankData = 6;
+}
+
+message MsgPlayerData {
+    optional int32 lv = 1;
+    optional int32 exp = 2;
+    optional int32 year = 3;
+    optional string attack = 4;
+    repeated int32 blockIds = 5;
+    optional int32 pos = 6;
+    repeated MsgSeason seasons = 7;
+    optional bool openOneKey = 8;
+    optional int32 playerRank = 9;
+    optional int32 familyRank = 10;
+    optional int32 curFloor = 11;
+    optional bool redFlag = 21;
+    optional string extData = 22;
+}
+
+message MsgAchievement {
+    optional int32 templateId = 1;
+    optional int32 curNum = 2;
+    optional int32 status = 3;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 4;
+}
+
+message MsgSeason {
+    optional int32 blockId = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+}
+
+message MsgResult {
+    optional int32 year = 1;
+    repeated int32 blockId = 2;
+    optional int32 buffType = 3;
+    optional int32 buffParam = 4;
+    optional int32 addExp = 5;
+    optional string addAttack = 6;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 7;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources extRewards = 8;
+}
+
+message MsgTowerData {
+    optional string attack = 1;
+    optional int32 curFloor = 2;
+    optional int32 curCol = 3;
+    repeated MsgTowerEvent events = 4;
+    optional int32 rank = 5;
+}
+
+message MsgTowerEvent {
+    optional int32 floor = 1;
+    optional int32 col = 2;
+    optional int32 blockType = 3;
+    optional int32 eventId = 4;
+    optional string param = 5;
+}
+
+message MsgRankExt {
+    optional int32 imageId = 1;
+}
+
+message MsgQueryPlayerDataReq_34201 {
+}
+
+message MsgQueryPlayerDataResp_34201 {
+    required int32 ret = 1;
+    optional MsgPlayerData info = 2;
+}
+
+message MsgChgFashionReq_34205 {
+    optional int32 fashionId = 1;
+}
+
+message MsgChgFashionResp_34205 {
+    required int32 ret = 1;
+}
+
+message MsgQueryAchievementReq_34206 {
+    optional int32 type = 2;
+}
+
+message MsgQueryAchievementResp_34206 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+    repeated MsgAchievement achievement = 3;
+}
+
+message MsgGainAchieveRewardReq_34207 {
+    optional int32 templateId = 2;
+}
+
+message MsgGainAchieveRewardResp_34207 {
+    required int32 ret = 1;
+    optional int32 templateId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 3;
+}
+
+message MsgPlayReq_34208 {
+}
+
+message MsgPlayResp_34208 {
+    required int32 ret = 1;
+    optional int32 pos = 2;
+    optional int32 addExp = 3;
+    optional string addAttack = 4;
+    optional MsgSeason addSeason = 5;
+    optional MsgResult result = 6;
+    optional bool openOneKey = 7;
+    optional MsgPlayerData playerData = 11;
+}
+
+message MsgAutoPlayReq_34209 {
+}
+
+message MsgAutoPlayResp_34209 {
+    required int32 ret = 1;
+    optional int32 playNum = 2;
+    repeated MsgResult results = 3;
+    optional MsgPlayerData playerData = 11;
+}
+
+message MsgQueryTowerDataReq_34211 {
+}
+
+message MsgQueryTowerDataResp_34211 {
+    required int32 ret = 1;
+    optional MsgTowerData tower = 2;
+}
+
+message MsgTowerChoiceEventReq_34212 {
+    optional int32 col = 1;
+}
+
+message MsgTowerChoiceEventResp_34212 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+    optional string attack = 3;
+    optional int32 curFloor = 4;
+    repeated MsgTowerEvent addEvents = 5;
+    optional int32 rank = 6;
+    optional int32 col = 7;
+}
+
+message MsgG2CQueryPlayerSimpleDataReq_34251 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+}
+
+message MsgG2CQueryPlayerSimpleDataResp_34251 {
+    required int32 ret = 1;
+    optional bool redAchieveFirst = 2;
+    optional int32 playerRank = 3;
+    optional int32 familyRank = 4;
+}
+
+message MsgG2CQueryFirstAchievementReq_34252 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int32 type = 3;
+}
+
+message MsgG2CQueryFirstAchievementResp_34252 {
+    required int32 ret = 1;
+    repeated MsgAchievement achievement = 2;
+}
+
+message MsgG2CGainFirstAchieveRewardReq_34253 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int32 templateId = 3;
+}
+
+message MsgG2CGainFirstAchieveRewardResp_34253 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+}
+
+message MsgG2CGainAllFirstAchieveRewardReq_34254 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+}
+
+message MsgG2CGainAllFirstAchieveRewardResp_34254 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+}
+
+message MsgG2CSyncFirstReq_34255 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int32 lv = 3;
+}
+
+message MsgG2CSendNoticeReq_34256 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional int32 templateId = 2;
+    repeated string params = 3;
+}
+
+message MsgG2CSyncTowerReq_34257 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int32 integral = 3;
+}
+
+message MsgG2CSyncTowerResp_34257 {
+    required int32 ret = 1;
+    optional int32 rank = 2;
+}
+
+message MsgG2CSyncImageIdReq_34258 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int32 imageId = 3;
+}

@@ -1,0 +1,996 @@
+syntax = "proto2";
+
+package bf.messages.game.HallMessage;
+
+import "CommonMsgMessage.proto";
+import "PlayerMessage.proto";
+
+message MsgChannel {
+    repeated int32 recently = 1;
+    repeated MsgChannelBrief msgBrief = 2;
+}
+
+message MsgChannelBrief {
+    optional int32 id = 1;
+    repeated MsgSubChannel msgSubChannel = 2;
+}
+
+message MsgSubChannel {
+    optional int32 roomId = 1;
+    optional int32 peopleCnt = 2;
+    optional int32 friendCnt = 3;
+    optional int32 familyCnt = 4;
+}
+
+message MsgPlayerBrief {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 1;
+    optional int32 useFashion = 2;
+    optional int32 state = 3;
+    optional int32 posId = 4;
+    optional int32 direction = 5;
+}
+
+message MsgRoom {
+    optional int64 roomId = 1;
+    optional int32 gameId = 2;
+    repeated MsgSeat msgSeat = 3;
+    optional int64 timeStamp = 4;
+    optional int64 waitTime = 5;
+    optional int32 channel = 6;
+    optional int32 peopleCnt = 7;
+}
+
+message MsgSeat {
+    optional int32 index = 1;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 2;
+    optional int32 useFashion = 3;
+    optional int32 job = 4;
+}
+
+message MsgHsSeat {
+    optional int32 hallId = 1;
+    optional int32 channel = 2;
+    optional int64 roomId = 3;
+    repeated MsgSeat msgSeat = 4;
+}
+
+message MsgInvite {
+    optional string playerId = 1;
+    optional int64 timeStamp = 2;
+}
+
+message MsgInviteList {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 1;
+    optional int32 channel = 2;
+    optional int64 roomId = 3;
+    optional int32 gameId = 4;
+    optional int64 timeStamp = 5;
+}
+
+message MsgInviteBrief {
+    optional int32 channelId = 1;
+    optional int64 roomId = 2;
+    optional int32 gameId = 3;
+}
+
+message MsgRoomBrief {
+    optional MsgInviteBrief msgBrief = 1;
+    optional int32 seatCnt = 2;
+    optional int32 state = 3;
+}
+
+message MsgPlayerMove {
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgUser = 1;
+    optional int32 beginPosId = 2;
+    optional int32 endPosId = 3;
+    required int32 direction = 4;
+    optional int32 useFashion = 5;
+}
+
+message MsgPaintRoom {
+    repeated int32 updateFieldsList = 99;
+    optional int64 uniqueId = 1;
+    repeated MsgPaintSeat msgSeat = 2;
+    optional int32 question = 3;
+    optional int32 answer = 4;
+    optional string drawPlayerId = 5;
+    optional int32 state = 6;
+    optional int64 timeStamp = 7;
+    repeated MsgPicture msgPic = 8;
+    optional MsgSettle msgSettle = 9;
+    optional bool isEnd = 10;
+}
+
+message MsgPaintSeat {
+    optional MsgSeat msgSeat = 1;
+    optional int32 score = 2;
+    optional int32 state = 3;
+}
+
+message MsgPicture {
+    optional int32 index = 1;
+    optional int32 color = 2;
+    repeated MsgVector msgVec = 3;
+}
+
+message MsgVector {
+    repeated int32 posId = 1;
+}
+
+message MsgSettle {
+    optional int32 choose = 1;
+    repeated string correctPlayerId = 2;
+    repeated MsgComment msgComment = 3;
+}
+
+message MsgComment {
+    optional string playerId = 1;
+    optional int32 commentId = 2;
+}
+
+message MsgGameEnd {
+    optional string playerId = 1;
+    optional MsgHallGameHead msgHead = 2;
+    optional int64 uniqueId = 3;
+    optional bool isTask = 4;
+}
+
+message MsgHallGameHead {
+    optional int32 channelId = 1;
+    optional int32 hallId = 2;
+    optional int32 channel = 3;
+    optional int64 roomId = 4;
+    optional int32 gameId = 5;
+}
+
+message MsgHallGameContent {
+    optional MsgHead msgHead = 1;
+    optional bytes data = 2;
+    repeated string playerId = 3;
+}
+
+message MsgTask {
+    optional int32 taskId = 1;
+    optional bool isReward = 2;
+}
+
+message MsgGameRound {
+    optional int32 gameId = 1;
+    optional int32 playCnt = 2;
+    optional int64 timeStamp = 3;
+}
+
+message MsgEndRoom {
+    optional string playerId = 1;
+    optional MsgRoom msgRoom = 2;
+}
+
+message MsgMatchComplete {
+    optional int32 channelId = 1;
+    optional int32 gameId = 2;
+    optional int64 matchId = 3;
+    repeated MsgHsSeat msgSeat = 4;
+}
+
+message MsgGreedyFishRoom {
+    repeated int32 updateFieldsList = 99;
+    optional int64 uniqueId = 1;
+    repeated MsgGreedyFishPlayerSeat players = 2;
+    optional string turnPlayerId = 3;
+    optional int64 turnEndTime = 4;
+    repeated MsgGreedyFishGrid grids = 5;
+    optional string winner = 6;
+    optional int32 status = 7;
+}
+
+message MsgGreedyFishPlayerSeat {
+    optional MsgSeat msgSeat = 1;
+    repeated MsgGreedyFishUsed fishUsed = 2;
+    optional int32 finalScore = 3;
+}
+
+message MsgGreedyFishGrid {
+    optional int32 x = 1;
+    optional int32 y = 2;
+    optional int32 fishLv = 3;
+    optional string playerId = 4;
+}
+
+message MsgGreedyFishUsed {
+    optional int32 fishLv = 1;
+    optional int32 used = 2;
+}
+
+message MsgKafkaGreedyFishOperate {
+    optional int32 x = 1;
+    optional int32 y = 2;
+    optional int32 fishLv = 3;
+    repeated MsgKafkaPos players = 4;
+}
+
+message MsgKafkaGreedyFishSettlement {
+    repeated MsgKafkaPos players = 1;
+    optional int32 result = 2;
+    optional string currentPlayer = 3;
+    optional string offlinePlayers = 4;
+}
+
+message MsgHead {
+    optional int32 channelId = 1;
+    optional int64 uniqueId = 2;
+    optional int32 gameId = 3;
+    optional int32 commandId = 4;
+    optional bool isClient = 5;
+}
+
+message MsgBaseInit {
+    repeated MsgHsSeat msgSeat = 2;
+}
+
+message MsgPaintExtraReq2 {
+}
+
+message MsgPaintExtraResp2 {
+    optional MsgPaintRoom msgRoom = 1;
+}
+
+message MsgPaintExtraReq3 {
+    optional int32 choose = 1;
+}
+
+message MsgPaintExtraResp3 {
+    optional int32 answer = 1;
+    optional int64 timeStamp = 2;
+}
+
+message MsgPaintExtraReq4 {
+    repeated MsgPicture msgPic = 1;
+}
+
+message MsgPaintExtraReq5 {
+    optional int32 emoji = 1;
+}
+
+message MsgPaintExtraResp5 {
+    optional string playerId = 1;
+    optional int32 emoji = 2;
+}
+
+message MsgPaintExtraReq6 {
+    optional int32 answer = 1;
+}
+
+message MsgPaintExtraResp6 {
+    optional int32 answer = 1;
+    optional bool isRight = 2;
+    optional bool isChamp = 3;
+}
+
+message MsgPaintExtraReq7 {
+    optional int32 comment = 1;
+}
+
+message MsgPaintExtraResp7 {
+    optional string playerId = 1;
+    optional int32 comment = 2;
+}
+
+message MsgKafkaPos {
+    optional int32 index = 1;
+    optional string playerId = 2;
+}
+
+message MsgKafkaInit {
+    repeated MsgKafkaPos msgPos = 1;
+}
+
+message MsgKafkaChoose {
+    repeated MsgKafkaPos msgPos = 1;
+    optional string drawPlayerId = 2;
+    optional int32 questionId = 3;
+    optional int32 answer = 4;
+}
+
+message MsgKafkaAnswer {
+    repeated MsgKafkaPos msgPos = 1;
+    optional string drawPlayerId = 2;
+    optional int32 questionId = 3;
+    optional int32 answer = 4;
+    optional string scoreChange = 5;
+    optional string score = 6;
+    optional string ownerScoreChange = 7;
+    optional string ownerScore = 8;
+}
+
+message MsgKafkaSettle {
+    optional string playerId = 1;
+    optional string score = 2;
+}
+
+message MsgKafkaSettlement {
+    repeated MsgKafkaSettle msgSettle = 1;
+    repeated string offlinePlayer = 2;
+}
+
+message MsgGreedyFishExtraReq2 {
+}
+
+message MsgGreedyFishExtraResp2 {
+    optional MsgGreedyFishRoom gameData = 1;
+}
+
+message MsgGreedyFishExtraReq3 {
+    optional int32 x = 1;
+    optional int32 y = 2;
+    optional int32 fishLv = 3;
+}
+
+message MsgGreedyFishExtraResp3 {
+    optional string playerId = 1;
+    optional int32 x = 2;
+    optional int32 y = 3;
+    optional int32 fishLv = 4;
+    optional MsgGreedyFishRoom gameData = 5;
+}
+
+message MsgGreedyFishExtraResp4 {
+    optional string noOperatePlayerId = 1;
+    optional MsgGreedyFishRoom gameData = 2;
+}
+
+message MsgGreedyFishExtraReq5 {
+    optional int32 emoji = 1;
+}
+
+message MsgGreedyFishExtraResp5 {
+    optional string playerId = 1;
+    optional int32 emoji = 2;
+}
+
+message MsgGreedyFishExtraResp6 {
+    optional MsgGreedyFishRoom gameData = 1;
+}
+
+message MsgAnimalChessRoom {
+    repeated int32 updateFieldsList = 99;
+    optional int64 uniqueId = 1;
+    repeated MsgAnimalChessPlayerSeat players = 2;
+    optional string turnPlayerId = 3;
+    optional int64 turnEndTime = 4;
+    repeated MsgAnimalChessGrid grids = 5;
+    optional string winner = 6;
+    optional int32 status = 7;
+    optional string firstTurnPlayer = 8;
+}
+
+message MsgAnimalChessPlayerSeat {
+    optional MsgSeat msgSeat = 1;
+    optional int32 finalScore = 3;
+}
+
+message MsgAnimalChessGrid {
+    optional int32 x = 1;
+    optional int32 y = 2;
+    optional int32 chessLv = 3;
+    optional string playerId = 4;
+    optional int32 color = 5;
+    optional int32 blockType = 6;
+}
+
+message MsgKafkaAnimalChessSettlement {
+    repeated MsgKafkaPos players = 1;
+    optional int32 result = 2;
+    optional string currentPlayer = 3;
+    optional string offlinePlayers = 4;
+}
+
+message MsgAnimalChessExtraReq2 {
+}
+
+message MsgAnimalChessExtraResp2 {
+    optional MsgAnimalChessRoom gameData = 1;
+}
+
+message MsgAnimalChessExtraReq3 {
+    optional int32 oldX = 1;
+    optional int32 oldY = 2;
+    optional int32 newX = 3;
+    optional int32 newY = 4;
+}
+
+message MsgAnimalChessExtraResp3 {
+    optional string playerId = 1;
+    optional int32 oldX = 2;
+    optional int32 oldY = 3;
+    optional int32 newX = 4;
+    optional int32 newY = 5;
+    optional MsgAnimalChessRoom gameData = 6;
+}
+
+message MsgAnimalChessExtraResp4 {
+    optional string noOperatePlayerId = 1;
+    optional MsgAnimalChessRoom gameData = 2;
+}
+
+message MsgAnimalChessExtraReq5 {
+    optional int32 emoji = 1;
+}
+
+message MsgAnimalChessExtraResp5 {
+    optional string playerId = 1;
+    optional int32 emoji = 2;
+}
+
+message MsgAnimalChessExtraResp6 {
+    optional MsgAnimalChessRoom gameData = 1;
+}
+
+message MsgWolfComingRoom {
+    repeated int32 updateFieldsList = 99;
+    optional int64 uniqueId = 1;
+    repeated MsgWolfComingPlayerSeat players = 2;
+    optional string turnPlayerId = 3;
+    optional int64 turnEndTime = 4;
+    repeated MsgWolfComingGrid grids = 5;
+    optional string winner = 6;
+    optional int32 status = 7;
+    optional string firstTurnPlayer = 8;
+    optional int32 rounds = 9;
+}
+
+message MsgWolfComingPlayerSeat {
+    optional MsgSeat msgSeat = 1;
+}
+
+message MsgWolfComingGrid {
+    optional int32 position = 1;
+    optional int32 chessLv = 2;
+    optional string playerId = 3;
+}
+
+message MsgKafkaWolfComingSettlement {
+    repeated MsgKafkaPos players = 1;
+    optional int32 result = 2;
+    optional string currentPlayer = 3;
+    optional string offlinePlayers = 4;
+}
+
+message MsgWolfComingExtraReq2 {
+}
+
+message MsgWolfComingExtraResp2 {
+    optional MsgWolfComingRoom gameData = 1;
+}
+
+message MsgWolfComingExtraReq3 {
+    optional int32 oldPosition = 1;
+    optional int32 newPosition = 2;
+}
+
+message MsgWolfComingExtraResp3 {
+    optional string playerId = 1;
+    optional int32 oldPosition = 2;
+    optional int32 newPosition = 3;
+    optional int32 status = 4;
+    optional MsgWolfComingRoom gameData = 6;
+}
+
+message MsgWolfComingExtraResp4 {
+    optional string noOperatePlayerId = 1;
+    optional MsgWolfComingRoom gameData = 2;
+}
+
+message MsgWolfComingExtraReq5 {
+    optional int32 emoji = 1;
+}
+
+message MsgWolfComingExtraResp5 {
+    optional string playerId = 1;
+    optional int32 emoji = 2;
+}
+
+message MsgWolfComingExtraResp6 {
+    optional MsgWolfComingRoom gameData = 1;
+}
+
+message GetChannelListReq_60000 {
+}
+
+message GetChannelListResp_60000 {
+    required int32 ret = 1;
+    optional MsgChannel msgChannel = 2;
+}
+
+message GetFashionReq_60001 {
+}
+
+message GetFashionResp_60001 {
+    required int32 ret = 1;
+    repeated int32 fashionId = 2;
+    optional int32 useFashion = 3;
+}
+
+message UseFashionReq_60002 {
+    required int32 fashionId = 1;
+}
+
+message UseFashionResp_60002 {
+    required int32 ret = 1;
+    repeated int32 fashionId = 2;
+    optional int32 useFashion = 3;
+}
+
+message LoginReq_60003 {
+    optional int32 channelId = 1;
+}
+
+message LoginResp_60003 {
+    required int32 ret = 1;
+    optional int32 channelId = 2;
+    repeated MsgPlayerBrief msgBrief = 3;
+    optional MsgChannel msgChannel = 4;
+}
+
+message MoveReq_60004 {
+    required int32 beginPosId = 1;
+    required int32 endPosId = 2;
+    required int32 direction = 3;
+}
+
+message MoveResp_60004 {
+    required int32 ret = 1;
+    optional MsgPlayerMove msgMove = 2;
+}
+
+message EnterRoomReq_60005 {
+    required int32 gameId = 1;
+}
+
+message EnterRoomResp_60005 {
+    required int32 ret = 1;
+    optional MsgRoom msgRoom = 2;
+}
+
+message GetInviteReq_60006 {
+}
+
+message GetInviteResp_60006 {
+    required int32 ret = 1;
+    repeated MsgInvite msgInvite = 2;
+}
+
+message InviteReq_60007 {
+    optional string toPlayerId = 1;
+}
+
+message InviteResp_60007 {
+    required int32 ret = 1;
+    optional bool isOneKey = 2;
+    optional int64 lastInviteTime = 3;
+}
+
+message NotifyInviteResp_60008 {
+    optional MsgInviteList msgInvite = 1;
+}
+
+message GetInviteListReq_60009 {
+}
+
+message GetInviteListResp_60009 {
+    required int32 ret = 1;
+    repeated MsgInviteList msgInvite = 2;
+}
+
+message DealWithInvitationReq_60010 {
+    required MsgInviteBrief msgInvite = 1;
+    optional string fromPlayerId = 2;
+    optional bool isAccept = 3;
+}
+
+message DealWithInvitationResp_60010 {
+    required int32 ret = 1;
+    optional MsgRoom msgRoom = 2;
+    repeated MsgInviteList msgInvite = 3;
+}
+
+message NotifyPlayerJoinResp_60011 {
+    optional int64 roomId = 1;
+    repeated MsgSeat msgSeat = 2;
+}
+
+message ExitRoomReq_60012 {
+}
+
+message ExitRoomResp_60012 {
+    required int32 ret = 1;
+    optional int32 channel = 2;
+    repeated MsgPlayerBrief msgBrief = 3;
+}
+
+message NotifyMapResp_60013 {
+    repeated MsgPlayerMove msgMove = 1;
+    repeated string offlinePlayerId = 2;
+}
+
+message MatchReq_60014 {
+}
+
+message MatchResp_60014 {
+    required int32 ret = 1;
+    optional int64 timeStamp = 2;
+}
+
+message CancelMatchReq_60015 {
+    required int64 roomId = 1;
+}
+
+message CancelMatchResp_60015 {
+    required int32 ret = 1;
+    optional int32 state = 2;
+}
+
+message MatchWsRemote_60016 {
+    optional MsgHallGameHead msgHead = 1;
+    repeated MsgSeat msgSeat = 2;
+}
+
+message MatchHsRemote_60016 {
+    required int32 ret = 1;
+}
+
+message CancelMatchHsRemote_60017 {
+    optional int64 uniqueId = 1;
+    optional int32 hallId = 2;
+    optional int32 channel = 3;
+    optional int64 roomId = 4;
+    optional int32 state = 5;
+    repeated string playerId = 6;
+}
+
+message GetTaskReq_60018 {
+}
+
+message GetTaskResp_60018 {
+    required int32 ret = 1;
+    repeated MsgTask msgTask = 2;
+    repeated MsgGameRound msgRound = 3;
+}
+
+message GetTaskAwardReq_60019 {
+    optional int32 taskId = 1;
+}
+
+message GetTaskAwardResp_60019 {
+    required int32 ret = 1;
+    optional int32 taskId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 3;
+}
+
+message LogoutReq_60020 {
+}
+
+message LogoutResp_60020 {
+    required int32 ret = 1;
+}
+
+message GetChannelListCsRemote_60021 {
+    optional int32 hallId = 1;
+    repeated int32 recently = 2;
+    repeated string friend = 3;
+    repeated string member = 4;
+}
+
+message GetChannelListGsRemote_60021 {
+    required int32 ret = 1;
+    optional MsgChannel msgChannel = 2;
+}
+
+message UseFashionCsRemote_60022 {
+    optional int32 hallId = 1;
+    optional string playerId = 2;
+    optional int32 fashionId = 3;
+}
+
+message LoginCsRemote_60023 {
+    optional int32 channelId = 1;
+    optional int32 hallId = 2;
+    optional int32 channel = 3;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 4;
+    optional int32 useFashion = 5;
+    repeated int32 recently = 6;
+    repeated string friend = 7;
+    repeated string member = 8;
+}
+
+message LoginGsRemote_60023 {
+    required int32 ret = 1;
+    optional int32 channelId = 2;
+    repeated MsgPlayerBrief msgBrief = 3;
+    optional MsgChannel msgChannel = 4;
+}
+
+message MoveCsRemote_60024 {
+    optional int32 hallId = 1;
+    optional string playerId = 2;
+    optional int32 beginPosId = 3;
+    optional int32 endPosId = 4;
+    optional int32 direction = 5;
+}
+
+message MoveGsRemote_60024 {
+    required int32 ret = 1;
+    optional MsgPlayerMove msgMove = 2;
+}
+
+message EnterRoomCsRemote_60025 {
+    optional int32 hallId = 1;
+    optional string playerId = 2;
+    optional int32 gameId = 3;
+}
+
+message EnterRoomGsRemote_60025 {
+    required int32 ret = 1;
+    optional MsgRoom msgRoom = 2;
+}
+
+message GetInviteCsRemote_60026 {
+    optional int32 hallId = 1;
+    optional string playerId = 2;
+}
+
+message GetInviteGsRemote_60026 {
+    required int32 ret = 1;
+}
+
+message InviteCsRemote_60027 {
+    optional int32 hallId = 1;
+    optional string playerId = 2;
+    optional string toPlayerId = 3;
+}
+
+message InviteGsRemote_60027 {
+    required int32 ret = 1;
+    optional int64 lastInviteTime = 2;
+    optional int32 channel = 3;
+    optional int64 roomId = 4;
+    optional int32 gameId = 5;
+}
+
+message InvitationGsRemote_60028 {
+    repeated string playerId = 1;
+    optional MsgInviteList msgInvite = 2;
+}
+
+message GetInviteListCsRemote_60029 {
+    optional int32 hallId = 1;
+    repeated MsgInviteList msgInvite = 2;
+}
+
+message GetInviteListGsRemote_60029 {
+    required int32 ret = 1;
+    repeated MsgInviteList msgInvite = 2;
+}
+
+message DealWithInvitationCsRemote_60030 {
+    optional int32 channelId = 1;
+    optional int32 hallId = 2;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgPlayer = 3;
+    optional int32 useFashion = 4;
+    optional MsgInviteList msgPrivate = 5;
+    optional bool isAccept = 6;
+    repeated MsgInviteList msgInvite = 7;
+}
+
+message DealWithInvitationGsRemote_60030 {
+    required int32 ret = 1;
+    optional MsgRoom msgRoom = 2;
+    repeated MsgInviteList msgInvite = 3;
+}
+
+message NotifyPlayerJoinGsRemote_60031 {
+    optional NotifyPlayerJoinResp_60011 msg = 1;
+    repeated string playerId = 2;
+}
+
+message ExitRoomCsRemote_60032 {
+    optional int32 channelId = 1;
+    optional int32 hallId = 2;
+    optional string playerId = 3;
+}
+
+message ExitRoomGsRemote_60032 {
+    required int32 ret = 1;
+    optional int32 channel = 2;
+    repeated MsgPlayerBrief msgBrief = 3;
+}
+
+message MatchCsRemote_60033 {
+    optional int32 channelId = 1;
+    optional int32 hallId = 2;
+    optional string playerId = 3;
+}
+
+message MatchGsRemote_60033 {
+    required int32 ret = 1;
+    optional int64 timeStamp = 2;
+}
+
+message CancelMatchCsRemote_60034 {
+    optional int32 channelId = 1;
+    optional int32 hallId = 2;
+    optional string playerId = 3;
+}
+
+message CancelMatchGsRemote_60034 {
+    required int32 ret = 1;
+}
+
+message MatchOverHsRemote_60035 {
+    optional int32 channelId = 1;
+    repeated CancelMatchHsRemote_60017 msg = 2;
+}
+
+message CheckRoomLegalHsRemote_60036 {
+    optional int32 hallId = 1;
+    optional int32 gameId = 2;
+    optional string playerId = 3;
+}
+
+message CheckRoomLegalGsRemote_60036 {
+    required int32 ret = 1;
+}
+
+message GetTaskRedDotReq_60037 {
+}
+
+message GetTaskRedDotResp_60037 {
+    required int32 ret = 1;
+    optional bool isShow = 2;
+}
+
+message NotifyMapGsRemote_60038 {
+    optional NotifyMapResp_60013 msg = 1;
+    repeated string playerId = 2;
+}
+
+message LogoutHsRemote_60039 {
+    optional int32 channelId = 1;
+    optional int32 hallId = 2;
+    optional string playerId = 3;
+}
+
+message LogoutGsRemote_60039 {
+    required int32 ret = 1;
+}
+
+message AutoCancelMatchGsRemote_60039 {
+    optional CancelMatchResp_60015 msg = 1;
+    repeated string playerId = 3;
+}
+
+message CancelMatchWsRemote_60040 {
+    optional MsgHallGameHead msgHead = 1;
+    optional int32 seatCnt = 2;
+}
+
+message CancelMatchHsRemote_60040 {
+    required int32 ret = 1;
+}
+
+message StartMatchGsRemote_60041 {
+    optional MatchResp_60014 msg = 1;
+    repeated string playerId = 3;
+}
+
+message BatchNotifyRoomGsRemote_60042 {
+    repeated MsgEndRoom msgRoom = 1;
+}
+
+message MatchCompleteHsRemote_60043 {
+    repeated MsgMatchComplete msgComplete = 1;
+}
+
+message MatchCompleteGsRemote_60043 {
+    required int32 ret = 1;
+    repeated MsgMatchComplete msgComplete = 2;
+}
+
+message CloseHsRemote_60044 {
+    optional int32 serverId = 1;
+    optional int32 hallId = 2;
+}
+
+message NotifyRoomGsRemote_60045 {
+    repeated string playerId = 1;
+    optional EnterRoomResp_60005 msg = 2;
+}
+
+message NotifyCloseResp_60046 {
+}
+
+message NotifyCloseGsRemote_60047 {
+    repeated string playerId = 1;
+}
+
+message InviteCrossFriendCsRemote_60048 {
+    optional string fromPlayerId = 1;
+    optional string toPlayerId = 2;
+    optional int32 hallId = 3;
+}
+
+message InviteCrossFriendGsRemote_60048 {
+    required int32 ret = 1;
+}
+
+message HallGameReq_60501 {
+    optional MsgHead msgHead = 1;
+    optional bytes data = 2;
+}
+
+message HallGameResp_60501 {
+    required int32 ret = 1;
+    optional bytes data = 2;
+}
+
+message HallGameWsRemote_60502 {
+    optional MsgHead msgHead = 1;
+    optional string playerId = 2;
+    optional bytes data = 3;
+}
+
+message HallGameGsRemote_60502 {
+    required int32 ret = 1;
+    optional bytes data = 2;
+    optional bytes kafka = 3;
+}
+
+message HallGameGsRemote_60503 {
+    optional MsgHead msgHead = 1;
+    repeated string playerId = 2;
+    optional bytes data = 3;
+    optional bytes kafka = 4;
+}
+
+message HallGameNotifyResp_60504 {
+    optional MsgHead msgHead = 1;
+    optional bytes data = 2;
+}
+
+message HallGameBatchGsRemote_60505 {
+    repeated MsgHallGameContent msgContent = 1;
+}
+
+message HallGameBatchEndGsRemote_60506 {
+    repeated MsgGameEnd msgEnd = 1;
+}
+
+message BatchInitEsRemote_60507 {
+    repeated HallGameReq_60501 msg = 1;
+}
+
+message BatchInitWsRemote_60507 {
+    required int32 ret = 1;
+    repeated int64 uniqueId = 2;
+}
+
+message GameEndKafkaRemote_60508 {
+    optional MsgHead msgHead = 1;
+    optional bytes data = 2;
+}
+
+message ReconnectGsRemote_60509 {
+    optional string playerId = 1;
+    optional bytes data = 2;
+}
+
+message OfflineGsRemote_60510 {
+    optional string playerId = 1;
+}
+
+message PlayerOfflineResp_60511 {
+}
+
+message GameControlKafkaRemote_60512 {
+    optional MsgHead msgHead = 1;
+    optional bytes data = 2;
+}

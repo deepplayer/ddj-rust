@@ -1,0 +1,484 @@
+syntax = "proto2";
+
+package bf.messages.game.WestJourneyMessage;
+
+import "GmActivityMessage.proto";
+import "CommonMsgMessage.proto";
+import "RankingMessage.proto";
+import "GmActivityCommonMessage.proto";
+import "ActivityMysteryMessage.proto";
+import "PlayerMessage.proto";
+
+message MsgWestJourneyData {
+    repeated MsgWestJourneyImageData imageData = 1;
+    repeated MsgWestJourneyMapData mapData = 2;
+    repeated MsgWestJourneyAchieveData achieveData = 3;
+    repeated bf.messages.game.GmActivityMessage.MsgRank msgRank = 4;
+    repeated MsgWestJourneyEventData eventData = 5;
+}
+
+message MsgWestJourneyImageData {
+    optional int32 imageId = 1;
+    optional int32 imageSort = 2;
+    optional int32 condition = 3;
+    optional int32 param = 4;
+    optional int32 effect = 5;
+    optional int32 effectValue = 6;
+}
+
+message MsgWestJourneyMapData {
+    optional int32 id = 1;
+    optional string rewardView1 = 2;
+    optional int32 wipeOutCost1 = 3;
+    optional string rewardView2 = 4;
+    optional int32 wipeOutCost2 = 5;
+}
+
+message MsgWestJourneyEventData {
+    optional int32 id = 1;
+    optional int32 type = 2;
+    optional string addScore = 3;
+    optional string reduceScore = 4;
+    optional string rewardExp = 5;
+    optional string addIron = 6;
+    optional string itemReward = 7;
+}
+
+message MsgWestJourneyAchieveData {
+    optional int32 id = 1;
+    optional int32 type = 2;
+    optional int32 value = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 4;
+}
+
+message MsgWestJourneyPlayerRankExtraData {
+    optional int32 imageId = 1;
+}
+
+message MsgPlayerData {
+    optional int32 useImageId = 1;
+    optional bf.messages.game.GmActivityCommonMessage.MsgRankPlayerData rankData = 2;
+    optional int32 charge = 3;
+    optional MsgWestJourneyCrossRunMap historyMap = 4;
+    optional MsgWestJourneyCrossRunMap curMap = 5;
+    optional MsgWestJourneyTeam team = 6;
+    optional int32 defeat = 7;
+    optional int32 kasayaX = 9;
+    optional int32 beatSpriteRewardSize = 10;
+    repeated int32 achieveRewardType = 11;
+    optional int32 onKasayaX = 12;
+}
+
+message MsgWestJourneyCrossRunMap {
+    optional int32 chapterId = 1;
+    optional int32 mapId = 2;
+    repeated MsgWestJourneyCrossRunMapGrids grids = 3;
+    repeated int32 startX = 4;
+    repeated int32 specialStartX = 5;
+    optional int32 allX = 6;
+}
+
+message MsgWestJourneyCrossRunMapGrids {
+    optional int32 x = 1;
+    optional int32 y = 2;
+    optional int32 id = 3;
+    optional int32 times = 4;
+    optional int32 itemId = 5;
+    optional int32 itemNum = 6;
+}
+
+message MsgWestJourneyTeam {
+    optional int32 lv = 1;
+    optional int32 attack = 2;
+    optional int32 hp = 3;
+    optional int32 time = 4;
+    optional int32 attackRate = 5;
+    repeated MsgWestJourneyCharacterEnergy energys = 6;
+    optional int32 limitHp = 7;
+}
+
+message MsgWestJourneyCharacterEnergy {
+    optional int32 id = 1;
+    optional int32 energy = 2;
+}
+
+message MsgWestJourneyMatchNpc {
+    optional int32 id = 1;
+    optional int32 hp = 2;
+    optional int32 attackRound = 3;
+    optional int32 limitHp = 4;
+    optional int32 damage = 5;
+}
+
+message MsgWestJourneyCoordinate {
+    optional int32 x = 1;
+    optional int32 y = 2;
+}
+
+message MsgWestJourneyMatchGrids {
+    optional MsgWestJourneyCoordinate coordinate = 1;
+    optional int32 id = 2;
+}
+
+message MsgWestJourneyMatchExplode {
+    optional MsgWestJourneyMatchGrids clearGrid = 1;
+    optional MsgWestJourneyMatchGrids grid = 2;
+    repeated MsgWestJourneyGridsHarm harm = 3;
+}
+
+message MsgWestJourneyGridsHarm {
+    optional int32 npcId = 1;
+    optional int32 harm = 2;
+}
+
+message MsgWestJourneyFallen {
+    optional MsgWestJourneyCoordinate coordinate = 1;
+    optional MsgWestJourneyMatchGrids grid = 2;
+}
+
+message MsgWestJourneyMatchNpcHarm {
+    optional int32 id = 1;
+    optional int32 harm = 2;
+}
+
+message MsgWestJourneyMatchResult {
+    repeated MsgWestJourneyMatchExplode explodes = 1;
+    repeated MsgWestJourneyFallen downs = 2;
+}
+
+message WestJourneyCorssRunMapCsRemote_38501 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional MsgWestJourneyCrossRunMap map = 2;
+}
+
+message WestJourneyCorssRunMapGsRemote_38501 {
+    optional MsgWestJourneyCrossRunMap map = 1;
+    required int32 ret = 2;
+}
+
+message WestJourneyCrossStartCsRemote_38502 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional bf.messages.game.PlayerMessage.MsgCrossUser msgOfflinePlayer = 3;
+}
+
+message WestJourneyCrossAchieveRewardCsRemote_38505 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 achieveId = 2;
+    required string playerId = 3;
+    optional int32 composeId = 4;
+}
+
+message WestJourneyCrossAchieveRewardGsRemote_38505 {
+    required int32 ret = 1;
+}
+
+message GetRankCsRemote_38506 {
+    required string playerId = 1;
+    required int64 familyId = 2;
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 3;
+    repeated int32 achievementId = 4;
+    optional int32 composeId = 5;
+    optional int32 serverId = 6;
+}
+
+message GetRankGsRemote_38506 {
+    required int32 ret = 1;
+    repeated bf.messages.game.RankingMessage.MsgRankIndex msgRankIndex = 2;
+    optional int64 oldFamilyId = 3;
+    repeated int32 achievementId = 4;
+    optional int32 isAllGsSync = 5;
+}
+
+message WestJourneyUseImageCsRemote_38508 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 id = 2;
+    required string playerId = 3;
+}
+
+message WestJourneyUseImageGsRemote_38508 {
+    required int32 ret = 1;
+}
+
+message WestJourneyGetPlayerDataCsRemote_38510 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required string playerId = 2;
+    repeated int32 achievememtId = 3;
+}
+
+message WestJourneyGetPlayerDataGsRemote_38510 {
+    required int32 ret = 1;
+    optional MsgPlayerData playerData = 2;
+}
+
+message WestJourneyGetAchievementListCsRemote_38515 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required string playerId = 2;
+    repeated int32 achievememtId = 3;
+    required int32 type = 4;
+    optional int32 composeId = 5;
+}
+
+message WestJourneyGetAchievementListGsRemote_38515 {
+    required int32 ret = 1;
+    repeated bf.messages.game.ActivityMysteryMessage.MsgAchievement msgAchievement = 2;
+    optional bool isJoin = 3;
+}
+
+message WestJourneyPlayerRunMapCsRemote_38516 {
+    optional string playerId = 1;
+    optional MsgWestJourneyCrossRunMap historyMap = 4;
+    optional MsgWestJourneyCrossRunMap curMap = 5;
+}
+
+message WestJourneyPushUpRankCsRemote_38517 {
+    optional string playerId = 1;
+    optional bf.messages.game.RankingMessage.MsgRankingEntryData rank = 2;
+}
+
+message WestJourneyGetRunMapReq_38550 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required MsgWestJourneyCrossRunMap map = 2;
+}
+
+message WestJourneyGetRunMapResp_38550 {
+    optional MsgWestJourneyCrossRunMap map = 1;
+    required int32 ret = 2;
+}
+
+message WestJourneyImageNotifyResp_38552 {
+    optional int32 charge = 1;
+}
+
+message WestJourneyTeamUpgradeReq_38554 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message WestJourneyTeamUpgradeResp_38554 {
+    optional int32 ret = 1;
+    optional MsgWestJourneyTeam team = 2;
+}
+
+message WestJourneyUseImageReq_38555 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 id = 2;
+}
+
+message WestJourneyUseImageResp_38555 {
+    required int32 ret = 1;
+    required int32 id = 2;
+}
+
+message WestJourneyStartReq_38556 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required MsgWestJourneyCrossRunMap map = 2;
+}
+
+message WestJourneyStartResp_38556 {
+    required int32 ret = 1;
+    optional MsgWestJourneyCrossRunMap map = 2;
+}
+
+message WestJourneyArriveReq_38558 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional MsgWestJourneyCoordinate coordinate = 2;
+}
+
+message WestJourneyArriveResp_38558 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+    optional int32 score = 3;
+    optional int32 kasayaX = 4;
+    optional int32 beatSpriteRewardSize = 5;
+    optional int32 defeat = 7;
+    optional MsgWestJourneyCoordinate coordinate = 8;
+    optional int32 rankIndex = 9;
+    optional int64 playerScore = 10;
+    optional int32 onKasayaX = 11;
+}
+
+message WestJourneyExitMapReq_38559 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message WestJourneyExitMapResp_38559 {
+    optional int32 ret = 1;
+}
+
+message WestJourneyGetMoppingUpInfoReq_38560 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required MsgWestJourneyCrossRunMap map = 2;
+}
+
+message WestJourneyGetMoppingUpInfoResp_38560 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+}
+
+message WestJourneyMoppingUpReq_38561 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required MsgWestJourneyCrossRunMap map = 2;
+    required int32 time = 3;
+}
+
+message WestJourneyMoppingUpResp_38561 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+    optional int32 beatSpriteRewardSize = 3;
+}
+
+message WestJourneyUseKasayaReq_38562 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message WestJourneyUseKasayaResp_38562 {
+    required int32 ret = 1;
+    optional int32 kasayaX = 2;
+    optional int32 onKasayaX = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 4;
+    optional int32 score = 5;
+    optional int32 beatSpriteRewardSize = 6;
+    optional int32 defeat = 7;
+    optional MsgWestJourneyCoordinate coordinate = 8;
+    optional int32 rankIndex = 9;
+    optional int64 playerScore = 10;
+}
+
+message WestJourneyBeatSpriteRewardReq_38563 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message WestJourneyBeatSpriteRewardResp_38563 {
+    required int32 ret = 1;
+    optional int32 beatSpriteRewardSize = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+}
+
+message GetAchievementListReq_38564 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 type = 2;
+}
+
+message GetAchievementListResp_38564 {
+    required int32 ret = 1;
+    repeated bf.messages.game.ActivityMysteryMessage.MsgAchievement msgAchievement = 2;
+    optional bool isJoin = 3;
+}
+
+message WestJourneyAchieveRewardReq_38565 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 achieveId = 2;
+}
+
+message WestJourneyAchieveRewardResp_38565 {
+    required int32 ret = 1;
+    optional int32 achieveId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+}
+
+message WestJourneyMatchStarReq_38580 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message WestJourneyMatchStarResp_38580 {
+    required int32 ret = 1;
+    repeated MsgWestJourneyMatchGrids grids = 2;
+    repeated MsgWestJourneyMatchNpc npcs = 4;
+    optional MsgWestJourneyTeam team = 5;
+}
+
+message WestJourneyMatchExchangeGridReq_38581 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional MsgWestJourneyCoordinate start = 2;
+    optional MsgWestJourneyCoordinate end = 3;
+}
+
+message WestJourneyMathExchangeGridResp_38581 {
+    required int32 ret = 1;
+    optional MsgWestJourneyCoordinate start = 2;
+    optional MsgWestJourneyCoordinate end = 3;
+    repeated MsgWestJourneyMatchGrids grids = 4;
+    repeated MsgWestJourneyMatchResult results = 5;
+    optional int32 finish = 7;
+    optional MsgWestJourneyTeam team = 8;
+    optional bool reload = 9;
+    repeated MsgWestJourneyMatchNpc npcs = 10;
+    repeated MsgWestJourneyMatchNpcHarm npcHarm = 11;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 12;
+}
+
+message WestJourneyMatchUseSkillReq_38582 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 characterId = 2;
+}
+
+message WestJourneyMatchUseSkillResp_38582 {
+    required int32 ret = 1;
+    repeated MsgWestJourneyMatchResult result = 2;
+    optional MsgWestJourneyTeam team = 3;
+    repeated MsgWestJourneyMatchNpc npcs = 4;
+    optional int32 harm = 5;
+    optional int32 npcId = 6;
+    optional int32 finish = 7;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 8;
+    optional bool reload = 9;
+}
+
+message WestJourneyMatchDifficultyReq_38584 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message WestJourneyMatchDifficultyResp_38584 {
+    required int32 ret = 1;
+    required int32 id = 2;
+    optional bool in = 3;
+}
+
+message WestJourneyMatchHintReq_38585 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message WestJourneyMatchHintResp_38585 {
+    required int32 ret = 1;
+    repeated MsgWestJourneyCoordinate hints = 2;
+}
+
+message WestJourneyMatchResetReq_38586 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message WestJourneyMatchResetResp_38586 {
+    required int32 ret = 1;
+}
+
+message WestJourneyPlayerRunMapResp_38587 {
+    optional MsgWestJourneyCrossRunMap historyMap = 4;
+    optional MsgWestJourneyCrossRunMap curMap = 5;
+}
+
+message WestJourneyPushUpRankResp_38588 {
+    optional bf.messages.game.RankingMessage.MsgRankingEntryData rank = 1;
+}
+
+message MsgTransferItem {
+    optional int32 templateId = 1;
+    optional int64 num = 2;
+    optional string score = 3;
+}
+
+message TransformItemReq_38589 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message TransformItemResp_38589 {
+    required int32 ret = 1;
+    repeated MsgTransferItem item = 2;
+}
+
+message WestJourneyStopReq_38590 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message WestJourneyStopResp_38590 {
+    required int32 ret = 1;
+}

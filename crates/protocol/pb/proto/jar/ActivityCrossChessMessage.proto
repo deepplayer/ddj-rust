@@ -1,0 +1,546 @@
+syntax = "proto2";
+
+package bf.messages.game.ActivityCrossChessMessage;
+
+import "CommonMsgMessage.proto";
+import "ChatMessage.proto";
+import "GmActivityMessage.proto";
+import "PlayerMessage.proto";
+
+message MsgSelfData {
+    repeated int32 updateFieldsList = 90;
+    optional int32 stair = 1;
+    optional string curHp = 2;
+    optional string maxHp = 3;
+    optional string score = 4;
+    optional string book = 5;
+    repeated int32 eventIds = 6;
+    repeated MsgEventCompleteHist msgEventCompleteHist = 7;
+    optional MsgChessEvent msgChessEvent = 8;
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 9;
+    optional int32 useEnergyNum = 10;
+}
+
+message MsgEventCompleteHist {
+    optional int32 eventId = 1;
+    optional int32 num = 2;
+}
+
+message MsgChessEvent {
+    optional int32 eventId = 1;
+    optional MsgChessEventNpc msgChessEventNpc = 2;
+    optional MsgChessEventPlayer msgChessEventPlayer = 3;
+    optional bool isFinish = 4;
+}
+
+message MsgChessEventNpc {
+    optional int64 npcId = 1;
+    optional string curHp = 2;
+    optional string maxHp = 3;
+    optional int64 nextAtkTime = 4;
+    optional bool isSign = 5;
+    optional int32 stair = 6;
+    optional int32 restScore = 7;
+}
+
+message MsgChessEventPlayer {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer msgOfflinePlayer = 1;
+    optional string curHp = 2;
+    optional string maxHp = 3;
+    optional int64 nextAtkTime = 4;
+    optional bool isSign = 5;
+    optional int32 stair = 6;
+    optional int32 restScore = 7;
+}
+
+message MsgChessEventNotify {
+    optional int32 templateId = 1;
+    repeated string replaceStr = 2;
+    optional int64 eventTime = 3;
+    optional MsgNotifyExtra msgNotifyExtra = 4;
+    optional int64 stageEndTime = 5;
+}
+
+message MsgNotifyExtra {
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResourcesLose = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResourcesGain = 2;
+}
+
+message MsgChessMark {
+    optional MsgChessEventNpc msgChessEventNpc = 1;
+    optional MsgChessEventPlayer msgChessEventPlayer = 2;
+    optional string markPlayerId = 3;
+    optional string markPlayerName = 4;
+    optional int32 eventId = 5;
+}
+
+message MsgOneKeyResult {
+    optional int32 eventId = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer msgOfflinePlayer = 2;
+    optional string damage = 3;
+    optional bf.messages.game.CommonMsgMessage.MsgResources score = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 5;
+    optional int32 stair = 6;
+    optional bool isFinish = 7;
+}
+
+message MsgActivityChessHist {
+    optional string playerId = 1;
+    optional int32 templateId = 2;
+    repeated string replaceStr = 3;
+    optional int64 eventTime = 4;
+}
+
+message MsgDefenceHist {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer msgOfflinePlayer = 1;
+    optional string damage = 2;
+    optional int32 percent = 3;
+}
+
+message MsgRankIndex {
+    optional int32 rankType = 1;
+    optional int32 index = 2;
+}
+
+message MsgChessMemberData {
+    optional string memberId = 1;
+    optional bool isLeader = 2;
+    optional string money = 3;
+    optional string score = 4;
+    optional string book = 5;
+}
+
+message MsgEventResult {
+    optional int32 eventId = 1;
+    optional int32 battleResult = 2;
+    optional string damage = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources score = 4;
+    optional int64 eventTime = 5;
+    optional int32 stair = 6;
+    optional string money = 7;
+    optional int32 scoreChange = 8;
+    optional string playerScore = 9;
+    optional int32 bookChange = 10;
+    optional string playerBook = 11;
+    optional string hpLeft = 12;
+    optional string targetId = 13;
+    optional string defMaxHp = 14;
+    optional string defCurHp = 15;
+    repeated MsgChessMemberData msgChessMemberData = 16;
+    optional int32 playerRank = 17;
+    optional int32 teamRank = 18;
+    optional int64 defTeamId = 19;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer defPlayerData = 20;
+    optional bool isFinish = 21;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 22;
+}
+
+message MsgExploreEvent {
+    optional int32 eventId = 1;
+    optional bool isFree = 2;
+}
+
+message MsgPlayerRankIndex {
+    optional int64 teamId = 1;
+    repeated MsgRankIndex msgRankIndex = 2;
+    repeated MsgChessMemberData msgChessMemberData = 3;
+    optional int32 serverId = 4;
+    optional string playerId = 5;
+}
+
+message MsgCrossChessReport {
+    optional int32 templateId = 1;
+    optional int64 eventTime = 2;
+    repeated string param = 3;
+}
+
+message GetChessEventReq_27131 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetChessEventResp_27131 {
+    required int32 ret = 1;
+    optional MsgSelfData msgSelfData = 2;
+}
+
+message ActiveChessEventReq_27132 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message ActiveChessEventResp_27132 {
+    required int32 ret = 1;
+    optional MsgSelfData msgSelfData = 2;
+    optional string damage = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources score = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 5;
+}
+
+message SyncEventNotifyResp_27133 {
+    repeated MsgChessEventNotify msgChessEventNotify = 1;
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+}
+
+message ClearEventNotifyReq_27134 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int64 eventTime = 2;
+}
+
+message ClearEventNotifyResp_27134 {
+    required int32 ret = 1;
+}
+
+message ActivityChessExploreReq_27135 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 stair = 2;
+}
+
+message ActivityChessExploreResp_27135 {
+    required int32 ret = 1;
+    optional MsgSelfData msgSelfData = 2;
+}
+
+message ActivityChessGoUpStairReq_27136 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required bool isUseItem = 2;
+    required int32 stair = 3;
+}
+
+message ActivityChessGoUpStairResp_27136 {
+    required int32 ret = 1;
+    optional MsgSelfData msgSelfData = 2;
+}
+
+message ActivityChessMarkReq_27137 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message ActivityChessMarkResp_27137 {
+    required int32 ret = 1;
+    optional MsgSelfData msgSelfData = 2;
+}
+
+message GetActivityChessMarkReq_27138 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bool isMine = 2;
+}
+
+message GetActivityChessMarkResp_27138 {
+    required int32 ret = 1;
+    repeated MsgChessMark msgChessMark = 2;
+}
+
+message AttackActivityChessMarkReq_27139 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required string ownerId = 2;
+    required bool isEventNpc = 3;
+    required string targetId = 4;
+}
+
+message AttackActivityChessMarkResp_27139 {
+    required int32 ret = 1;
+    optional string damage = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources score = 3;
+    optional string curHp = 4;
+    optional string money = 5;
+}
+
+message OneKeyActiveReq_27140 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 stair = 2;
+    optional bool isCanGoUpStair = 3;
+    optional bool isPass = 4;
+}
+
+message OneKeyActiveResp_27140 {
+    required int32 ret = 1;
+    repeated MsgOneKeyResult msgOneKeyResult = 2;
+}
+
+message GetActivityChessHistReq_27141 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetActivityChessHistResp_27141 {
+    required int32 ret = 1;
+    repeated MsgActivityChessHist msgActivityChessHist = 2;
+}
+
+message GetActivityChessDefenceHistReq_27142 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message GetActivityChessDefenceHistResp_27142 {
+    required int32 ret = 1;
+    repeated MsgDefenceHist msgDefenceHist = 2;
+}
+
+message GetChessEventRemoteCSReq_27143 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required string playerId = 2;
+    required string money = 3;
+}
+
+message GetChessEventRemoteGSResp_27143 {
+    required int32 ret = 1;
+    optional MsgSelfData msgSelfData = 2;
+}
+
+message AddChessEventRemoteGSReq_27144 {
+    required string playerId = 1;
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+    optional int32 templateId = 3;
+    repeated string replaceStr = 4;
+    optional int64 eventTime = 5;
+    optional int64 stageEndTime = 6;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources itemLose = 7;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources itemGain = 8;
+}
+
+message SyncEventRemoteGSReq_27145 {
+    optional string playerId = 1;
+    optional GetChessEventResp_27131 event = 2;
+}
+
+message GetRedDotRemoteCSReq_27146 {
+    required string playerId = 1;
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+    repeated int32 rankType = 3;
+}
+
+message GetRedDotRemoteGSResp_27146 {
+    required int32 ret = 1;
+    repeated MsgRankIndex msgRankIndex = 2;
+    optional bool isBattle = 3;
+    optional bool isTargetRedDot = 4;
+    optional int64 teamId = 5;
+    optional int64 createTimeColdTime = 6;
+    optional bool isInvite = 7;
+}
+
+message ActiveEventRemoteCSReq_27147 {
+    required string playerId = 1;
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+    required string money = 3;
+}
+
+message ActiveEventRemoteGSResp_27147 {
+    required int32 ret = 1;
+    optional MsgSelfData msgSelfData = 2;
+    repeated MsgEventResult msgEventResult = 3;
+    optional int64 teamId = 4;
+    repeated string memberPlayerId = 5;
+}
+
+message AddChessHistRemoteGSReq_27148 {
+    required string playerId = 1;
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+    optional int64 teamId = 3;
+    optional bool isKill = 4;
+    optional int64 eventTime = 5;
+    optional int32 stair = 6;
+    optional string atkPlayerName = 7;
+    optional int64 atkServerId = 8;
+    optional string damage = 9;
+    optional int32 eventId = 10;
+    repeated string memberPlayerId = 11;
+}
+
+message SendWorldNotifyRemoteGSReq_27149 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string atkPlayerName = 2;
+    optional int64 atkServerId = 3;
+    optional string ownerPlayerName = 4;
+    optional int64 ownerServerId = 5;
+    optional string defPlayerName = 6;
+    optional int64 defServerId = 7;
+    optional int32 eventId = 8;
+    optional bool isHelp = 9;
+    optional int32 book = 10;
+}
+
+message ExploreRemoteCSReq_27150 {
+    required string playerId = 1;
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+    required string money = 3;
+    required int32 stair = 4;
+}
+
+message ExploreRemoteGSResp_27150 {
+    required int32 ret = 1;
+    optional ActivityChessExploreResp_27135 result = 2;
+    optional int64 teamId = 3;
+}
+
+message UpStairRemoteCSReq_27151 {
+    required string playerId = 1;
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+    required string money = 3;
+    required bool isUseItem = 4;
+    required int32 stair = 5;
+}
+
+message UpStairRemoteGSResp_27151 {
+    required int32 ret = 1;
+    optional ActivityChessGoUpStairResp_27136 result = 2;
+    optional int32 bookChange = 3;
+    optional int32 playerRank = 4;
+    optional int32 teamRank = 5;
+    optional int64 teamId = 6;
+}
+
+message MarkRemoteCSReq_27152 {
+    required string playerId = 1;
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+}
+
+message MarkRemoteGSResp_27152 {
+    required int32 ret = 1;
+    optional bf.messages.game.ChatMessage.MsgChatData63 msgBuilder = 2;
+    optional int64 teamId = 3;
+    optional int32 stair = 4;
+    optional string curHp = 5;
+    optional int32 eventId = 6;
+    optional string targetId = 7;
+    optional string defCurHp = 8;
+    repeated MsgChessMemberData msgChessMemberData = 9;
+    optional MsgSelfData msgSelfData = 10;
+}
+
+message GetMarkRemoteCSReq_27153 {
+    required string playerId = 1;
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+    optional bool isMine = 3;
+}
+
+message GetMarkRemoteGSResp_27153 {
+    required int32 ret = 1;
+    optional GetActivityChessMarkResp_27138 result = 2;
+}
+
+message AttackMarkRemoteCSReq_27154 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required string ownerId = 2;
+    required bool isEventNpc = 3;
+    required string targetId = 4;
+    required string playerId = 5;
+    required string money = 6;
+}
+
+message AttackMarkRemoteGSResp_27154 {
+    required int32 ret = 1;
+    optional AttackActivityChessMarkResp_27139 result = 2;
+    optional int32 eventId = 3;
+    optional string ownerPlayerId = 4;
+    optional bool isSelf = 5;
+    optional bool isKill = 6;
+    optional int64 eventTime = 7;
+    optional int32 stair = 8;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources atkReward = 9;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources ownerReward = 10;
+    optional string money = 11;
+    optional int32 scoreChange = 12;
+    optional string playerScore = 13;
+    optional int32 bookChange = 14;
+    optional string playerBook = 15;
+    optional string curHp = 16;
+    optional string targetId = 17;
+    optional string defMaxHp = 18;
+    optional string defCurHp = 19;
+    optional string damage = 20;
+    optional int32 playerRank = 21;
+    optional int32 teamRank = 22;
+    repeated MsgChessMemberData msgChessMemberData = 23;
+    optional string defPlayerName = 24;
+    optional int64 defServerId = 25;
+    optional int64 teamId = 26;
+    repeated string memberPlayerId = 27;
+}
+
+message SyncPlayerEventRemoteGSReq_27155 {
+    required string playerId = 1;
+    optional GetChessEventRemoteGSResp_27143 data = 2;
+}
+
+message OneKeyRemoteCSReq_27156 {
+    required string playerId = 1;
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+    required int32 stair = 3;
+    required bool isCanGoUpStair = 4;
+    required bool isPass = 5;
+    required int64 energy = 6;
+    required string money = 7;
+}
+
+message OneKeyRemoteGSResp_27156 {
+    required int32 ret = 1;
+    repeated MsgExploreEvent msgExploreEvent = 2;
+    optional int64 energyUse = 3;
+    repeated MsgEventResult kafka = 4;
+    optional int64 teamId = 5;
+    repeated string memberPlayerId = 6;
+}
+
+message GetDefenceHistRemoteCSReq_27157 {
+    required string playerId = 1;
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+}
+
+message GetDefenceHistRemoteGSResp_27157 {
+    required int32 ret = 1;
+    optional GetActivityChessDefenceHistResp_27142 result = 2;
+}
+
+message ClearAllNotifyRemoteGSReq_27158 {
+    required string playerId = 1;
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+}
+
+message GetCrossChessRankRemoteCSReq_27159 {
+    required string playerId = 1;
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+}
+
+message GetCrossChessRankRemoteGSResp_27159 {
+    required int32 ret = 1;
+    repeated MsgRankIndex msgRankIndex = 2;
+    optional int64 teamId = 3;
+    optional bool isLeader = 4;
+}
+
+message GetTop100PlayerRankRemoteCSReq_27160 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    required int32 serverId = 2;
+}
+
+message GetTop100PlayerRankRemoteGSResp_27160 {
+    repeated MsgPlayerRankIndex msgPlayerRankIndex = 1;
+}
+
+message OpenAndAddPlayerScoreRemoteCSReq_27161 {
+    required string playerId = 1;
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 2;
+    required string score = 3;
+}
+
+message SyncTeamMsgGsRemote_27162 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int64 teamId = 2;
+    optional string playerId = 3;
+    repeated MsgCrossChessReport msgReport = 4;
+}
+
+message SyncMarkGetKilledGsRemote_27163 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int64 teamId = 2;
+    optional string playerId = 3;
+    optional int32 eventId = 4;
+    optional int64 eventTime = 5;
+    optional int32 stair = 6;
+    optional string helperPlayerId = 7;
+    optional string helperName = 8;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgHelperReward = 9;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgOwnerReward = 10;
+    optional string defPlayerId = 11;
+    optional string defName = 12;
+    repeated string memberPlayerId = 13;
+}

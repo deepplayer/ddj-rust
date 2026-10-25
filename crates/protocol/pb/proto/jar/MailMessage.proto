@@ -1,0 +1,59 @@
+syntax = "proto2";
+
+package bf.messages.game.MailMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgMailData {
+    optional int32 type = 1;
+    optional string id = 2;
+    optional int64 sendTime = 3;
+    optional int32 templateId = 4;
+    repeated string fiters = 5;
+    optional string title = 7;
+    optional string content = 8;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources annexs = 9;
+    optional int64 outTime = 12;
+    optional bool read = 10;
+    optional bool receive = 11;
+    optional string fromPlayerId = 13;
+    optional string fromPlayerName = 14;
+}
+
+message MailGetReq_10001 {
+}
+
+message MailGetResp_10001 {
+    required int32 ret = 1;
+    repeated MsgMailData msgMailDatas = 2;
+}
+
+message MailReadReq_10002 {
+    repeated string id = 1;
+}
+
+message MailReadResp_10002 {
+    required int32 ret = 1;
+}
+
+message MailReceiveReq_10003 {
+    repeated string id = 1;
+}
+
+message MailReceiveResp_10003 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources annexs = 3;
+}
+
+message MailRemoveReq_10004 {
+    repeated string id = 1;
+}
+
+message MailRemoveResp_10004 {
+    required int32 ret = 1;
+    repeated MsgMailData msgMailDatas = 3;
+}
+
+message MailAddResp_10005 {
+    repeated MsgMailData msgMailDatas = 1;
+}

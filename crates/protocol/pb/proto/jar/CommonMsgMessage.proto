@@ -1,0 +1,93 @@
+syntax = "proto2";
+
+package bf.messages.game.CommonMsgMessage;
+
+message MsgResources {
+    optional int32 id = 1;
+    optional string num = 2;
+    optional int32 multiple = 3;
+}
+
+message MsgPvPBattleData {
+    optional MsgBattlePlayerData fromMsgBattlePlayerData = 1;
+    optional MsgBattlePlayerData toMsgBattlePlayerData = 2;
+    optional bool bor = 3;
+    optional int32 num = 4;
+    optional bytes data = 5;
+    repeated bool eachWin = 6;
+}
+
+message MsgPvPMultiBattleData {
+    repeated MsgPvPBattleData pvpBattles = 1;
+    optional bool bor = 3;
+    optional int32 total = 4;
+    optional int32 totalWin = 5;
+    optional MsgPvPBattleData battleData = 6;
+}
+
+message MsgTalentSkinSkill {
+    optional int32 id = 1;
+    repeated int32 talentIds = 2;
+}
+
+message MsgBattlePlayerData {
+    optional string id = 1;
+    optional string name = 2;
+    repeated int32 fashionIds = 3;
+    optional int32 sex = 4;
+    repeated MsgBattleTalentData toBattleTalentData = 5;
+    repeated int32 pets = 6;
+    optional MsgAddress address = 7;
+    optional int32 serverId = 8;
+    repeated int32 petUsedSkinIds = 9;
+    optional string familyName = 10;
+    repeated MsgTalentSkinSkill msgTalentSkinSkill = 11;
+    optional int32 vipLv = 12;
+    optional int64 familyId = 13;
+    optional int32 npcSex = 14;
+}
+
+message MsgTalentSkin {
+    optional int32 id = 1;
+    optional int32 lv = 2;
+    optional int32 type = 3;
+    optional int32 skinAwake = 4;
+    optional int32 skillLv = 5;
+}
+
+message MsgBattleTalentData {
+    optional int32 id = 1;
+    optional int32 lv = 2;
+    optional string money = 3;
+    optional int32 degree = 4;
+    optional int32 usedSkinId = 5;
+    repeated MsgTalentSkin msgTalentSkin = 6;
+    optional int32 skinAwaken = 7;
+}
+
+message MsgAddress {
+    optional string country = 1;
+    optional string province = 2;
+    optional string city = 3;
+    optional string continent = 4;
+    optional string world = 5;
+}
+
+message MsgChaseData {
+    optional string playerId = 1;
+    optional string name = 2;
+    repeated int32 fashionIds = 3;
+    optional int32 sex = 4;
+    optional int32 lv = 5;
+    optional int32 vipLv = 6;
+    optional string money = 7;
+    required int64 cot = 8;
+    optional int32 serverId = 9;
+    optional int32 npcSex = 10;
+}
+
+message MsgActivityGift {
+    optional int32 templateId = 1;
+    optional int64 endTime = 2;
+    optional int32 buyCnt = 3;
+}

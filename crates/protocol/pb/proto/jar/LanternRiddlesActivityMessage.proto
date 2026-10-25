@@ -1,0 +1,139 @@
+syntax = "proto2";
+
+package bf.messages.game.LanternRiddlesActivityMessage;
+
+import "GmActivityMessage.proto";
+import "FestivalMessage.proto";
+import "GmActivityCommonMessage.proto";
+
+message MsgLanternRiddlesAllTemplateData {
+    repeated bf.messages.game.GmActivityMessage.MsgRank msgRank = 1;
+    repeated MsgRiddleRewardDate riddleRewardDate = 2;
+}
+
+message MsgRiddleRewardDate {
+    optional int32 actId = 1;
+    optional int32 rightNum = 2;
+    optional string reward = 3;
+    optional int32 type = 4;
+    optional int32 id = 5;
+}
+
+message MsgLanternRiddlePlayerData {
+    optional bf.messages.game.GmActivityCommonMessage.MsgRankPlayerData rankData = 1;
+    optional bool fristReward = 2;
+    repeated int32 rewardIds = 3;
+    optional int64 rewardTime = 4;
+}
+
+message MsgCrossRankReq_37601 {
+    optional int32 actId = 1;
+    optional int32 serverId = 2;
+    repeated MsgLanternRiddlesInfo playerInfo = 3;
+    repeated MsgLanternRiddlesInfo familyInfo = 4;
+    optional int32 lanternId = 5;
+}
+
+message MsgLanternRiddlesInfo {
+    optional string playerId = 1;
+    optional int64 value = 2;
+    optional int64 time = 3;
+    optional int32 rank = 4;
+    optional int64 familyId = 5;
+    optional int64 familyValue = 6;
+    optional int64 familyTime = 7;
+    optional int32 familyRank = 8;
+}
+
+message MsgCrossRankResp_37601 {
+    optional int32 type = 1;
+    repeated MsgLanternRiddlesInfo rank = 2;
+    optional int32 lanternId = 3;
+}
+
+message MsgGetLanternRiddlesReq_37602 {
+    optional int32 activityId = 1;
+    optional int32 serverId = 2;
+}
+
+message MsgGetLanternRiddlesResp_37602 {
+    repeated MsgGetLanternRiddlesInfo info = 1;
+}
+
+message MsgGetLanternRiddlesInfo {
+    optional int32 type = 1;
+    optional int32 day = 2;
+    optional int32 lanternId = 3;
+    repeated int32 info = 4;
+}
+
+message LanternRiddleGetSubjectReq_37603 {
+    optional int32 actId = 1;
+}
+
+message LanternRiddleGetSubjectResp_37603 {
+    optional MsgLanternRiddleDate lanternRiddleDate = 1;
+    optional int32 value = 2;
+    optional int32 id = 3;
+    optional bool use = 4;
+    required int32 ret = 5;
+    repeated int32 trueId = 6;
+    optional int32 lunValue = 7;
+    optional int32 lunExcludeOptionNum = 8;
+}
+
+message MsgLanternRiddleDate {
+    optional int32 actId = 1;
+    optional int32 lanternId = 2;
+    optional string question = 3;
+    repeated MsgOptionDate option = 4;
+}
+
+message MsgOptionDate {
+    optional int32 id = 1;
+    optional string answer = 2;
+}
+
+message LanternRiddleChangeSubjectReq_37604 {
+    optional int32 actId = 1;
+    optional int32 id = 2;
+    optional int32 lanternId = 3;
+}
+
+message LanternRiddleChangeSubjectResp_37604 {
+    required int32 ret = 1;
+    optional int32 value = 2;
+}
+
+message LanternRiddleExcludeOptionReq_37605 {
+    optional int32 actId = 1;
+    optional int32 lanternId = 2;
+}
+
+message LanternRiddleExcludeOptionResp_37605 {
+    required int32 ret = 1;
+}
+
+message GetRankCsRemoteReq_37606 {
+    required string playerId = 1;
+    required int64 familyId = 2;
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 3;
+}
+
+message GetRankGsRemoteResp_37606 {
+    required int32 ret = 1;
+    repeated bf.messages.game.FestivalMessage.MsgRankIndex msgRankIndex = 2;
+    optional int64 oldFamilyId = 3;
+}
+
+message LanternRiddleGetRwdReq_37607 {
+    optional int32 actId = 1;
+}
+
+message LanternRiddleGetRwdResp_37607 {
+    required int32 ret = 1;
+    optional int32 trueNum = 2;
+    optional int32 value = 3;
+    optional bool isMaxValue = 4;
+    repeated int32 rewardIds = 5;
+}

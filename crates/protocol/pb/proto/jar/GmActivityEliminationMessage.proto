@@ -1,0 +1,172 @@
+syntax = "proto2";
+
+package bf.messages.game.GmActivityEliminationMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgCoordinate {
+    optional int32 x = 1;
+    optional int32 y = 2;
+}
+
+message MsgEliminationGrid {
+    optional MsgCoordinate coordinate = 1;
+    optional int32 dishId = 2;
+}
+
+message MsgEliminationBanquet {
+    optional int32 banquetId = 1;
+    optional int32 steps = 2;
+    optional int32 score = 3;
+    repeated MsgEliminationGrid grids = 4;
+    optional int32 talentId = 5;
+    optional bool started = 6;
+    optional int32 useAddStepCnt = 7;
+}
+
+message MsgEliminationPlayerData {
+    repeated MsgEliminationBanquet banquets = 1;
+    optional int32 banquet1Times = 2;
+}
+
+message MsgEliminationFallen {
+    optional MsgCoordinate startPoint = 1;
+    optional MsgEliminationGrid grid = 2;
+    optional bool newHigher = 3;
+}
+
+message MsgEliminationExplode {
+    optional MsgEliminationGrid grid = 1;
+    optional MsgCoordinate movePoint = 2;
+}
+
+message MsgEliminationCombo {
+    repeated MsgEliminationExplode explosions = 1;
+    repeated MsgEliminationFallen downs = 2;
+    optional int32 score = 3;
+}
+
+message MsgEliminationResult {
+    repeated MsgEliminationCombo combos = 1;
+    optional bool reload = 2;
+    repeated MsgEliminationGrid grids = 3;
+    optional int32 steps = 4;
+    optional int32 score = 5;
+}
+
+message MsgEliminationDishCount {
+    optional int32 dishId = 1;
+    optional int32 num = 2;
+}
+
+message MsgEliminationEnd {
+    optional MsgEliminationResult surprise = 1;
+    optional int32 score = 2;
+    optional int64 addExp = 3;
+    optional string beyond = 4;
+    optional bool newRecord = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResources = 6;
+    repeated MsgEliminationDishCount dishCounts = 7;
+}
+
+message EliminationStartGameReq_33301 {
+    optional int32 activityId = 1;
+    optional int32 banquetId = 2;
+    optional int32 activityType = 3;
+}
+
+message EliminationStartGameResp_33301 {
+    optional int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 banquetId = 3;
+    optional MsgEliminationBanquet banquet = 4;
+    optional int32 banquet1Times = 5;
+}
+
+message EliminationChooseTalentReq_33302 {
+    optional int32 activityId = 1;
+    optional int32 talentId = 2;
+    optional int32 banquetId = 3;
+    optional int32 activityType = 4;
+}
+
+message EliminationChooseTalentResp_33302 {
+    optional int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 talentId = 3;
+    optional int32 banquetId = 4;
+}
+
+message EliminationExchangeGridReq_33303 {
+    optional int32 activityId = 1;
+    optional int32 banquetId = 2;
+    optional MsgCoordinate start = 3;
+    optional MsgCoordinate end = 4;
+    optional int32 activityType = 5;
+}
+
+message EliminationExchangeGridResp_33303 {
+    optional int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 banquetId = 3;
+    optional MsgEliminationResult result = 4;
+    optional MsgCoordinate start = 5;
+    optional MsgCoordinate end = 6;
+}
+
+message EliminationUseSpecialItemReq_33304 {
+    optional int32 activityId = 1;
+    optional int32 banquetId = 2;
+    optional int32 itemId = 3;
+    optional MsgCoordinate target = 4;
+    optional int32 activityType = 6;
+}
+
+message EliminationUseSpecialItemResp_33304 {
+    optional int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 banquetId = 3;
+    optional MsgCoordinate target = 4;
+    optional MsgEliminationResult result = 5;
+}
+
+message EliminationEndGameReq_33305 {
+    optional int32 activityId = 1;
+    optional int32 banquetId = 2;
+    optional int32 activityType = 3;
+}
+
+message EliminationEndGameResp_33305 {
+    optional int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 banquetId = 3;
+    optional MsgEliminationEnd eliminateEnd = 4;
+    optional int32 banquet1Times = 5;
+    optional int32 activityType = 6;
+}
+
+message EliminationAddStepReq_33306 {
+    optional int32 activityId = 1;
+    optional int32 banquetId = 2;
+    optional int32 activityType = 3;
+}
+
+message EliminationAddStepResp_33306 {
+    optional int32 ret = 1;
+    optional int32 activityId = 2;
+    optional int32 banquetId = 3;
+    optional int32 steps = 4;
+    optional int32 useAddStepCnt = 5;
+}
+
+message EliminationHintReq_33307 {
+    optional int32 activityId = 1;
+    optional int32 banquetId = 2;
+    optional int32 activityType = 3;
+}
+
+message EliminationHintResp_33307 {
+    required int32 ret = 1;
+    optional int32 banquetId = 2;
+    repeated MsgCoordinate hints = 3;
+}

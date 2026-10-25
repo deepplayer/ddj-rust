@@ -1,0 +1,41 @@
+syntax = "proto2";
+
+package bf.messages.game.LimitRedeemActivityMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgLimitRedeemRewardDb {
+    optional int32 activityId = 1;
+    optional int32 activityType = 2;
+    optional int32 onlyId = 3;
+    optional int32 exchangeType = 4;
+    optional int32 exchangeNum = 5;
+    optional string exchangeItem = 6;
+    optional string reward = 7;
+}
+
+message MsgLimitRedeemRewardTemplateData {
+    repeated MsgLimitRedeemRewardDb redeemDbs = 1;
+}
+
+message MsgLimitRedeemItem {
+    optional int32 onlyId = 1;
+    optional int32 num = 2;
+}
+
+message MsgLimitRedeemPlayerData {
+    repeated MsgLimitRedeemItem redeems = 1;
+}
+
+message LimitRedeemExchangeReq_35501 {
+    optional int32 activityId = 1;
+    optional int32 onlyId = 2;
+    optional int32 num = 3;
+}
+
+message LimitRedeemExchangeResp_35501 {
+    optional int32 ret = 1;
+    optional int32 activityId = 2;
+    optional MsgLimitRedeemItem redeem = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 4;
+}

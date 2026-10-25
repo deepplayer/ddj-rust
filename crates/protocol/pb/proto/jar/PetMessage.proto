@@ -1,0 +1,329 @@
+syntax = "proto2";
+
+package bf.messages.game.PetMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgPetData {
+    repeated int32 updateFieldsList = 90;
+    optional int32 petId = 1;
+    optional int64 intimacy = 2;
+    optional int32 star = 3;
+    optional int64 interaction = 4;
+    optional int64 growth = 5;
+    repeated int32 skillLv = 6;
+    repeated int32 skillClass = 7;
+    optional MsgMiracle msgMiracle = 8;
+    repeated MsgPetSkin msgPetSkins = 9;
+    optional int32 skinId = 10;
+    optional int32 rateLv = 11;
+    optional int32 haloLv = 12;
+}
+
+message MsgMiracle {
+    optional int32 useNum = 1;
+    optional int64 useTime = 2;
+}
+
+message MsgInteractResult {
+    optional int32 petId = 1;
+    optional int64 exp = 2;
+    optional int32 multiple = 3;
+}
+
+message MsgPetYardBuilding {
+    repeated int32 updateFieldsList = 90;
+    optional int32 buildingId = 1;
+    optional int32 taskId = 2;
+    optional int64 endTime = 3;
+    repeated MsgPetTask msgPetTask = 4;
+}
+
+message MsgPetTask {
+    optional int32 petId = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+    optional string playerName = 3;
+    optional string playerId = 4;
+    optional int32 multiple = 5;
+    optional int32 characterLv = 6;
+    optional int32 skinId = 7;
+}
+
+message MsgOthersPet {
+    optional int32 petId = 1;
+    optional int32 multiple = 2;
+    optional string playerName = 3;
+    optional int32 characterLv = 4;
+    optional string playerId = 5;
+    optional int32 skinId = 6;
+}
+
+message MsgRentPets {
+    optional int32 petId = 1;
+    optional string playerId = 2;
+    optional string playerName = 3;
+    optional int32 taskId = 4;
+    optional int64 endTime = 5;
+    optional int32 state = 6;
+    optional int64 coldTime = 7;
+}
+
+message MsgMissionReward {
+    optional int32 taskId = 1;
+    repeated MsgPetReward msgPetReward = 2;
+}
+
+message MsgPetReward {
+    optional int32 petId = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+}
+
+message MsgRentReward {
+    optional int32 pet = 1;
+    optional int32 num = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+}
+
+message MsgPetSkin {
+    optional int32 id = 1;
+    optional int32 lv = 2;
+}
+
+message PetUpdateResp_7001 {
+    repeated MsgPetData msgPetData = 1;
+}
+
+message PetInteractReq_7002 {
+    optional int32 all = 1;
+}
+
+message PetInteractResp_7002 {
+    required int32 ret = 1;
+    repeated MsgInteractResult msgInteractResult = 2;
+}
+
+message PetStarReq_7003 {
+    optional int32 petId = 1;
+}
+
+message PetStarResp_7003 {
+    required int32 ret = 1;
+}
+
+message PetUpgradeSkillReq_7005 {
+    optional int32 petId = 1;
+    optional int32 skillId = 2;
+}
+
+message PetUpgradeSkillResp_7005 {
+    required int32 ret = 1;
+}
+
+message PetUpgradeSkillClassReq_7006 {
+    optional int32 petId = 1;
+    optional int32 skillId = 2;
+}
+
+message PetUpgradeSkillClassResp_7006 {
+    required int32 ret = 1;
+}
+
+message PetMiracleUseResultResp_7007 {
+    optional int32 petId = 1;
+}
+
+message BuildYardReq_7008 {
+    required int32 buildingId = 1;
+}
+
+message BuildYardResp_7008 {
+    required int32 ret = 1;
+    optional MsgPetYardBuilding msgPetYardBuilding = 2;
+}
+
+message RefreshTaskReq_7009 {
+    required int32 buildingId = 1;
+}
+
+message RefreshTaskResp_7009 {
+    required int32 ret = 1;
+}
+
+message GetOthersPetReq_7010 {
+    required int32 buildingId = 1;
+}
+
+message GetOthersPetResp_7010 {
+    required int32 ret = 1;
+    repeated MsgOthersPet msgOthersPet = 2;
+}
+
+message SetRentPetReq_7011 {
+    required int32 petId = 1;
+    required bool isEquip = 2;
+    optional bool isTask = 3;
+}
+
+message SetRentPetResp_7011 {
+    required int32 ret = 1;
+}
+
+message OneKeySpeedUpReq_7012 {
+}
+
+message OneKeySpeedUpResp_7012 {
+    required int32 ret = 1;
+    repeated MsgMissionReward msgMissionReward = 2;
+}
+
+message OneKeyDeployReq_7013 {
+}
+
+message OneKeyDeployResp_7013 {
+    required int32 ret = 1;
+}
+
+message GetRentPetsReq_7014 {
+}
+
+message GetRentPetsResp_7014 {
+    optional int32 ret = 1;
+    repeated MsgRentPets msgRentPets = 2;
+}
+
+message StartMissionReq_7015 {
+    required int32 buildingId = 1;
+    repeated int32 petId = 2;
+    repeated MsgOthersPet msgOthersPet = 3;
+}
+
+message StartMissionResp_7015 {
+    required int32 ret = 1;
+}
+
+message GetPetYardBuildingResp_7016 {
+    repeated MsgPetYardBuilding msgPetYardBuilding = 1;
+    optional int32 lv = 2;
+}
+
+message SpeedUpMissionReq_7017 {
+    required int32 buildingId = 1;
+}
+
+message SpeedUpMissionResp_7017 {
+    required int32 ret = 1;
+}
+
+message GetMissionRewardReq_7018 {
+    required int32 buildingId = 1;
+}
+
+message GetMissionRewardResp_7018 {
+    required int32 ret = 1;
+    repeated MsgMissionReward msgMissionReward = 2;
+}
+
+message SyncYardLvResp_7019 {
+    required int32 oldLv = 1;
+    required int32 curLv = 2;
+}
+
+message ClearYardLvReq_7020 {
+}
+
+message ClearYardLvResp_7020 {
+    required int32 ret = 1;
+}
+
+message SyncRentPetReq_7021 {
+}
+
+message SyncRentPetResp_7021 {
+    required int32 ret = 1;
+    repeated MsgRentReward msgRentReward = 2;
+}
+
+message ClearRentPetReq_7022 {
+    repeated MsgRentReward msgRentReward = 1;
+}
+
+message ClearRentPetResp_7022 {
+    required int32 ret = 1;
+}
+
+message MsgActivatePetSkinReq_7023 {
+    optional int32 petId = 1;
+    optional int32 skinId = 2;
+}
+
+message MsgActivatePetSkinResp_7023 {
+    required int32 ret = 1;
+}
+
+message MsgUpgradePetSkinReq_7024 {
+    optional int32 petId = 1;
+    optional int32 skinId = 2;
+}
+
+message MsgUpgradePetSkinResp_7024 {
+    required int32 ret = 1;
+}
+
+message MsgSetPetSkinReq_7025 {
+    optional int32 petId = 1;
+    optional int32 skinId = 2;
+}
+
+message MsgSetPetSkinResp_7025 {
+    required int32 ret = 1;
+}
+
+message MsgSetPetRateLvReq_7026 {
+    optional int32 petId = 1;
+}
+
+message MsgSetPetRateLvResp_7026 {
+    required int32 ret = 1;
+}
+
+message MsgSeniorPetHaloUpdateReq_7027 {
+    optional int32 petId = 1;
+}
+
+message MsgSeniorPetHaloUpdateResp_7027 {
+    required int32 ret = 1;
+}
+
+message MsgSeniorPetGetReq_7028 {
+    optional int32 petId = 1;
+}
+
+message MsgSeniorPetGetResp_7028 {
+    required int32 ret = 1;
+}
+
+message MsgPetRateLvReplaceReq_7029 {
+    optional int32 petId1 = 1;
+    optional int32 petId2 = 2;
+}
+
+message MsgPetRateLvReplaceResp_7029 {
+    required int32 ret = 1;
+}
+
+message MsgInteractTimesReq_7030 {
+    optional int32 num = 1;
+}
+
+message MsgInteractTimesResp_7030 {
+    required int32 ret = 1;
+    repeated MsgInteractResult msgInteractResult = 2;
+}
+
+message MsgExchangePetReq_7031 {
+    optional int32 petId = 1;
+}
+
+message MsgExchangePetResp_7031 {
+    required int32 ret = 1;
+}

@@ -1,0 +1,835 @@
+syntax = "proto2";
+
+package bf.messages.game.SilkFightMessage;
+
+import "CommonMsgMessage.proto";
+import "GmActivityMessage.proto";
+
+message MsgSilkShopBrifData {
+    optional int32 shopId = 1;
+    optional int32 groupId = 2;
+    optional int64 familyId = 3;
+    optional string familyName = 4;
+    optional int32 playerNum = 5;
+    optional bool highProduce = 6;
+}
+
+message MsgSilkShopDetailData {
+    optional int32 shopId = 1;
+    optional int32 groupId = 2;
+    optional int64 familyId = 3;
+    optional string familyName = 4;
+    repeated MsgSilkShopPlayerData playerDatas = 5;
+    optional bool highProduce = 6;
+}
+
+message MsgSilkShopPlayerData {
+    optional string playerId = 1;
+    optional string playerName = 2;
+    optional int32 serverId = 3;
+    optional int64 produceSpeed = 4;
+    optional int64 productNum = 5;
+    optional int64 seatId = 6;
+    repeated int32 fashionIds = 7;
+    optional int32 sex = 8;
+    optional string familyName = 9;
+    optional string icon = 10;
+    optional int32 vip = 11;
+    optional string money = 12;
+    optional int64 logTime = 13;
+    optional bool isRob = 14;
+    optional int64 shopId = 15;
+    optional bool enemyWin = 16;
+    optional int64 itemLost = 17;
+    optional int64 familyId = 18;
+    optional int32 npcSex = 19;
+}
+
+message MsgSilkShopLoctionData {
+    optional int32 shopId = 1;
+    optional int32 seatId = 2;
+    optional int64 productNum = 3;
+    optional int64 produceSpeed = 4;
+    repeated int32 talentId = 5;
+}
+
+message MsgSilkShopTalentBrifData {
+    optional string playerId = 1;
+    optional int32 talentId = 2;
+    optional int32 degree = 3;
+    optional int32 skinId = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgTalentSkin msgTalentSkinLvs = 5;
+    optional string money = 6;
+    optional int32 lv = 7;
+}
+
+message MsgSilkShopNoticeData {
+    optional string playerId = 1;
+    optional string playerName = 2;
+    optional string familyName = 3;
+    optional int64 shopId = 4;
+    optional int64 seatId = 5;
+    repeated int32 fashionIds = 6;
+    optional int32 sex = 7;
+    optional string icon = 8;
+    optional int32 vip = 9;
+    optional string toPlayerName = 10;
+    optional string toFamilyName = 11;
+    optional int64 logTime = 12;
+    optional bool isRob = 13;
+    optional int32 serverId = 14;
+    optional int32 toServerId = 15;
+    optional int32 npcSex = 16;
+}
+
+message OccupyShopBrif {
+    optional int32 shopId = 1;
+    optional int32 seatId = 2;
+    optional int32 produceSpeed = 3;
+    optional int64 productNum = 4;
+}
+
+message MsgPlayerBrifData {
+    optional string playerId = 1;
+    optional string playerName = 2;
+    optional int32 serverId = 3;
+    repeated int32 fashionIds = 4;
+    optional int32 sex = 5;
+    optional string familyName = 6;
+    optional string icon = 7;
+    optional int32 vip = 8;
+    optional string money = 9;
+    optional int64 familyId = 10;
+    optional int32 job = 11;
+    repeated int32 pets = 12;
+    optional bf.messages.game.CommonMsgMessage.MsgAddress address = 13;
+    repeated int32 petUsedSkinIds = 14;
+    optional int32 lv = 15;
+    optional int32 familyIcon = 16;
+    optional int32 npcSex = 17;
+}
+
+message MsgSilkFightKafkaData {
+    optional string reason = 1;
+    optional int32 silk_activity_id = 2;
+    optional string silk_activity_name = 3;
+    optional int32 silk_id = 4;
+    optional int64 naming_family = 5;
+    optional int32 seat_id = 6;
+    optional int32 is_add = 7;
+    optional string d_role_id = 10;
+    optional string d_poewr = 11;
+    optional string result = 12;
+    repeated MsgSilkShopLoctionData have_cinema = 13;
+    optional int64 silk_score_change = 14;
+    optional int64 silk_score = 15;
+    optional int32 silk_rank = 16;
+    optional int64 family_id = 17;
+    optional int64 silk_family_score = 18;
+    optional int32 silk_family_rank = 19;
+    optional int32 silk_shop_score = 20;
+    optional int32 silk_rank_playerId = 21;
+    optional int32 silk_rank_num = 22;
+    optional int64 silk_rank_score = 23;
+    optional int64 left_silk_shop_score = 24;
+    optional bf.messages.game.CommonMsgMessage.MsgResources item_gain = 25;
+    optional bf.messages.game.CommonMsgMessage.MsgResources item_use = 26;
+    repeated MsgSilkShopTalentBrifData msgTalentData = 27;
+    optional int32 silk_activity_group = 28;
+}
+
+message MsgAutoSettlement {
+    optional string playerId = 1;
+    optional int64 familyId = 2;
+    optional int32 playerRank = 3;
+    optional string playerScore = 4;
+    optional int32 familyRank = 5;
+    optional string familyScore = 6;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources itemGet = 7;
+}
+
+message SilkFightOpenReq_42001 {
+}
+
+message SilkFightOpenResp_42001 {
+    required int32 ret = 1;
+    repeated MsgSilkShopBrifData SilkShops = 2;
+    repeated int32 talentId = 3;
+}
+
+message SilkFightEnterShopReq_42002 {
+    optional int32 shopId = 1;
+}
+
+message SilkFightEnterShopResp_42002 {
+    required int32 ret = 1;
+    optional int64 cd = 2;
+}
+
+message SilkFightPlayerSeatDownReq_42003 {
+    optional int32 shopId = 1;
+    optional int32 seatId = 2;
+    repeated int32 talentId = 3;
+}
+
+message SilkFightPlayerSeatDownResp_42003 {
+    required int32 ret = 1;
+    repeated int32 talentId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources itemGet = 3;
+}
+
+message SilkFightShopPushShopDetialResp_42004 {
+    optional MsgSilkShopDetailData shopDetail = 1;
+}
+
+message SilkFightPlayerFightReq_42005 {
+    optional int32 shopId = 1;
+    optional int32 seatId = 2;
+    repeated int32 talentId = 3;
+}
+
+message SilkFightPlayerFightResp_42005 {
+    required int32 ret = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData battleData = 2;
+    repeated int32 talentId = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources itemLost = 4;
+}
+
+message SilkFightLeaveEnterReq_42006 {
+    optional bool isEnter = 1;
+    optional int32 type = 2;
+    optional int32 shopId = 3;
+    optional int32 seatId = 4;
+}
+
+message SilkFightLeaveEnterResp_42006 {
+    required int32 ret = 1;
+}
+
+message SilkFightPushNamingResp_42007 {
+    optional string familyName = 1;
+    optional int32 shopId = 2;
+    optional int32 namingAdd = 3;
+    optional int64 familyId = 4;
+}
+
+message SilkFightMyLocationReq_42008 {
+}
+
+message SilkFightMyLocationResp_42008 {
+    required int32 ret = 1;
+    repeated MsgSilkShopLoctionData locationInfo = 2;
+}
+
+message SilkFightOneKeyTakeReq_42009 {
+}
+
+message SilkFightOneKeyTakeResp_42009 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources itemGet = 2;
+}
+
+message SilkFightCancelReq_42010 {
+    optional int32 shopId = 1;
+    optional int32 seatId = 2;
+}
+
+message SilkFightCancelResp_42010 {
+    required int32 ret = 1;
+    repeated MsgSilkShopLoctionData locationInfo = 2;
+    repeated int32 talentId = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources itemGet = 4;
+}
+
+message SilkFightTakeNomarlSeatReq_42011 {
+    repeated int32 talentId = 1;
+}
+
+message SilkFightTakeNomarlSeatResp_42011 {
+    required int32 ret = 1;
+    repeated int32 talentId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources itemGet = 3;
+}
+
+message SilkFightBeTookAwayResp_42012 {
+    optional int32 shopId = 1;
+    optional int32 seatId = 2;
+    optional MsgSilkShopPlayerData my = 3;
+    optional MsgSilkShopPlayerData other = 4;
+    optional int64 occupyTime = 5;
+    optional int64 productNum = 6;
+    optional int64 productRob = 7;
+}
+
+message SilkFightOpenNoticeReq_42013 {
+}
+
+message SilkFightOpenNoticeResp_42013 {
+    required int32 ret = 1;
+    repeated MsgSilkShopNoticeData noticeData = 2;
+}
+
+message SilkFightOpenPlayerOccupyReq_42014 {
+    optional string playerId = 1;
+    optional bool isSearch = 2;
+}
+
+message SilkFightOpenPlayerOccupyResp_42014 {
+    required int32 ret = 1;
+    optional MsgSilkShopPlayerData playerData = 2;
+    optional int32 occupyNum = 3;
+    repeated OccupyShopBrif shopBrifs = 4;
+}
+
+message SilkFightPlayerDefendReq_42015 {
+}
+
+message SilkFightPlayerDefendResp_42015 {
+    required int32 ret = 1;
+    repeated MsgSilkShopPlayerData playerDatas = 2;
+}
+
+message SilkFightPeepEnemyReq_42016 {
+    optional int32 shopId = 1;
+    optional int32 seatId = 2;
+}
+
+message SilkFightPeepEnemyResp_42016 {
+    required int32 ret = 1;
+    optional MsgSilkShopPlayerData playerData = 2;
+    repeated MsgSilkShopTalentBrifData msgTalentData = 3;
+}
+
+message SilkFightSettlementReq_42017 {
+}
+
+message SilkFightSettlementResp_42017 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources itemGet = 2;
+}
+
+message MessageShareSilkReq_42018 {
+    optional int32 shopId = 1;
+    optional int32 seatId = 2;
+}
+
+message MessageShareSilkResp_42018 {
+    required int32 ret = 1;
+    optional int64 shareCD = 2;
+}
+
+message PushSilkRedPointReq_42019 {
+}
+
+message PushSilkRedPointResp_42019 {
+    required int32 ret = 1;
+    optional bool isReadNotice = 2;
+    optional bool isReadDefend = 3;
+}
+
+message CrossSilkFightOpenReq_42501 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message CrossSilkFightOpenResp_42501 {
+    required int32 ret = 1;
+    repeated MsgSilkShopBrifData SilkShops = 2;
+    repeated int32 talentId = 3;
+    optional bf.messages.game.CommonMsgMessage.MsgResources itemScore = 4;
+}
+
+message CrossSilkFightEnterShopReq_42502 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 shopId = 2;
+}
+
+message CrossSilkFightEnterShopResp_42502 {
+    required int32 ret = 1;
+    optional int64 cd = 2;
+}
+
+message CrossSilkFightPlayerSeatDownReq_42503 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 shopId = 2;
+    optional int32 seatId = 3;
+    repeated int32 talentId = 4;
+}
+
+message CrossSilkFightPlayerSeatDownResp_42503 {
+    required int32 ret = 1;
+    repeated int32 talentId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources itemGet = 3;
+}
+
+message CrossSilkFightShopPushShopDetialResp_42504 {
+    optional MsgSilkShopDetailData shopDetail = 1;
+}
+
+message CrossSilkFightPlayerFightReq_42505 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 shopId = 2;
+    optional int32 seatId = 3;
+    repeated int32 talentId = 4;
+}
+
+message CrossSilkFightPlayerFightResp_42505 {
+    required int32 ret = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData battleData = 2;
+    repeated int32 talentId = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources itemLost = 4;
+}
+
+message CrossSilkFightLeaveEnterReq_42506 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 5;
+    optional bool isEnter = 1;
+    optional int32 type = 2;
+    optional int32 shopId = 3;
+    optional int32 seatId = 4;
+}
+
+message CrossSilkFightLeaveEnterResp_42506 {
+    required int32 ret = 1;
+}
+
+message CrossSilkFightPushNamingResp_42507 {
+    optional string familyName = 1;
+    optional int32 shopId = 2;
+    optional int32 namingAdd = 3;
+    optional int64 familyId = 4;
+    optional int32 serverId = 5;
+}
+
+message CrossSilkFightMyLocationReq_42508 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message CrossSilkFightMyLocationResp_42508 {
+    required int32 ret = 1;
+    repeated MsgSilkShopLoctionData locationInfo = 2;
+}
+
+message CrossSilkFightOneKeyTakeReq_42509 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message CrossSilkFightOneKeyTakeResp_42509 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources itemGet = 2;
+}
+
+message CrossSilkFightCancelReq_42510 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 shopId = 2;
+    optional int32 seatId = 3;
+}
+
+message CrossSilkFightCancelResp_42510 {
+    required int32 ret = 1;
+    repeated MsgSilkShopLoctionData locationInfo = 2;
+    repeated int32 talentId = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources itemGet = 4;
+}
+
+message CrossSilkFightTakeNomarlSeatReq_42511 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated int32 talentId = 2;
+}
+
+message CrossSilkFightTakeNomarlSeatResp_42511 {
+    required int32 ret = 1;
+    repeated int32 talentId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources itemGet = 3;
+}
+
+message CrossSilkFightBeTookAwayResp_42512 {
+    optional int32 shopId = 1;
+    optional int32 seatId = 2;
+    optional MsgSilkShopPlayerData my = 3;
+    optional MsgSilkShopPlayerData other = 4;
+    optional int64 occupyTime = 5;
+    optional int64 productNum = 6;
+    optional int64 productRob = 7;
+}
+
+message CrossSilkFightOpenNoticeReq_42513 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message CrossSilkFightOpenNoticeResp_42513 {
+    required int32 ret = 1;
+    repeated MsgSilkShopNoticeData noticeData = 2;
+}
+
+message CrossSilkFightOpenPlayerOccupyReq_42514 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional bool isSearch = 3;
+}
+
+message CrossSilkFightOpenPlayerOccupyResp_42514 {
+    required int32 ret = 1;
+    optional MsgSilkShopPlayerData playerData = 2;
+    optional int32 occupyNum = 3;
+    repeated OccupyShopBrif shopBrifs = 4;
+}
+
+message CrossSilkFightPlayerDefendReq_42515 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message CrossSilkFightPlayerDefendResp_42515 {
+    required int32 ret = 1;
+    repeated MsgSilkShopPlayerData playerDatas = 2;
+}
+
+message CrossSilkFightPeepEnemyReq_42516 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 shopId = 2;
+    optional int32 seatId = 3;
+}
+
+message CrossSilkFightPeepEnemyResp_42516 {
+    required int32 ret = 1;
+    optional MsgSilkShopPlayerData playerData = 2;
+    repeated MsgSilkShopTalentBrifData msgTalentData = 3;
+}
+
+message CrossSilkFightSettlementReq_42517 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message CrossSilkFightSettlementResp_42517 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources itemGet = 2;
+}
+
+message CrossMessageShareSilkReq_42518 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 shopId = 2;
+    optional int32 seatId = 3;
+}
+
+message CrossMessageShareSilkResp_42518 {
+    required int32 ret = 1;
+    optional int64 shareCD = 2;
+}
+
+message CrossPushSilkRedPointReq_42519 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+}
+
+message CrossPushSilkRedPointResp_42519 {
+    required int32 ret = 1;
+    optional bool isReadNotice = 2;
+    optional bool isReadDefend = 3;
+}
+
+message CrossSilkFightOpenRemoteGSReq_42600 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+    optional MsgPlayerBrifData playerBrifdata = 4;
+}
+
+message CrossSilkFightOpenRemoteGSResp_42600 {
+    required int32 ret = 1;
+    repeated MsgSilkShopBrifData SilkShops = 2;
+    repeated int32 talentId = 3;
+    optional bf.messages.game.CommonMsgMessage.MsgResources itemScore = 4;
+}
+
+message CrossSilkFightEnterShopRemoteGSReq_42602 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 shopId = 2;
+    optional string playerId = 3;
+}
+
+message CrossSilkFightEnterShopRemoteGSResp_42602 {
+    required int32 ret = 1;
+    optional MsgSilkShopDetailData shopDetail = 2;
+    optional int64 cd = 3;
+}
+
+message CrossSilkFightPlayerSeatDownRemoteGSReq_42603 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 shopId = 2;
+    optional int32 seatId = 3;
+    optional string playerId = 4;
+    repeated MsgSilkShopTalentBrifData talentBrifList = 5;
+    optional int64 familyId = 6;
+    optional string familyName = 7;
+    optional int32 job = 8;
+    optional MsgPlayerBrifData playerBrifdata = 9;
+}
+
+message CrossSilkFightPlayerSeatDownRemoteGSResp_42603 {
+    optional int32 ret = 1;
+    optional MsgSilkShopDetailData shopDetail = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgResources itemScore = 3;
+    optional int64 totalScore = 4;
+    optional MsgSilkFightKafkaData kafkaData = 5;
+}
+
+message CrossSilkFightPlayerFightRemoteGSReq_42605 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 shopId = 2;
+    optional int32 seatId = 3;
+    repeated int32 talentId = 4;
+    repeated MsgSilkShopTalentBrifData talentBrifList = 5;
+    optional string playerId = 6;
+    optional int64 familyId = 7;
+    optional string familyName = 8;
+    optional int32 job = 9;
+    optional MsgPlayerBrifData playerBrifdata = 10;
+}
+
+message CrossSilkFightPlayerFightRemoteGSResp_42605 {
+    optional int32 ret = 1;
+    optional MsgSilkShopDetailData shopDetail = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData battleData = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources itemScore = 4;
+    repeated int32 talentId = 5;
+    optional MsgSilkFightKafkaData kafkaData = 6;
+    optional MsgSilkFightKafkaData kafkaDataBeFight = 7;
+}
+
+message CrossSilkFightLeaveEnterRemoteGSReq_42606 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional bool isEnter = 2;
+    optional int32 type = 3;
+    optional int32 shopId = 4;
+    optional int32 seatId = 5;
+    optional string playerId = 6;
+}
+
+message CrossSilkFightLeaveEnterRemoteGSResp_42606 {
+    optional int32 ret = 1;
+}
+
+message CrossSilkFightMyLocationRemoteGSReq_42608 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message CrossSilkFightMyLocationRemoteGSResp_42608 {
+    required int32 ret = 1;
+    repeated MsgSilkShopLoctionData locationInfo = 2;
+}
+
+message CrossSilkFightOneKeyTakeRemoteReq_42609 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+}
+
+message CrossSilkFightOneKeyTakeRemoteResp_42609 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources itemGet = 3;
+    optional MsgSilkFightKafkaData kafkaData = 4;
+}
+
+message CrossSilkFightCancelRemoteGSReq_42610 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 shopId = 2;
+    optional int32 seatId = 3;
+    optional string playerId = 4;
+    optional int64 familyId = 5;
+}
+
+message CrossSilkFightCancelRemoteGSResp_42610 {
+    required int32 ret = 1;
+    repeated MsgSilkShopLoctionData locationInfo = 2;
+    repeated int32 talentId = 3;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources itemGet = 4;
+    optional MsgSilkFightKafkaData kafkaData = 5;
+}
+
+message CrossSilkFightTakeNomarlSeatRemoteCSReq_42611 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated int32 talentId = 2;
+    optional int64 familyId = 3;
+    optional string playerId = 4;
+    optional MsgPlayerBrifData playerBrifdata = 5;
+}
+
+message CrossSilkFightTakeNomarlSeatRemoteCSResp_42611 {
+    required int32 ret = 1;
+    repeated int32 talentId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources itemGet = 3;
+    optional MsgSilkFightKafkaData kafkaData = 4;
+}
+
+message CrossSilkFightOpenNoticeRemoteGSReq_42613 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message CrossSilkFightOpenNoticeRemoteGSResp_42613 {
+    required int32 ret = 1;
+    repeated MsgSilkShopNoticeData noticeData = 2;
+}
+
+message CrossSilkFightOpenPlayerOccupyRemoteReq_42614 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string myPlayerId = 2;
+    optional string toPlayerId = 3;
+    optional bool isSearch = 4;
+}
+
+message CrossSilkFightOpenPlayerOccupyRemoteResp_42614 {
+    required int32 ret = 1;
+    optional MsgSilkShopPlayerData playerData = 2;
+    optional int32 occupyNum = 3;
+    repeated OccupyShopBrif shopBrifs = 4;
+    optional MsgSilkFightKafkaData kafkaData = 5;
+}
+
+message CrossSilkFightPlayerDefendRemoteReq_42615 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message CrossSilkFightPlayerDefendRemoteResp_42615 {
+    required int32 ret = 1;
+    repeated MsgSilkShopPlayerData playerDatas = 2;
+}
+
+message CrossSilkFightPeepEnemyRemoteReq_42616 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 shopId = 2;
+    optional int32 seatId = 3;
+    optional string playerId = 4;
+}
+
+message CrossSilkFightPeepEnemyRemoteResp_42616 {
+    required int32 ret = 1;
+    optional MsgSilkShopPlayerData playerData = 2;
+    repeated MsgSilkShopTalentBrifData msgTalentData = 3;
+    optional MsgSilkFightKafkaData kafkaData = 4;
+}
+
+message CrossSilkFightSettlementRemoteReq_42617 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message CrossSilkFightSettlementRemoteResp_42617 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources itemGet = 2;
+    optional MsgSilkFightKafkaData kafkaData = 3;
+}
+
+message CrossMessageShareSilkRemoteReq_42618 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional int32 shopId = 2;
+    optional int32 seatId = 3;
+    optional string playerId = 4;
+}
+
+message CrossMessageShareSilkRemoteResp_42618 {
+    required int32 ret = 1;
+    optional int64 shareCD = 2;
+}
+
+message CrossSilkFightPushRedPointRemoteReq_42619 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message CrossSilkFightPushRedPointRemoteResp_42619 {
+    required int32 ret = 1;
+    optional bool isReadNotice = 2;
+    optional bool isReadDefend = 3;
+}
+
+message CrossSilkFightHaveSeatRemoteReq_42620 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message CrossSilkFightHaveSeatRemoteResp_42620 {
+    required int32 ret = 1;
+    optional bool haveSeat = 2;
+}
+
+message CrossMessageGetRankInfoRemoteReq_42650 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+}
+
+message CrossMessageGetRankInfoRemoteResp_42650 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivityMessage.MsgSilkFightPlayerRankData rankData = 2;
+}
+
+message CrossMessageRecordTakeTypeRemoteReq_42651 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int32 takeType = 3;
+}
+
+message CrossMessageRecordTakeTypeRemoteResp_42651 {
+    required int32 ret = 1;
+}
+
+message CrossMessageFamilyEventRemoteReq_42653 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+    optional int32 eventType = 4;
+    optional string familyName = 5;
+    optional int32 job = 6;
+}
+
+message CrossMessageFamilyEventRemoteResp_42653 {
+    required int32 ret = 1;
+}
+
+message SilkFightCrossTalentCsRemote_42654 {
+    required bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    optional string playerId = 2;
+}
+
+message SilkFightCrossTalentGsRemote_42654 {
+    required int32 ret = 1;
+    repeated int32 talentId = 2;
+}
+
+message SilkFightCrossPushNamingResp_42607 {
+    optional string familyName = 1;
+    optional int32 shopId = 2;
+    optional int32 namingAdd = 3;
+    optional int64 familyId = 4;
+    optional string playerId = 5;
+    optional int32 serverId = 6;
+}
+
+message SilkFightCrossPushShopDetialResp_42604 {
+    optional MsgSilkShopDetailData shopDetail = 1;
+    optional string playerId = 2;
+}
+
+message SilkFightCrossBeTookAwayResp_42612 {
+    optional int32 shopId = 1;
+    optional int32 seatId = 2;
+    optional MsgSilkShopPlayerData my = 3;
+    optional MsgSilkShopPlayerData other = 4;
+    optional int64 occupyTime = 5;
+    optional int64 productNum = 6;
+    optional int64 productRob = 7;
+    optional int32 actId = 8;
+    optional int32 groupId = 9;
+}
+
+message AutoSettlementGsRemote_42630 {
+    optional bf.messages.game.GmActivityMessage.MsgGmActivity msgGmActivity = 1;
+    repeated MsgAutoSettlement msgAutoSettlement = 2;
+}
+
+message SilkFightCroosPushReadPointResp_42631 {
+    required int32 ret = 1;
+    optional bool isReadNotice = 2;
+    optional bool isReadDefend = 3;
+    optional string playerId = 4;
+}

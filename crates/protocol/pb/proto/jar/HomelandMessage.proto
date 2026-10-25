@@ -1,0 +1,517 @@
+syntax = "proto2";
+
+package bf.messages.game.HomelandMessage;
+
+import "CommonMsgMessage.proto";
+import "PlayerMessage.proto";
+
+message MsgHomeland {
+    optional int32 lv = 1;
+    optional int32 exp = 2;
+    repeated MsgFashion fashions = 3;
+    repeated int32 useFashionIds = 4;
+    repeated int32 attackTalentIds = 5;
+    repeated int32 defenseTalentIds = 6;
+    repeated int32 newLogType = 7;
+    repeated MsgCell farmCells = 11;
+    repeated MsgCell pastureCells = 12;
+    repeated MsgCarriage carriage = 21;
+    optional bool enabledPsw = 22;
+    optional string psw = 23;
+    repeated int32 carriageNewLogType = 24;
+    optional int64 nextRefreshTime = 25;
+}
+
+message MsgCell {
+    required int32 seatId = 1;
+    optional int32 goodsId = 2;
+    optional int64 endTime = 3;
+    optional int32 status = 4;
+}
+
+message MsgYield {
+    optional int32 seatId = 1;
+    optional int32 exp = 2;
+    optional int32 extraExp = 5;
+    optional bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+    optional bf.messages.game.CommonMsgMessage.MsgResources extraReward = 4;
+}
+
+message MsgHarvest {
+    repeated MsgYield yield = 1;
+    optional int32 lv = 2;
+    optional int32 exp = 3;
+    repeated MsgCell farmCells = 4;
+    repeated MsgCell pastureCells = 5;
+}
+
+message MsgFashion {
+    optional int32 id = 1;
+    optional int32 lv = 2;
+}
+
+message MsgOtherHomeland {
+    optional MsgHomeland homeland = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 2;
+    optional bool isFriendOrFamily = 3;
+    optional int32 surplusHelpNum = 6;
+    optional int32 surplusStealNum = 7;
+    optional int32 surplusInputNum = 8;
+}
+
+message MsgLog {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 3;
+    optional int64 time = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources extraResources = 5;
+}
+
+message MsgHomelandOfflineData {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 1;
+    optional int32 houseLv = 2;
+    optional int32 houseExp = 3;
+    optional bool existRipe = 4;
+    optional bool carriageUnlock = 5;
+    repeated int32 carriageGoodsId = 6;
+    repeated int32 carriageAdd = 7;
+}
+
+message MsgBattleResultData {
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 1;
+}
+
+message MsgCarriage {
+    optional int32 type = 1;
+    optional int32 status = 2;
+    repeated MsgCarriageOrder orders = 3;
+    optional int32 bigMapId = 4;
+}
+
+message MsgCarriageOrder {
+    optional int32 templateId = 1;
+    optional int32 goodsId = 2;
+    optional int32 curNum = 3;
+    optional int32 maxNum = 4;
+    optional bf.messages.game.CommonMsgMessage.MsgResources price = 5;
+    optional int32 selfSaleNum = 6;
+    optional int32 personMaxNum = 7;
+}
+
+message MsgCarriageLog {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgResources hisSale = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgResources hisProfit = 3;
+    optional bf.messages.game.CommonMsgMessage.MsgResources myProfit = 4;
+    optional bf.messages.game.CommonMsgMessage.MsgResources mySurplus = 5;
+    optional int64 time = 6;
+}
+
+message MsgExtendReq_44001 {
+    optional int32 seatId = 1;
+    optional int32 type = 2;
+}
+
+message MsgExtendResp_44001 {
+    required int32 ret = 1;
+    optional MsgCell cell = 2;
+    optional int32 type = 3;
+}
+
+message MsgBuyGoodsReq_44002 {
+    optional int32 goodsId = 1;
+    optional int32 num = 2;
+}
+
+message MsgBuyGoodsResp_44002 {
+    required int32 ret = 1;
+}
+
+message MsgPlantReq_44003 {
+    optional int32 goodsId = 1;
+    optional int32 num = 2;
+}
+
+message MsgPlantResp_44003 {
+    required int32 ret = 1;
+    repeated MsgCell cell = 2;
+}
+
+message MsgHarvestReq_44004 {
+}
+
+message MsgHarvestResp_44004 {
+    required int32 ret = 1;
+    optional MsgHarvest harvest = 2;
+}
+
+message MsgQueryYieldReq_44005 {
+    optional int32 seatId = 1;
+}
+
+message MsgQueryYieldResp_44005 {
+    required int32 ret = 1;
+    optional MsgYield yield = 2;
+}
+
+message MsgSaleFruitReq_44006 {
+    optional int32 fruitId = 1;
+    optional int32 num = 2;
+}
+
+message MsgSaleFruitResp_44006 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources extraReward = 3;
+}
+
+message MsgUnlockPasturePushResp_44007 {
+    required int32 ret = 1;
+    repeated MsgCell cells = 2;
+}
+
+message MsgRandQueryOtherHomelandReq_44011 {
+}
+
+message MsgRandQueryOtherHomelandResp_44011 {
+    required int32 ret = 1;
+    optional MsgOtherHomeland info = 2;
+}
+
+message MsgQueryOtherHomelandReq_44012 {
+    optional string playerId = 1;
+}
+
+message MsgQueryOtherHomelandResp_44012 {
+    required int32 ret = 1;
+    optional MsgOtherHomeland info = 2;
+}
+
+message MsgQueryFamilyMembersReq_44013 {
+    optional int32 type = 1;
+}
+
+message MsgQueryFamilyMembersResp_44013 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+    repeated MsgHomelandOfflineData infos = 3;
+}
+
+message MsgSearchPlayerReq_44014 {
+    optional string playerId = 1;
+}
+
+message MsgSearchPlayerResp_44014 {
+    required int32 ret = 1;
+    optional MsgHomelandOfflineData info = 2;
+    optional bool alreadySteal = 3;
+}
+
+message MsgHelpHarvestReq_44015 {
+    optional string playerId = 1;
+}
+
+message MsgHelpHarvestResp_44015 {
+    required int32 ret = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgResources extraReward = 3;
+    optional int32 lv = 4;
+    optional int32 exp = 5;
+    optional bool refreshView = 6;
+}
+
+message MsgOtherHelpHarvestPushResp_44016 {
+    required int32 ret = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer helpPlayer = 2;
+    optional MsgHarvest harvest = 3;
+}
+
+message MsgStealReq_44017 {
+    optional string playerId = 1;
+    repeated int32 talentIds = 2;
+}
+
+message MsgStealResp_44017 {
+    required int32 ret = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData battleData = 2;
+    optional bool refreshView = 3;
+}
+
+message MsgOtherStealPushResp_44018 {
+    required int32 ret = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer stealPlayer = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+}
+
+message MsgSetDefenseTeamReq_44019 {
+    repeated int32 talentIds = 1;
+}
+
+message MsgSetDefenseTeamResp_44019 {
+    required int32 ret = 1;
+}
+
+message MsgQueryLogReq_44020 {
+}
+
+message MsgQueryLogResp_44020 {
+    required int32 ret = 1;
+    repeated MsgLog defenceLogs = 2;
+    repeated MsgLog helpLogs = 3;
+    repeated int32 newLogType = 7;
+}
+
+message MsgAddLogPushResp_44021 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+    repeated int32 newLogType = 7;
+    repeated int32 carriageNewLogType = 24;
+}
+
+message MsgHomelandPushResp_44022 {
+    optional int32 ret = 1;
+    optional MsgHomeland homeland = 2;
+}
+
+message MsgQueryHomelandReq_44023 {
+}
+
+message MsgQueryHomelandResp_44023 {
+    optional int32 ret = 1;
+    optional MsgHomeland homeland = 2;
+}
+
+message MsgFashionActiveReq_44025 {
+    optional int32 id = 1;
+}
+
+message MsgFashionActiveResp_44025 {
+    required int32 ret = 1;
+    optional MsgFashion info = 2;
+    repeated int32 useFashionIds = 3;
+}
+
+message MsgFashionUpLvReq_44026 {
+    optional int32 id = 1;
+}
+
+message MsgFashionUpLvResp_44026 {
+    required int32 ret = 1;
+    optional MsgFashion info = 2;
+}
+
+message MsgFashionUseReq_44027 {
+    optional int32 id = 1;
+}
+
+message MsgFashionUseResp_44027 {
+    required int32 ret = 1;
+    repeated int32 useFashionIds = 2;
+}
+
+message MsgFamilyManor {
+    optional int32 pos = 1;
+    optional string playerId = 2;
+    optional string playerName = 3;
+    optional int32 fashionId = 4;
+}
+
+message MsgFamilyBuildReq_44051 {
+    optional int32 pos = 1;
+}
+
+message MsgFamilyBuildResp_44051 {
+    required int32 ret = 1;
+}
+
+message MsgFamilyChgPosReq_44052 {
+    optional int32 pos = 1;
+}
+
+message MsgFamilyChgPosResp_44052 {
+    required int32 ret = 1;
+}
+
+message MsgFamilyBuildPushResp_44053 {
+    optional MsgFamilyManor info = 1;
+}
+
+message MsgFamilyDismantlePushResp_44054 {
+    optional int32 pos = 1;
+}
+
+message MsgUpdCarriagePushResp_44061 {
+    required int32 ret = 1;
+    repeated MsgCarriage carriage = 2;
+}
+
+message MsgCarriageSaleReq_44062 {
+    optional int32 type = 1;
+    optional int32 pos = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgResources sale = 3;
+}
+
+message MsgCarriageSaleResp_44062 {
+    required int32 ret = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgResources extraReward = 3;
+}
+
+message MsgCarriageSetPswReq_44063 {
+    optional string psw = 1;
+}
+
+message MsgCarriageSetPswResp_44063 {
+    required int32 ret = 1;
+    optional string psw = 2;
+}
+
+message MsgCarriageInputPswReq_44064 {
+    optional string tarPlayerId = 1;
+    optional string psw = 2;
+}
+
+message MsgCarriageInputPswResp_44064 {
+    required int32 ret = 1;
+    optional int32 surplusInputNum = 2;
+}
+
+message MsgCarriageSaleOtherReq_44065 {
+    optional string tarPlayerId = 1;
+    optional int32 type = 3;
+    optional int32 pos = 4;
+    optional bf.messages.game.CommonMsgMessage.MsgResources sale = 5;
+}
+
+message MsgCarriageSaleOtherResp_44065 {
+    required int32 ret = 1;
+    optional MsgOtherHomeland info = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+    optional bf.messages.game.CommonMsgMessage.MsgResources extraReward = 4;
+}
+
+message MsgCarriageQueryLogReq_44066 {
+    optional int32 type = 1;
+}
+
+message MsgCarriageQueryLogResp_44066 {
+    required int32 ret = 1;
+    repeated MsgCarriageLog carriageLogs = 2;
+    repeated int32 carriageNewLogType = 24;
+}
+
+message MsgG2CMatchingData {
+    optional string playerId = 1;
+    optional bool enabled = 2;
+    optional int32 houseLv = 3;
+    optional int32 houseExp = 4;
+    optional int32 houseFashionId = 5;
+    optional int64 fastRipeTime = 6;
+    optional int64 fastStealTime = 7;
+    optional string money = 8;
+    optional int64 lastUpdTime = 9;
+    repeated int32 carriageGoodsId = 10;
+    repeated int32 carriageAdd = 11;
+    optional int64 carriageNextTime = 12;
+}
+
+message MsgG2GQueryOtherHomelandReq_44082 {
+    optional string fromPlayerId = 1;
+    optional string tarPlayerId = 2;
+    optional int32 groupId = 3;
+}
+
+message MsgG2GQueryOtherHomelandResp_44082 {
+    required int32 ret = 1;
+    optional MsgOtherHomeland info = 2;
+}
+
+message MsgG2GHelpHarvestReq_44083 {
+    optional string fromPlayerId = 1;
+    optional string toPlayerId = 2;
+    optional int32 groupId = 3;
+}
+
+message MsgG2GHelpHarvestResp_44083 {
+    required int32 ret = 1;
+    optional int32 helpRewardExp = 2;
+}
+
+message MsgG2GStealReq_44084 {
+    optional bf.messages.game.CommonMsgMessage.MsgBattlePlayerData fromPlayerBattleData = 1;
+    optional string toPlayerId = 2;
+    optional int32 groupId = 3;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer fromPlayer = 4;
+}
+
+message MsgG2GStealResp_44084 {
+    required int32 ret = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgPvPBattleData battleData = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources reward = 3;
+}
+
+message MsgQueryOfflineDataReq_44085 {
+    optional string playerId = 1;
+    optional int32 groupId = 2;
+}
+
+message MsgQueryOfflineDataResp_44085 {
+    required int32 ret = 1;
+    optional MsgHomelandOfflineData info = 2;
+}
+
+message MsgG2CMatchingReq_44081 {
+    optional int32 groupId = 1;
+    optional string playerId = 2;
+    repeated string exceptPlayers = 3;
+}
+
+message MsgG2CMatchingResp_44081 {
+    required int32 ret = 1;
+    optional string matchingPlayerId = 2;
+}
+
+message MsgG2CSyncAllMatchingDataReq_44086 {
+    optional int32 groupId = 1;
+    repeated MsgG2CMatchingData infos = 2;
+}
+
+message MsgG2CSyncMatchingDataReq_44087 {
+    optional int32 groupId = 1;
+    optional MsgG2CMatchingData info = 2;
+}
+
+message MsgG2GCarriageInputPswReq_44088 {
+    optional int32 groupId = 1;
+    optional string tarPlayerId = 2;
+    optional string psw = 3;
+}
+
+message MsgG2GCarriageInputPswResp_44088 {
+    required int32 ret = 1;
+}
+
+message MsgG2GCarriageSaleOtherReq_44089 {
+    optional int32 groupId = 1;
+    optional string tarPlayerId = 2;
+    optional string psw = 3;
+    optional int32 type = 4;
+    optional int32 pos = 5;
+    optional bf.messages.game.CommonMsgMessage.MsgResources sale = 6;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer fromPlayer = 7;
+}
+
+message MsgG2GCarriageSaleOtherResp_44089 {
+    required int32 ret = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgResources reward = 2;
+    optional MsgOtherHomeland info = 3;
+}
+
+message MsgG2CQueryOfflineDataReq_44090 {
+    optional int32 groupId = 1;
+    repeated string playerId = 2;
+}
+
+message MsgG2CQueryOfflineDataResp_44090 {
+    required int32 ret = 1;
+    repeated MsgHomelandOfflineData info = 2;
+}

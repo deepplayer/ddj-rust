@@ -1,0 +1,896 @@
+syntax = "proto2";
+
+package bf.messages.game.GmActivityFanRenMessage;
+
+import "CommonMsgMessage.proto";
+import "GmActivityCommonMessage.proto";
+import "PlayerMessage.proto";
+import "FamilyMessage.proto";
+
+message MsgAllTemplateData {
+    repeated bf.messages.game.GmActivityCommonMessage.MsgRankReward rankRewards = 1;
+    repeated MsgImageTemplate image = 2;
+    repeated MsgStageTemplate stage = 3;
+    repeated MsgAchieveTemplate achieve = 4;
+    repeated MsgTurnTemplate turn = 5;
+}
+
+message MsgImageTemplate {
+    optional int32 imageId = 1;
+    optional int32 condition = 2;
+    optional int32 param = 3;
+}
+
+message MsgStageTemplate {
+    optional int32 stageId = 1;
+    optional string reward = 2;
+}
+
+message MsgAchieveTemplate {
+    optional int32 id = 1;
+    optional int32 type = 2;
+    optional int32 value = 3;
+    optional string reward = 4;
+}
+
+message MsgTurnTemplate {
+    optional int32 id = 1;
+    optional int32 day = 2;
+    optional int32 stage = 3;
+    optional int64 start = 4;
+    optional int64 end = 5;
+}
+
+message MsgSimplePlayerData {
+    repeated bf.messages.game.GmActivityCommonMessage.MsgPlayerRankData rankData = 1;
+    repeated MsgTop3Player top3 = 2;
+    optional int32 playerRank = 3;
+    optional int32 familyRank = 4;
+    optional int32 useImageId = 5;
+    repeated int32 redAchieve = 6;
+    optional int32 chargeNum = 7;
+}
+
+message MsgPlayerData {
+    optional int32 lv = 1;
+    optional int32 exp = 2;
+    optional int64 lingLi = 3;
+    repeated MsgFiveElement fiveElement = 4;
+    optional MsgAttrData attr = 5;
+    repeated int32 passStageId = 6;
+    optional int32 playerRank = 7;
+    optional int32 playerScore = 8;
+    optional bool isGaming = 9;
+}
+
+message MsgFiveElement {
+    optional int32 type = 1;
+    optional int32 lv = 2;
+    optional int32 exp = 3;
+}
+
+message MsgAttrData {
+    optional int32 attack = 1;
+    optional int32 hp = 2;
+    optional int32 speed = 3;
+    optional int32 bjRate = 4;
+    optional int32 bjHurt = 5;
+}
+
+message MsgAttrValue {
+    optional int32 type = 1;
+    optional int32 value = 2;
+}
+
+message MsgAchieve {
+    optional int32 templateId = 1;
+    optional int32 status = 2;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 3;
+    optional bf.messages.game.FamilyMessage.MsgFamilySimpleInfo family = 4;
+}
+
+message MsgTop3Player {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 1;
+    optional int32 imageId = 2;
+}
+
+message MsgOtherPlayerInfo {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 1;
+    optional int32 lv = 2;
+    optional int64 lingLi = 3;
+    optional int32 imageId = 4;
+    repeated MsgFiveElement fiveElement = 5;
+    optional MsgAttrData attr = 6;
+}
+
+message MsgQueryPlayerDataReq_34501 {
+}
+
+message MsgQueryPlayerDataResp_34501 {
+    required int32 ret = 1;
+    optional MsgPlayerData info = 2;
+}
+
+message MsgChgImageReq_34502 {
+    optional int32 imageId = 1;
+}
+
+message MsgChgImageResp_34502 {
+    required int32 ret = 1;
+    optional int32 imageId = 2;
+}
+
+message MsgQueryAchieveReq_34503 {
+    optional int32 type = 1;
+}
+
+message MsgQueryAchieveResp_34503 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+    repeated MsgAchieve achieve = 3;
+}
+
+message MsgGainAchieveRewardReq_34504 {
+    optional int32 templateId = 1;
+}
+
+message MsgGainAchieveRewardResp_34504 {
+    required int32 ret = 1;
+    repeated int32 templateId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 3;
+}
+
+message MsgQueryOtherPlayerReq_34505 {
+    optional string playerId = 1;
+}
+
+message MsgQueryOtherPlayerResp_34505 {
+    required int32 ret = 1;
+    optional MsgOtherPlayerInfo info = 2;
+}
+
+message MsgBatchPlayReq_34506 {
+    optional int32 num = 1;
+}
+
+message MsgBatchPlayResp_34506 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+    optional int32 playerRank = 3;
+    optional int32 playerScore = 4;
+}
+
+message MsgUseItemReq_34507 {
+    optional bool takeQuickly = 1;
+}
+
+message MsgUseItemResp_34507 {
+    required int32 ret = 1;
+    optional MsgPlayerData info = 2;
+    optional int32 addExp = 3;
+    repeated int32 fiveType = 4;
+    repeated int32 fiveAddExp = 5;
+}
+
+message MsgUpLvReq_34508 {
+}
+
+message MsgUpLvResp_34508 {
+    required int32 ret = 1;
+    optional MsgPlayerData info = 2;
+}
+
+message MsgStageStartReq_34511 {
+    optional int32 stageId = 1;
+}
+
+message MsgStageStartResp_34511 {
+    required int32 ret = 1;
+    repeated MsgAttrValue info = 2;
+    optional int64 startTime = 3;
+}
+
+message MsgStageEndReq_34512 {
+    optional int32 time = 1;
+    optional bool isPass = 2;
+    optional string md5 = 3;
+    optional string curBlood = 4;
+    optional string bossBlood = 5;
+}
+
+message MsgStageEndResp_34512 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+    optional MsgPlayerData info = 3;
+    optional int32 progress = 4;
+}
+
+message MsgStageSyncProgressReq_34513 {
+    optional ClSyncProgressTemplate data = 1;
+}
+
+message MsgStageSyncProgressResp_34513 {
+    required int32 ret = 1;
+}
+
+message MsgStageQueryProgressReq_34514 {
+}
+
+message MsgStageQueryProgressResp_34514 {
+    required int32 ret = 1;
+    optional ClSyncProgressTemplate data = 2;
+    repeated MsgAttrValue info = 3;
+    optional int64 startTime = 4;
+}
+
+message MsgStageQuickPassReq_34515 {
+    optional int32 stageId = 1;
+}
+
+message MsgStageQuickPassResp_34515 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+    optional MsgPlayerData info = 3;
+}
+
+message MsgPVPSimpleInfo {
+    optional int32 turn = 1;
+    optional int32 stage = 2;
+    optional int64 stageEndTime = 3;
+    optional int32 rank = 4;
+    optional bool canEnter = 5;
+    optional int32 mySectId = 6;
+    optional MsgTipsInfo1 tips1 = 7;
+    optional MsgTipsInfo2 tips2 = 8;
+    optional MsgTipsInfo3 tips3 = 9;
+    optional int32 turnId = 10;
+}
+
+message MsgTipsInfo3 {
+    optional int32 sectId = 1;
+}
+
+message MsgTipsInfo1 {
+    optional int32 sectId = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 2;
+}
+
+message MsgTipsInfo2 {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer topRobPlayer = 1;
+    optional int32 topRobNum = 2;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer topKillPlayer = 3;
+    optional int32 topKillNum = 4;
+    repeated int32 sectId = 5;
+    repeated int32 sectScore = 6;
+    optional int32 mySectRank = 7;
+    optional int32 mySectScore = 8;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources sectRankRewards = 9;
+    optional bool isWarReward = 22;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer sectRobPlayer = 11;
+    optional int32 sectRobNum = 12;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer sectKillPlayer = 13;
+    optional int32 sectKillNum = 14;
+    optional int32 myAttackNum = 15;
+    optional int32 myAttackScore = 16;
+    optional int32 myKillNum = 17;
+    optional int32 myKillScore = 18;
+    optional int32 myPlayerRank = 19;
+    optional int32 myPlayerScore = 20;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources playerRankRewards = 21;
+}
+
+message MsgFamilyInfo {
+    optional bf.messages.game.FamilyMessage.MsgFamilySimpleInfo family = 1;
+    optional int64 score = 2;
+}
+
+message MsgSectPlayerNum {
+    optional int32 sectId = 1;
+    optional int32 num = 2;
+}
+
+message MsgRoomSimple {
+    optional int32 areaId = 1;
+    optional int32 sectId = 2;
+    repeated MsgSectPlayerNum sectPlayerNum = 3;
+}
+
+message MsgQueryPVPSimpleReq_34521 {
+}
+
+message MsgQueryPVPSimpleResp_34521 {
+    required int32 ret = 1;
+    optional MsgPVPSimpleInfo info = 2;
+}
+
+message MsgClearTipsReq_34522 {
+}
+
+message MsgClearTipsResp_34522 {
+    required int32 ret = 1;
+}
+
+message MsgQuerySectFamilyReq_34523 {
+    optional int32 sectId = 1;
+}
+
+message MsgQuerySectFamilyResp_34523 {
+    required int32 ret = 1;
+    repeated MsgFamilyInfo infos = 2;
+    optional int32 mySectId = 3;
+}
+
+message MsgEntryPvpReq_34524 {
+}
+
+message MsgEntryPvpResp_34524 {
+    required int32 ret = 1;
+    optional MsgRoom room = 2;
+}
+
+message MsgLeavePvpReq_34531 {
+}
+
+message MsgLeavePvpResp_34531 {
+    required int32 ret = 1;
+}
+
+message MsgQueryAllRoomSimpleReq_34525 {
+}
+
+message MsgQueryAllRoomSimpleResp_34525 {
+    required int32 ret = 1;
+    repeated MsgRoomSimple infos = 2;
+    optional int32 areaId = 3;
+    optional int32 markAreaId = 4;
+    optional bool isLeader = 5;
+    optional int64 markCdEndTime = 6;
+    optional int64 choiceAreaCdEndTime = 7;
+}
+
+message MsgMarkAreaReq_34526 {
+    optional int32 areaId = 1;
+}
+
+message MsgMarkAreaResp_34526 {
+    required int32 ret = 1;
+    optional int32 markAreaId = 2;
+    optional int64 markCdEndTime = 3;
+}
+
+message MsgChoiceAreaReq_34527 {
+    optional int32 areaId = 1;
+}
+
+message MsgChoiceAreaResp_34527 {
+    required int32 ret = 1;
+}
+
+message MsgQuerySectMemberReq_34532 {
+}
+
+message MsgQuerySectMemberResp_34532 {
+    required int32 ret = 1;
+    repeated bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 2;
+}
+
+message MsgRoom {
+    optional int32 areaId = 1;
+    optional int32 sectId = 2;
+    repeated MsgPvpPlayer players = 3;
+    repeated int32 sectScore = 4;
+    optional int64 robEndTime = 5;
+    repeated MsgSectPlayerNum sectPlayerNum = 6;
+    optional int64 nowTime = 7;
+    optional int32 myPlayerId = 11;
+    optional int32 mySectId = 12;
+    optional int32 mySpirit = 13;
+    optional MsgPlayerDieInfo dieInfo = 14;
+}
+
+message MsgPvpPlayer {
+    optional int32 playerId = 1;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 2;
+    optional int32 gradeId = 6;
+    optional int32 hpMax = 7;
+    optional int32 hp = 8;
+    optional MsgPoint pos = 9;
+    optional int32 sectId = 10;
+    optional int32 killCount = 11;
+    optional int64 recoverHpTime = 12;
+}
+
+message MsgPlayerDieInfo {
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer killPlayer = 1;
+    optional int32 killSectId = 2;
+    optional int32 attackCount = 3;
+    optional int32 attackScore = 4;
+    optional int32 killCount = 5;
+    optional int32 killScore = 6;
+    optional int64 recoverHpTime = 7;
+}
+
+message MsgPoint {
+    optional int32 x = 1;
+    optional int32 y = 2;
+}
+
+message MsgInput {
+    optional int32 type = 1;
+    optional bytes data = 2;
+}
+
+message MsgInputMove {
+    optional int32 playerId = 1;
+    optional int32 dt = 2;
+    optional MsgPoint speed = 3;
+}
+
+message MsgInputLockPlayer {
+    optional int32 playerId = 1;
+    optional int32 tarPlayerId = 2;
+}
+
+message MsgInputJoin {
+    optional MsgPvpPlayer player = 1;
+}
+
+message MsgInputLeave {
+    optional int32 playerId = 1;
+}
+
+message MsgInputTimePast {
+    optional int32 dt = 1;
+}
+
+message MsgInputAttack {
+    optional int32 playerId = 1;
+    optional int32 tarPlayerId = 2;
+    optional int32 hurt = 3;
+    optional int32 tarHp = 4;
+    optional bool isBaoJi = 5;
+    optional int64 tarRecoverHpTime = 11;
+    optional MsgPlayerDieInfo tarDieInfo = 12;
+    optional int32 spirit = 13;
+    optional int32 hp = 14;
+}
+
+message MsgInputRobDataChg {
+    optional int64 robEndTime = 1;
+    repeated MsgSectPlayerNum sectPlayerNum = 2;
+}
+
+message MsgInputOccupyStateChg {
+    optional int32 sectId = 1;
+}
+
+message MsgInputSyncScore {
+    repeated int32 sectScore = 1;
+}
+
+message MsgInputNotice {
+    optional int32 templateId = 1;
+    repeated string params = 2;
+    optional bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 3;
+}
+
+message MsgInputPlayerUpdate {
+    optional MsgPvpPlayer player = 1;
+    optional int32 spirit = 2;
+}
+
+message MsgSendClientInputReq_34528 {
+    optional int32 sn = 1;
+    repeated MsgInput input = 2;
+    optional int32 actId = 3;
+}
+
+message MsgFramePushResp_34529 {
+    required int32 ret = 1;
+    optional int32 lastSn = 2;
+    repeated MsgInput input = 3;
+}
+
+message MsgG2CClientInput {
+    optional string playerId = 1;
+    optional int32 sn = 2;
+    repeated MsgInput input = 3;
+}
+
+message MsgG2CAreaInput {
+    optional int32 areaId = 1;
+    repeated MsgInput input = 2;
+    repeated MsgG2CClientSn clientSn = 3;
+}
+
+message MsgG2CClientSn {
+    optional string playerId = 1;
+    optional int32 lastSn = 2;
+}
+
+message MsgG2CPvpMail {
+    optional int32 turn = 1;
+    optional int32 playerRank = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources playerRewards = 3;
+    optional int32 sectRank = 4;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources sectRewards = 5;
+}
+
+message MsgG2CQuerySimplePlayerDataReq_34591 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+}
+
+message MsgG2CQuerySimplePlayerDataResp_34591 {
+    required int32 ret = 1;
+    optional MsgSimplePlayerData info = 2;
+}
+
+message MsgG2CQueryPlayerDataReq_34551 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+}
+
+message MsgG2CQueryPlayerDataResp_34551 {
+    required int32 ret = 1;
+    optional MsgPlayerData info = 2;
+}
+
+message MsgG2CChgImageReq_34552 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int32 imageId = 3;
+}
+
+message MsgG2CChgImageResp_34552 {
+    required int32 ret = 1;
+}
+
+message MsgG2CQueryAchieveReq_34553 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int32 type = 3;
+}
+
+message MsgG2CQueryAchieveResp_34553 {
+    required int32 ret = 1;
+    repeated MsgAchieve achieve = 2;
+}
+
+message MsgG2CGainAchieveRewardReq_34554 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int32 templateId = 3;
+}
+
+message MsgG2CGainAchieveRewardResp_34554 {
+    required int32 ret = 1;
+    repeated int32 templateId = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 3;
+}
+
+message MsgG2CQueryOtherPlayerReq_34555 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+}
+
+message MsgG2CQueryOtherPlayerResp_34555 {
+    required int32 ret = 1;
+    optional MsgOtherPlayerInfo info = 2;
+}
+
+message MsgG2CBatchPlayReq_34556 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int32 num = 3;
+}
+
+message MsgG2CBatchPlayResp_34556 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+    optional int32 playerRank = 3;
+    optional int32 playerScore = 4;
+    optional int32 addIntegral = 5;
+    optional int32 maxStageId = 6;
+}
+
+message MsgG2CUseItemReq_34557 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional bool takeQuickly = 3;
+    optional int32 itemNum = 4;
+}
+
+message MsgG2CUseItemResp_34557 {
+    required int32 ret = 1;
+    optional MsgPlayerData info = 2;
+    optional int32 addExp = 3;
+    repeated int32 fiveType = 4;
+    repeated int32 fiveAddExp = 5;
+    optional int32 useItemNum = 6;
+}
+
+message MsgG2CUpLvReq_34558 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+}
+
+message MsgG2CUpLvResp_34558 {
+    required int32 ret = 1;
+    optional MsgPlayerData info = 2;
+}
+
+message MsgG2CStageStartReq_34561 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int32 stageId = 3;
+}
+
+message MsgG2CStageStartResp_34561 {
+    required int32 ret = 1;
+    repeated MsgAttrValue info = 2;
+    optional int64 startTime = 3;
+}
+
+message MsgG2CStageEndReq_34562 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int32 time = 3;
+    optional bool isPass = 4;
+    optional string md5 = 5;
+}
+
+message MsgG2CStageEndResp_34562 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+    optional MsgPlayerData info = 3;
+    optional int32 progress = 4;
+    optional int32 stageId = 5;
+    optional int32 addIntegral = 6;
+    optional ClSyncProgressTemplate data = 7;
+    optional int32 familyScore = 8;
+    optional int32 familyRank = 9;
+}
+
+message MsgG2CStageSyncProgressReq_34563 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional ClSyncProgressTemplate data = 3;
+}
+
+message MsgG2CStageSyncProgressResp_34563 {
+    required int32 ret = 1;
+}
+
+message MsgG2CStageQueryProgressReq_34564 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+}
+
+message MsgG2CStageQueryProgressResp_34564 {
+    required int32 ret = 1;
+    optional ClSyncProgressTemplate data = 2;
+    repeated MsgAttrValue info = 3;
+    optional int64 startTime = 4;
+}
+
+message MsgG2CStageQuickPassReq_34565 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int32 stageId = 3;
+}
+
+message MsgG2CStageQuickPassResp_34565 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+    optional MsgPlayerData info = 3;
+    optional int32 addIntegral = 4;
+    optional int32 familyScore = 5;
+    optional int32 familyRank = 6;
+}
+
+message MsgG2CQueryPVPSimpleReq_34571 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+}
+
+message MsgG2CQueryPVPSimpleResp_34571 {
+    required int32 ret = 1;
+    optional MsgPVPSimpleInfo info = 2;
+    optional int32 sectId = 3;
+}
+
+message MsgG2CClearTipsReq_34572 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+}
+
+message MsgG2CClearTipsResp_34572 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+    optional bool isSettle = 3;
+    optional int32 playerScore = 4;
+    optional int32 playerRank = 5;
+    optional int32 sectScore = 6;
+    optional int32 sectRank = 7;
+    optional int32 turn = 8;
+    optional int32 sectId = 9;
+}
+
+message MsgG2CQuerySectFamilyReq_34573 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int32 sectId = 3;
+}
+
+message MsgG2CQuerySectFamilyResp_34573 {
+    required int32 ret = 1;
+    repeated MsgFamilyInfo infos = 2;
+    optional int32 mySectId = 3;
+}
+
+message MsgG2CEntryPvpReq_34574 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+}
+
+message MsgG2CEntryPvpResp_34574 {
+    required int32 ret = 1;
+    optional bool first = 2;
+    optional int32 turn = 3;
+    optional int32 sectId = 4;
+}
+
+message MsgG2CLeavePvpReq_34581 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+}
+
+message MsgG2CQueryAllRoomSimpleReq_34575 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+}
+
+message MsgG2CQueryAllRoomSimpleResp_34575 {
+    required int32 ret = 1;
+    repeated MsgRoomSimple infos = 2;
+    optional int32 areaId = 3;
+    optional int32 markAreaId = 4;
+    optional bool isLeader = 5;
+    optional int64 markCdEndTime = 6;
+    optional int64 choiceAreaCdEndTime = 7;
+}
+
+message MsgG2CMarkAreaReq_34576 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+    optional int32 areaId = 4;
+}
+
+message MsgG2CMarkAreaResp_34576 {
+    required int32 ret = 1;
+    optional int32 markAreaId = 2;
+    optional int64 markCdEndTime = 3;
+}
+
+message MsgG2CChoiceAreaReq_34577 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+    optional int32 areaId = 4;
+}
+
+message MsgG2CChoiceAreaResp_34577 {
+    required int32 ret = 1;
+}
+
+message MsgG2CPushEntryPvpResp_34580 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional MsgRoom room = 2;
+    optional string playerId = 3;
+}
+
+message MsgG2CQuerySectMemberReq_34582 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+}
+
+message MsgG2CQuerySectMemberResp_34582 {
+    required int32 ret = 1;
+    repeated bf.messages.game.PlayerMessage.MsgOfflinePlayer player = 2;
+}
+
+message MsgG2CSendClientInputReq_34578 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    repeated MsgG2CClientInput input = 2;
+}
+
+message MsgG2CFramePushResp_34579 {
+    required int32 ret = 1;
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 2;
+    repeated MsgG2CAreaInput areaInput = 3;
+}
+
+message MsgG2CGainAllAchieveRewardReq_34592 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+}
+
+message MsgG2CGainAllAchieveRewardResp_34592 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+}
+
+message MsgG2CSyncFamilyReq_34593 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int64 familyId = 3;
+}
+
+message MsgG2CSyncFamilyEventReq_34594 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int32 eventType = 3;
+    optional int64 familyId = 4;
+    repeated string memberId = 5;
+}
+
+message MsgG2CSyncPlayerLogoutReq_34595 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+}
+
+message MsgG2CFamilyLockStateReq_34596 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional int64 familyId = 2;
+}
+
+message MsgG2CFamilyLockStateResp_34596 {
+    required int32 ret = 1;
+    optional bool lock = 2;
+}
+
+message MsgG2CQueryPvpMailReq_34597 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+}
+
+message MsgG2CQueryPvpMailResp_34597 {
+    required int32 ret = 1;
+    repeated MsgG2CPvpMail mails = 2;
+}
+
+message ClSkillTemplate {
+    optional int32 id = 1;
+    optional int32 lv = 2;
+}
+
+message ClSkillDamageTemplate {
+    optional int32 id = 1;
+    optional string damage = 2;
+}
+
+message ClDropBoxTemplate {
+    optional int32 time = 1;
+    optional string key = 2;
+}
+
+message ClSyncProgressTemplate {
+    optional int32 stageId = 1;
+    optional int32 time = 2;
+    repeated ClSkillTemplate skillList = 3;
+    repeated ClSkillTemplate auxSkillList = 4;
+    optional string curBlood = 5;
+    optional int32 curLv = 6;
+    optional int32 curExp = 7;
+    repeated ClSkillDamageTemplate damageList = 8;
+    optional int32 rebornNum = 9;
+    optional int32 reSkillNum = 10;
+    optional int32 imageId = 11;
+    repeated ClDropBoxTemplate dropList = 12;
+}

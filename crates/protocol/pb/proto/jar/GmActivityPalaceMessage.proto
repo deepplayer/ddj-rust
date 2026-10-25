@@ -1,0 +1,611 @@
+syntax = "proto2";
+
+package bf.messages.game.GmActivityPalaceMessage;
+
+import "CommonMsgMessage.proto";
+import "GmActivityCommonMessage.proto";
+
+message MsgAllTemplateData {
+    repeated bf.messages.game.GmActivityCommonMessage.MsgRankReward rankRewards = 1;
+    repeated MsgRewardTemplate taskRewards = 2;
+    repeated MsgRechargeTemplate recharge = 3;
+}
+
+message MsgRewardTemplate {
+    optional int32 id = 1;
+    optional int32 stage = 2;
+    optional int32 floor = 3;
+    optional string reward = 4;
+}
+
+message MsgRechargeTemplate {
+    optional int32 giftId = 1;
+    optional int32 giftType = 10;
+    optional int32 payType = 2;
+    optional string originalPrice = 11;
+    optional string price = 12;
+    optional int32 discount = 13;
+    optional int32 rmb = 3;
+    optional int32 overseasPayId = 4;
+    optional int32 vipExp = 5;
+    optional string voucher = 6;
+    optional string name = 7;
+    optional string addition = 8;
+    optional string reward = 9;
+    optional int32 treasure = 14;
+}
+
+message MsgSimplePlayerData {
+    repeated bf.messages.game.GmActivityCommonMessage.MsgPlayerRankData rankData = 1;
+    repeated int32 gainTaskId = 2;
+    optional int32 curStage = 3;
+    optional int32 curFloor = 4;
+    optional int32 playerRank = 5;
+    optional int32 familyRank = 6;
+    repeated int32 buyGiftId = 7;
+    optional bool unlockDungeon = 8;
+}
+
+message MsgPlayerData {
+    optional int32 roleId = 1;
+    optional MsgRoleAttr roleAttr = 2;
+    repeated MsgCard card = 3;
+    repeated int32 choiceCardId = 4;
+    repeated MsgTreasure treasure = 5;
+    repeated MsgTreasure herb = 6;
+    optional MsgMapData mapData = 8;
+    optional int32 status = 9;
+    repeated MsgGoods goods = 10;
+    optional int32 rank = 11;
+    optional int32 score = 12;
+    repeated int32 buyGiftId = 13;
+    optional int32 backNum = 14;
+    optional bool unlockPlayBatch = 15;
+    repeated MsgPushGift pushGift = 16;
+    optional bf.messages.game.CommonMsgMessage.MsgResources chgRolePrice = 17;
+    optional bool redShop = 21;
+}
+
+message MsgRoleAttr {
+    optional int32 hpMax = 1;
+    optional int32 hp = 2;
+    optional int32 power = 3;
+    optional int32 defense = 4;
+    optional int32 magicPower = 5;
+}
+
+message MsgMapData {
+    optional int32 stage = 1;
+    repeated MsgMapCell cell = 2;
+    optional MsgPos myPos = 3;
+    optional MsgMapCell choiceEvent = 4;
+}
+
+message MsgMapCell {
+    optional MsgPos pos = 1;
+    optional int32 eventId = 2;
+    optional int32 monsterId = 5;
+    optional int32 monsterHp = 7;
+    optional int32 randomEventId = 6;
+}
+
+message MsgPos {
+    optional int32 row = 1;
+    optional int32 col = 2;
+}
+
+message MsgCard {
+    optional int32 cardId = 1;
+    optional int32 lv = 2;
+    optional int32 num = 3;
+    optional int32 progress = 4;
+}
+
+message MsgTreasure {
+    optional int32 id = 1;
+    optional int32 num = 2;
+}
+
+message MsgShop {
+    optional int64 nextRefreshTime = 1;
+    optional bf.messages.game.CommonMsgMessage.MsgResources refreshPrice = 2;
+    repeated MsgShopItem shopItem = 3;
+}
+
+message MsgShopItem {
+    optional int32 id = 1;
+    optional int32 type = 2;
+    optional int32 templateId = 3;
+    optional bf.messages.game.CommonMsgMessage.MsgResources price = 4;
+    optional int32 rate = 5;
+    optional bool isBuy = 6;
+}
+
+message MsgGoods {
+    optional int32 type = 1;
+    repeated int32 id = 2;
+}
+
+message MsgPushGift {
+    optional int32 giftId = 1;
+    optional int64 endTime = 2;
+}
+
+message MsgCardGroup {
+    optional int32 groupId = 1;
+    repeated int32 cardId = 2;
+}
+
+message MsgRankExt {
+    optional int32 roleId = 1;
+}
+
+message MsgDungeon {
+    optional int32 roleId = 1;
+    optional MsgRoleAttr roleAttr = 2;
+    repeated MsgCard card = 3;
+    repeated int32 choiceCardId = 4;
+    repeated MsgTreasure treasure = 5;
+    optional int32 choiceNpcId = 6;
+    optional int32 updStateType = 7;
+    optional bool isGaming = 8;
+}
+
+message MsgQueryPlayerDataReq_34401 {
+}
+
+message MsgQueryPlayerDataResp_34401 {
+    required int32 ret = 1;
+    optional MsgPlayerData playerData = 2;
+}
+
+message MsgGainAchieveRewardReq_34402 {
+    optional int32 id = 1;
+}
+
+message MsgGainAchieveRewardResp_34402 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+}
+
+message MsgChoiceRoleReq_34406 {
+    optional int32 roleId = 1;
+}
+
+message MsgChoiceRoleResp_34406 {
+    required int32 ret = 1;
+    optional MsgPlayerData playerData = 2;
+}
+
+message MsgQueryShopReq_34407 {
+}
+
+message MsgQueryShopResp_34407 {
+    required int32 ret = 1;
+    optional MsgShop shop = 2;
+}
+
+message MsgShopBuyReq_34408 {
+    optional int32 id = 1;
+}
+
+message MsgShopBuyResp_34408 {
+    required int32 ret = 1;
+    optional MsgShop shop = 2;
+    optional MsgPlayerData playerData = 3;
+}
+
+message MsgShopRefreshReq_34409 {
+}
+
+message MsgShopRefreshResp_34409 {
+    required int32 ret = 1;
+    optional MsgShop shop = 2;
+}
+
+message MsgSetAlternateCardReq_34410 {
+    optional int32 groupId = 1;
+    repeated int32 cardId = 2;
+}
+
+message MsgSetAlternateCardResp_34410 {
+    required int32 ret = 1;
+}
+
+message MsgQueryAlternateCardReq_34443 {
+}
+
+message MsgQueryAlternateCardResp_34443 {
+    required int32 ret = 1;
+    optional int32 curGroupId = 2;
+    repeated MsgCardGroup cardGroup = 3;
+}
+
+message MsgBatchPlayReq_34411 {
+    optional int32 num = 1;
+}
+
+message MsgBatchPlayResp_34411 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+    optional int32 rank = 11;
+    optional int32 score = 12;
+}
+
+message MsgQueryEventReq_34412 {
+    optional MsgPos pos = 1;
+}
+
+message MsgQueryEventResp_34412 {
+    required int32 ret = 1;
+    optional MsgMapCell cell = 2;
+}
+
+message MsgEventAttackReq_34413 {
+    optional MsgPos pos = 1;
+}
+
+message MsgEventAttackResp_34413 {
+    required int32 ret = 1;
+}
+
+message MsgEventBoxReq_34414 {
+    optional MsgPos pos = 1;
+}
+
+message MsgEventBoxResp_34414 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+    repeated MsgGoods goods = 3;
+    optional MsgPlayerData playerData = 4;
+}
+
+message MsgEventLockReq_34405 {
+    optional MsgPos pos = 1;
+}
+
+message MsgEventLockResp_34405 {
+    required int32 ret = 1;
+    optional MsgMapCell cell = 2;
+}
+
+message MsgEventRandomReq_34415 {
+    optional MsgPos pos = 1;
+    optional int32 choiceIndex = 2;
+}
+
+message MsgEventRandomResp_34415 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+    repeated MsgGoods goods = 3;
+    optional bool notDraw = 5;
+    optional MsgPlayerData playerData = 4;
+}
+
+message MsgEventSleepReq_34416 {
+    optional MsgPos pos = 1;
+    optional int32 choiceIndex = 2;
+    optional int32 id = 3;
+}
+
+message MsgEventSleepResp_34416 {
+    required int32 ret = 1;
+    optional MsgPlayerData playerData = 2;
+}
+
+message MsgEventChoiceCardReq_34417 {
+    optional int32 cardId = 1;
+    optional int32 treasureId = 2;
+}
+
+message MsgEventChoiceCardResp_34417 {
+    required int32 ret = 1;
+    optional MsgPlayerData playerData = 2;
+}
+
+message MsgQueryCommonRewardReq_34418 {
+    optional int32 row = 1;
+}
+
+message MsgQueryCommonRewardResp_34418 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+}
+
+message MsgQueryBattleResultReq_34419 {
+}
+
+message MsgQueryBattleResultResp_34419 {
+    required int32 ret = 1;
+    optional int32 resultType = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 4;
+    repeated MsgGoods goods = 5;
+    optional MsgPlayerData playerData = 6;
+    repeated MsgTreasure treasure = 7;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources extRewards = 8;
+}
+
+message MsgBattleBackReq_34420 {
+    optional int32 type = 1;
+}
+
+message MsgBattleBackResp_34420 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+    optional MsgPlayerData playerData = 3;
+}
+
+message MsgGoToNextStageReq_34404 {
+}
+
+message MsgGoToNextStageResp_34404 {
+    required int32 ret = 1;
+    optional MsgPlayerData playerData = 2;
+}
+
+message MsgChgRoleReq_34441 {
+    optional int32 role = 1;
+}
+
+message MsgChgRoleResp_34441 {
+    required int32 ret = 1;
+    optional MsgPlayerData playerData = 2;
+}
+
+message MsgPushGiftResp_34442 {
+    required int32 ret = 1;
+    repeated MsgPushGift pushGift = 2;
+}
+
+message MsgQueryDungeonReq_34451 {
+}
+
+message MsgQueryDungeonResp_34451 {
+    required int32 ret = 1;
+    optional MsgDungeon info = 2;
+    optional int32 rank = 3;
+    optional int32 score = 4;
+}
+
+message MsgDungeonSyncStateReq_34452 {
+}
+
+message MsgDungeonSyncStateResp_34452 {
+    required int32 ret = 1;
+    optional MsgDungeon info = 2;
+}
+
+message MsgDungeonSetAlternateCardReq_34453 {
+    optional int32 groupId = 1;
+    repeated int32 cardId = 2;
+}
+
+message MsgDungeonSetAlternateCardResp_34453 {
+    required int32 ret = 1;
+}
+
+message MsgDungeonQueryAlternateCardReq_34457 {
+}
+
+message MsgDungeonQueryAlternateCardResp_34457 {
+    required int32 ret = 1;
+    optional int32 curGroupId = 2;
+    repeated MsgCardGroup cardGroup = 3;
+}
+
+message MsgDungeonAttackReq_34454 {
+    optional int32 npcId = 1;
+}
+
+message MsgDungeonAttackResp_34454 {
+    required int32 ret = 1;
+}
+
+message MsgDungeonPushBattleResultResp_34455 {
+    required int32 ret = 1;
+    optional int32 resultType = 2;
+    optional int32 round = 3;
+    optional int32 hurt = 4;
+    optional int32 rank = 5;
+    optional int32 hurtMax = 6;
+    optional bool newRecord = 7;
+}
+
+message MsgDungeonGameEndReq_34456 {
+}
+
+message MsgDungeonGameEndResp_34456 {
+    required int32 ret = 1;
+    optional int32 resultType = 2;
+    optional int32 round = 3;
+    optional int32 hurt = 4;
+    optional int32 rank = 5;
+    optional int32 hurtMax = 6;
+    optional bool newRecord = 7;
+}
+
+message MsgGameData {
+    optional int32 modeType = 21;
+    optional int32 round = 1;
+    optional int32 npcId = 2;
+    optional int32 roleId = 3;
+    optional int32 resultType = 4;
+    optional int32 npcHp = 5;
+    optional int32 npcHpMax = 6;
+    repeated MsgGameBuffIcon npcBuff = 7;
+    repeated MsgGameNpcActionIcon npcAction = 8;
+    optional int32 npcSkillId = 9;
+    optional int32 hp = 11;
+    optional int32 hpMax = 12;
+    optional int32 energy = 13;
+    optional int32 energyMax = 14;
+    repeated MsgGameCard card = 15;
+    repeated MsgGameBuffIcon buff = 16;
+    repeated MsgTreasure herb = 17;
+    repeated MsgTreasure treasure = 18;
+    optional int32 drawNum = 19;
+    optional int32 throwNum = 20;
+}
+
+message MsgGameCard {
+    optional int32 onlyId = 1;
+    optional int32 id = 2;
+    repeated int32 param = 3;
+    optional bool canPlay = 4;
+}
+
+message MsgGameBuff {
+    optional int32 buffId = 1;
+    repeated int32 param = 2;
+    optional int32 round = 3;
+}
+
+message MsgGameBuffIcon {
+    optional int32 buffId = 1;
+    optional int32 num = 2;
+    optional bool isExpire = 3;
+}
+
+message MsgGameNpcAction {
+    optional int32 planId = 1;
+    repeated int32 param = 2;
+}
+
+message MsgGameNpcActionIcon {
+    optional int32 planId = 1;
+    optional int32 num = 2;
+    optional int32 extraNum = 3;
+}
+
+message MsgStageTriggerData {
+    optional int32 stage = 1;
+    repeated MsgGoodsEffect goodsEffect = 2;
+    repeated MsgGameNpcActionIcon npcAction = 3;
+}
+
+message MsgGoodsEffect {
+    optional int32 type = 1;
+    optional int32 treasureId = 2;
+    optional MsgGameBuffIcon buff = 3;
+    repeated MsgEffect effect = 4;
+    optional int32 order = 5;
+}
+
+message MsgCardEffect {
+    optional int32 type = 1;
+    optional int32 id = 2;
+    repeated MsgCardEffectUnit cardEffect = 3;
+}
+
+message MsgCardEffectUnit {
+    optional MsgEffect cardEffect = 1;
+    repeated MsgGoodsEffect goodsEffect = 2;
+}
+
+message MsgEffect {
+    optional int32 playerAddHp = 11;
+    optional int32 playerAttackCostHp = 12;
+    optional int32 playerCostHp = 13;
+    optional int32 playerAddHpMax = 14;
+    repeated MsgGameCard playerDrawCard = 15;
+    repeated MsgGameCard playerGetCard = 16;
+    optional int32 playerAddEnergy = 17;
+    optional int32 playerAttackHurt = 18;
+    repeated MsgGameBuffIcon playerChgBuff = 19;
+    repeated int32 playerRemoveCardOnlyId = 20;
+    optional int32 reverseId = 21;
+    optional int32 tips = 23;
+    optional int32 npcAddHp = 31;
+    optional int32 npcAttackCostHp = 32;
+    optional int32 npcCostHp = 33;
+    optional int32 npcAttackHurt = 34;
+    repeated MsgGameBuffIcon npcChgBuff = 35;
+}
+
+message MsgQueryGameDataReq_34421 {
+}
+
+message MsgQueryGameDataResp_34421 {
+    required int32 ret = 1;
+    optional MsgGameData firstGameData = 2;
+    repeated MsgStageTriggerData firstStageData = 3;
+    repeated MsgGameCard firstDrawCard = 4;
+    optional MsgGameData gameData = 5;
+}
+
+message MsgQueryNpcActionReq_34422 {
+}
+
+message MsgQueryNpcActionResp_34422 {
+    required int32 ret = 1;
+    repeated MsgGameNpcAction action = 2;
+}
+
+message MsgQueryBuffReq_34423 {
+    optional int32 type = 1;
+}
+
+message MsgQueryBuffResp_34423 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+    repeated MsgGameBuff buff = 3;
+}
+
+message MsgQueryDiscardReq_34424 {
+    optional int32 type = 1;
+}
+
+message MsgQueryDiscardResp_34424 {
+    required int32 ret = 1;
+    repeated int32 id = 2;
+}
+
+message MsgPlayCardReq_34427 {
+    optional int32 onlyId = 1;
+}
+
+message MsgPlayCardResp_34427 {
+    required int32 ret = 1;
+    optional int32 onlyId = 2;
+    optional MsgCardEffect cardEffect = 3;
+    optional MsgGameData gameData = 4;
+}
+
+message MsgRoundEndReq_34428 {
+}
+
+message MsgRoundEndResp_34428 {
+    required int32 ret = 1;
+    repeated MsgStageTriggerData stageDataBefore = 2;
+    repeated MsgStageTriggerData stageDataAfter = 3;
+    optional MsgCardEffect actionEffect = 4;
+    repeated MsgGameCard drawCard = 5;
+    optional int32 tips = 8;
+    optional MsgGameData gameData = 7;
+}
+
+message MsgUseHerbReq_34429 {
+    optional int32 id = 1;
+}
+
+message MsgUseHerbResp_34429 {
+    required int32 ret = 1;
+    optional int32 id = 2;
+    optional MsgCardEffect herbEffect = 3;
+    optional MsgGameData gameData = 4;
+}
+
+message MsgG2CSyncHurtReq_34491 {
+    optional bf.messages.game.GmActivityCommonMessage.MsgGmActivity activity = 1;
+    optional string playerId = 2;
+    optional int32 hurt = 3;
+    optional int32 roleId = 4;
+    optional int32 round = 5;
+}
+
+message MsgG2CSyncHurtResp_34491 {
+    required int32 ret = 1;
+    optional int32 rank = 2;
+    optional int32 hurtMax = 3;
+    optional bool newRecord = 4;
+}

@@ -1,0 +1,823 @@
+syntax = "proto2";
+
+package bf.messages.game.SysActivityMessage;
+
+import "CommonMsgMessage.proto";
+
+message MsgSevenDayGift {
+    optional int32 unlockDay = 1;
+    optional int64 allRewardTime = 2;
+}
+
+message MsgMoneySpeed {
+    optional int64 allRewardTime = 1;
+}
+
+message MsgMonthCard {
+    optional int32 type = 1;
+    optional int64 startTime = 2;
+    optional int64 endTime = 3;
+    optional int64 lastRewardTime = 4;
+    optional int64 freeFamilyDonate = 5;
+    optional string transferCode = 6;
+    optional bool canTransfer = 7;
+}
+
+message MsgFavourable {
+    optional int32 id = 1;
+    optional int32 count = 2;
+}
+
+message MsgSevenDayGiftGetReq_17001 {
+}
+
+message MsgSevenDayGiftGetResp_17001 {
+    required int32 ret = 1;
+    optional MsgSevenDayGift msgSevenDayGift = 2;
+}
+
+message MsgMonthCardResp_17011 {
+    repeated MsgMonthCard msgMonthCard = 1;
+}
+
+message MsgMonthCardRewardReq_17012 {
+    optional int32 type = 1;
+}
+
+message MsgMonthCardRewardResp_17012 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+}
+
+message MsgMonthCardGetReq_17013 {
+}
+
+message MsgMonthCardGetResp_17013 {
+    required int32 ret = 1;
+}
+
+message MsgMonthCardTransferReq_17014 {
+    optional int32 type = 1;
+    optional string transferCode = 2;
+}
+
+message MsgMonthCardTransferResp_17014 {
+    required int32 ret = 1;
+    optional MsgMonthCard msgMonthCard = 2;
+}
+
+message MsgRPCMonthCardTransferReq_17015 {
+    optional string openId = 1;
+    optional int32 type = 2;
+    optional string transferCode = 3;
+}
+
+message MsgRPCMonthCardTransferResp_17015 {
+    required int32 ret = 1;
+    optional int32 day = 2;
+}
+
+message MsgTransferCode {
+    optional string code = 1;
+    optional int32 serverId = 2;
+    optional string openId = 3;
+}
+
+message MsgG2WGenerateTransferCodeReq_17016 {
+    optional string openId = 1;
+    optional int32 serverId = 2;
+    optional string origCode = 3;
+}
+
+message MsgG2WGenerateTransferCodeResp_17016 {
+    required int32 ret = 1;
+    optional string code = 2;
+}
+
+message MsgG2WFindTransferCodeReq_17017 {
+    optional string transferCode = 1;
+}
+
+message MsgG2WFindTransferCodeResp_17017 {
+    required int32 ret = 1;
+    optional MsgTransferCode info = 2;
+}
+
+message MsgG2WTransferInReq_17018 {
+    optional int32 serverId = 1;
+    optional string openId = 2;
+    optional int32 type = 3;
+    optional string transferCode = 4;
+}
+
+message MsgG2WTransferInResp_17018 {
+    required int32 ret = 1;
+    optional int32 day = 2;
+}
+
+message MsgG2WUpdateTransferCodeReq_17019 {
+    optional string transferCode = 1;
+    optional int32 serverId = 2;
+}
+
+message MsgG2WUpdateTransferCodeResp_17019 {
+    required int32 ret = 1;
+}
+
+message MsgG2WInsertTransferCodeReq_17020 {
+    repeated MsgTransferCode infos = 1;
+}
+
+message MsgG2WInsertTransferCodeResp_17020 {
+    required int32 ret = 1;
+}
+
+message MsgMiracleResp_17021 {
+    optional int32 miracleId = 1;
+}
+
+message MsgGrowFundSetData {
+    optional bool buy = 1;
+    repeated MsgGrowFundData msgGrowFundData = 2;
+    optional int64 doneTime = 3;
+}
+
+message MsgGrowFundData {
+    optional int32 id = 1;
+    optional int32 drawState = 2;
+}
+
+message GrowFundDrawReq_17030 {
+    optional int32 id = 1;
+}
+
+message GrowFundDrawResp_17030 {
+    required int32 ret = 1;
+    optional MsgGrowFundData msgGrowFundData = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources award = 3;
+    optional int64 doneTime = 4;
+}
+
+message GrowFundChargeNotifyResp_17031 {
+}
+
+message MsgFashionPlayerData {
+    repeated MsgFashionData fashion = 1;
+    repeated MsgFashionSuitData suits = 2;
+    optional int32 gorgeousValue = 3;
+    repeated MsgFashionGorgeousTask tasks = 4;
+}
+
+message MsgFashionGorgeousTask {
+    optional int32 taskId = 1;
+    optional int32 status = 2;
+}
+
+message MsgFashionData {
+    optional int32 id = 1;
+    optional int64 outTime = 2;
+}
+
+message MsgFashionSuitData {
+    optional int32 id = 1;
+    optional int32 level = 2;
+}
+
+message FashionGorgeousRewardReq_17221 {
+    optional int32 taskId = 1;
+}
+
+message FashionGorgeousRewardResp_17221 {
+    required int32 ret = 1;
+    repeated MsgFashionGorgeousTask tasks = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 3;
+}
+
+message FashionExchangeReq_17222 {
+    required int32 fashionId = 1;
+}
+
+message FashionExchangeResp_17222 {
+    required int32 ret = 1;
+}
+
+message FashionUseReq_17036 {
+    repeated int32 id = 1;
+}
+
+message FashionUseResp_17036 {
+    required int32 ret = 1;
+    repeated int32 fashionIds = 2;
+}
+
+message FashionAddResp_17037 {
+    optional MsgFashionData msgFashionData = 1;
+    optional int32 gorgeousValue = 2;
+}
+
+message FashionRemoveResp_17038 {
+    optional int32 fashionId = 1;
+    optional bool expire = 2;
+}
+
+message FashionSuitUpgradeReq_17039 {
+    optional int32 suitId = 1;
+}
+
+message FashionSuitUpgradeResp_17039 {
+    required int32 ret = 1;
+    optional MsgFashionSuitData suit = 2;
+    optional int32 gorgeousValue = 3;
+}
+
+message FashionSuitActivateReq_17040 {
+    optional int32 suitId = 1;
+}
+
+message FashionSuitActivateResp_17040 {
+    required int32 ret = 1;
+    optional MsgFashionSuitData suit = 2;
+    optional int32 gorgeousValue = 3;
+}
+
+message MsgMoneySpeedReq_17041 {
+}
+
+message MsgMoneySpeedResp_17041 {
+    required int32 ret = 1;
+    optional MsgMoneySpeed msgMoneySpeed = 2;
+}
+
+message MsgPushData {
+    optional int32 id = 1;
+    optional int32 groupId = 2;
+    optional int32 buyCot = 3;
+    optional int64 surplusTime = 4;
+}
+
+message PushNotifyResp_17051 {
+    repeated MsgPushData msgPushData = 1;
+}
+
+message PushTriggerItemNotReq_17052 {
+    optional int32 itemId = 1;
+}
+
+message PushTriggerItemNotResp_17052 {
+    required int32 ret = 1;
+}
+
+message PrayData {
+    optional int64 freeTime = 1;
+    optional int32 luckNum = 2;
+    optional int32 cycle = 3;
+}
+
+message NoticeData {
+    optional string name = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+}
+
+message PrayReq_17071 {
+    optional int32 times = 1;
+}
+
+message PrayResp_17071 {
+    optional int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+}
+
+message MsgPrayNoticeReq_17072 {
+}
+
+message MsgPrayNoticeResp_17072 {
+    repeated NoticeData notices = 1;
+}
+
+message MsgPrayNoticeResp_17073 {
+    optional NoticeData notice = 1;
+}
+
+message MsgPrayDataResp_17074 {
+    optional PrayData prayData = 1;
+}
+
+message PrayCidData {
+    optional string cid = 1;
+    repeated string allCid = 2;
+    optional int64 startTime = 3;
+    optional int64 endTime = 4;
+    optional int32 itemId = 5;
+    optional int32 itemNum = 6;
+    optional int32 chargeNum = 7;
+}
+
+message PrayCidReq_17081 {
+    optional int32 times = 1;
+}
+
+message PrayCidResp_17081 {
+    optional int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+}
+
+message MsgPrayCidNoticeReq_17082 {
+}
+
+message MsgPrayCidNoticeResp_17082 {
+    repeated NoticeData notices = 1;
+}
+
+message MsgPrayCidNoticeResp_17083 {
+    optional NoticeData notice = 1;
+}
+
+message PrayCidPushResp_17084 {
+    optional PrayCidData prayCidData = 1;
+}
+
+message MsgAmberWelfareData {
+    optional string cid = 1;
+    optional int32 signInProgress = 2;
+    optional int32 signInCycleDay = 3;
+    optional int32 signRewardStatus = 4;
+    optional int32 exclusiveRewardStatus = 5;
+    optional int32 chargeNum = 6;
+    repeated int32 chargeRewardIds = 7;
+    optional bool amberVip = 8;
+    optional bool heyTapVip = 9;
+}
+
+message AmberWelfareDataReq_17091 {
+}
+
+message AmberWelfareDataResp_17091 {
+    required int32 ret = 1;
+    optional MsgAmberWelfareData data = 2;
+}
+
+message AmberWelfareSignReq_17092 {
+}
+
+message AmberWelfareSignResp_17092 {
+    required int32 ret = 1;
+    optional int32 signInProgress = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 3;
+}
+
+message AmberWelfareExclusiveReq_17093 {
+}
+
+message AmberWelfareExclusiveResp_17093 {
+    required int32 ret = 1;
+    optional int32 exclusiveRewardStatus = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 3;
+}
+
+message AmberWelfareChargeGiftReq_17094 {
+    optional int32 id = 1;
+}
+
+message AmberWelfareChargeGiftResp_17094 {
+    required int32 ret = 1;
+    optional int32 id = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 3;
+}
+
+message AmberVipReq_17095 {
+}
+
+message AmberVipResp_17095 {
+    required int32 ret = 1;
+}
+
+message AmberVipSyncResp_17096 {
+    required int32 ret = 1;
+    optional MsgAmberWelfareData data = 2;
+}
+
+message AmberHeyTapVipReq_17097 {
+    optional int32 heyTapVipFlag = 1;
+    optional string md5Sign = 2;
+    optional string timestamp = 3;
+}
+
+message AmberHeyTapVipResp_17097 {
+    required int32 ret = 1;
+    optional MsgAmberWelfareData amberData = 2;
+}
+
+message GetFavourableReq_17101 {
+}
+
+message GetFavourableResp_17101 {
+    required int32 ret = 1;
+    optional int64 lastCloseTime = 2;
+    repeated MsgFavourable msgFavourable = 3;
+    optional string cafeUrl = 4;
+    optional string oneStoreUrl = 5;
+}
+
+message CloseFavourableWindowReq_17102 {
+    required int32 id = 1;
+}
+
+message CloseFavourableWindowResp_17102 {
+    required int32 ret = 1;
+    optional int64 lastCloseTime = 2;
+    repeated MsgFavourable msgFavourable = 4;
+}
+
+message FeedBackReq_17103 {
+    required int32 id = 1;
+    required int32 star = 2;
+    optional string evaluation = 3;
+}
+
+message FeedBackResp_17103 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources msgResourcesGain = 2;
+}
+
+message MsgVivoWelfare {
+    optional int32 signState = 1;
+    optional string cid = 2;
+}
+
+message VivoWelfareDataReq_17121 {
+}
+
+message VivoWelfareDataResp_17121 {
+    required int32 ret = 1;
+    optional MsgVivoWelfare vivoWelfare = 2;
+}
+
+message VivoGameCenterStartReq_17122 {
+}
+
+message VivoGameCenterStartResp_17122 {
+    required int32 ret = 1;
+    optional int32 signState = 2;
+}
+
+message VivoWelfareSignInReq_17123 {
+}
+
+message VivoWelfareSignInResp_17123 {
+    required int32 ret = 1;
+    optional int32 signState = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources resources = 3;
+}
+
+message MsgComebackActData {
+    required int32 openType = 1;
+    required int64 startTime = 2;
+    required int64 endTime = 3;
+    optional MsgComebackTaskAct taskActData = 11;
+    repeated MsgComebackGiftAct giftActData = 12;
+    optional bool isBuyCard = 13;
+    optional MsgComebackResourceAct resourceActData = 14;
+    optional bool isOldBinding = 15;
+    optional MsgComebackBindingAct bindingActData = 16;
+    optional bool answer = 17;
+    optional bool answerReward = 18;
+    optional int32 answerType = 19;
+}
+
+message MsgComebackTaskAct {
+    optional bool isPray = 1;
+    optional int32 lockDay = 2;
+}
+
+message MsgComebackGiftAct {
+    optional int32 id = 1;
+    optional int32 buyNum = 2;
+}
+
+message MsgComebackResourceAct {
+    optional bool canFree = 1;
+    optional int32 canPayDay = 2;
+    optional bf.messages.game.CommonMsgMessage.MsgResources cost = 3;
+    repeated MsgComebackResourceActFunc funcData = 4;
+    optional int32 offlineDay = 5;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources freeRewards = 6;
+}
+
+message MsgComebackResourceActFunc {
+    optional int32 type = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources oneDayRewards = 2;
+}
+
+message MsgComebackQuestAct {
+    optional int32 questId = 1;
+    repeated string answer = 2;
+}
+
+message MsgDataPushResp_17132 {
+    required int32 ret = 1;
+    optional MsgComebackActData actData = 2;
+}
+
+message MsgGainPrayRewardReq_17134 {
+}
+
+message MsgGainPrayRewardResp_17134 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+    optional MsgComebackActData actData = 3;
+}
+
+message MsgBuyGiftReq_17136 {
+    optional int32 id = 1;
+}
+
+message MsgBuyGiftResp_17136 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+    optional MsgComebackActData actData = 3;
+}
+
+message MsgResourceRetrieveReq_17138 {
+    optional int32 type = 1;
+    optional int32 dayNum = 2;
+}
+
+message MsgResourceRetrieveResp_17138 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+    optional MsgComebackActData actData = 3;
+}
+
+message MsgComebackAnswerReq_17139 {
+    repeated MsgComebackQuestAct act = 1;
+}
+
+message MsgComebackAnswerResp_17139 {
+    optional int32 ret = 1;
+}
+
+message MsgComebackAnswerRewardReq_17140 {
+}
+
+message MsgComebackAnswerRewardResp_17140 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+}
+
+message AntiCheatInfo {
+    repeated int32 antiCheatReward = 1;
+    repeated int32 antiCheatRead = 2;
+}
+
+message AntiCheatRewardReq_17151 {
+    optional int32 index = 1;
+}
+
+message AntiCheatRewardResp_17151 {
+    required int32 ret = 1;
+    optional int32 index = 2;
+}
+
+message AntiCheatReadReq_17152 {
+    optional int32 index = 1;
+}
+
+message AntiCheatReadResp_17152 {
+    optional int32 ret = 1;
+}
+
+message AntiCheatReq_17153 {
+}
+
+message AntiCheatResp_17153 {
+    optional AntiCheatInfo info = 1;
+}
+
+message MsgComebackBindingAct {
+    optional int32 serverId = 1;
+    optional int64 vipExp = 2;
+    optional int64 bindingTime = 4;
+    optional MsgComebackBindingPlayerData playerData = 5;
+    repeated int32 rewardDay = 6;
+}
+
+message MsgComebackBindingPlayerData {
+    optional string playerId = 1;
+    repeated int32 fashionIds = 2;
+    optional string name = 3;
+    optional int32 vipLv = 4;
+    optional int64 vipExp = 5;
+    optional int32 lv = 6;
+    optional int32 serverId = 7;
+    optional int32 bindingServerId = 8;
+    optional string money = 9;
+    optional int32 sex = 10;
+    optional bf.messages.game.CommonMsgMessage.MsgAddress address = 11;
+    optional int64 endTime = 12;
+    optional int32 npcSex = 13;
+    optional string oldPlayerId = 14;
+}
+
+message ComebackBindingPlayerDataReq_17161 {
+}
+
+message ComebackBindingPlayerDataResp_17161 {
+    required int32 ret = 1;
+    repeated MsgComebackBindingPlayerData playerData = 2;
+}
+
+message ComebackBindingReq_17162 {
+    required string playerId = 1;
+}
+
+message ComebackBindingResp_17162 {
+    required int32 ret = 1;
+    optional MsgComebackBindingAct bindingActData = 2;
+}
+
+message ComebackBindingRewardReq_17163 {
+    optional int32 day = 1;
+}
+
+message ComebackBindingRewardResp_17163 {
+    required int32 ret = 1;
+    repeated int32 rewardDay = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 3;
+}
+
+message ComeBackBindingGetReq_17164 {
+    required string openId = 1;
+}
+
+message ComeBackBindingGetResp_17164 {
+    required int32 ret = 1;
+    repeated MsgComebackBindingPlayerData playerData = 2;
+}
+
+message ComeBackBindingCreateOrUpdateReq_17165 {
+    required int32 type = 1;
+    optional string openId = 2;
+    optional int32 cityId = 3;
+    optional int32 channelId = 4;
+    optional MsgComebackBindingPlayerData playerData = 5;
+}
+
+message MsgWeChatBind {
+    optional bool received = 1;
+    optional int32 channelId = 2;
+}
+
+message WeChatBindQueryReq_17201 {
+}
+
+message WeChatBindQueryResp_17201 {
+    required int32 ret = 1;
+    optional MsgWeChatBind data = 2;
+}
+
+message WeChatBindRewardReq_17202 {
+}
+
+message WeChatBindRewardResp_17202 {
+    required int32 ret = 1;
+    optional MsgWeChatBind data = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 3;
+}
+
+message MsgShortcutData {
+    optional int32 channelId = 1;
+    optional string cid = 2;
+    optional int32 state = 3;
+    optional bool eligible = 4;
+}
+
+message ShortcutDataReq_17301 {
+}
+
+message ShortcutDataResp_17301 {
+    required int32 ret = 1;
+    optional MsgShortcutData shortcutData = 2;
+}
+
+message ShortcutInstallReq_17302 {
+}
+
+message ShortcutInstallResp_17302 {
+    required int32 ret = 1;
+    optional MsgShortcutData shortcutData = 2;
+}
+
+message ShortcutRewardReq_17303 {
+}
+
+message ShortcutRewardResp_17303 {
+    required int32 ret = 1;
+    optional MsgShortcutData shortcutData = 2;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 3;
+}
+
+message MsgSecondPsw {
+    optional bool haveSetPsw = 1;
+    optional bool enabled = 2;
+    optional int32 inputErrorNum = 3;
+    optional int64 resetEndTime = 4;
+}
+
+message MsgSetPswReq_17351 {
+    optional string newPsw = 1;
+}
+
+message MsgSetPswResp_17351 {
+    required int32 ret = 1;
+    optional bool haveSetPsw = 2;
+    optional bool enabled = 3;
+}
+
+message MsgVerifyPswReq_17352 {
+    optional string psw = 1;
+}
+
+message MsgVerifyPswResp_17352 {
+    required int32 ret = 1;
+    optional int32 inputErrorNum = 3;
+}
+
+message MsgSetEnabledPswReq_17353 {
+    optional bool enabled = 1;
+}
+
+message MsgSetEnabledPswResp_17353 {
+    required int32 ret = 1;
+    optional bool enabled = 2;
+}
+
+message MsgApplyResetPswReq_17354 {
+    optional int32 type = 1;
+}
+
+message MsgApplyResetPswResp_17354 {
+    required int32 ret = 1;
+    optional int32 type = 2;
+    optional int64 resetEndTime = 3;
+}
+
+message MsgQuerySecondPswDataReq_17355 {
+}
+
+message MsgQuerySecondPswDataResp_17355 {
+    required int32 ret = 1;
+    optional MsgSecondPsw data = 2;
+}
+
+message MsgSkinManualPlayer {
+    optional int32 level = 1;
+    repeated int32 gainTalentSkins = 2;
+    repeated int32 gainPetSkins = 3;
+    repeated int32 gainNpcSkins = 4;
+    repeated int32 gainFashions = 5;
+    repeated MsgSkinManualExhibitionStage exhibitionStages = 9;
+}
+
+message MsgSkinManualExhibitionStage {
+    optional int32 skinType = 1;
+    repeated int32 gainIds = 2;
+}
+
+message SkinManualUpgradeReq_17401 {
+}
+
+message SkinManualUpgradeResp_17401 {
+    required int32 ret = 1;
+    optional int32 level = 2;
+}
+
+message SkinManualCollectReq_17402 {
+}
+
+message SkinManualCollectResp_17402 {
+    required int32 ret = 1;
+    optional MsgSkinManualPlayer playerData = 2;
+    repeated int32 talentSkins = 3;
+    repeated int32 petSkins = 4;
+    repeated int32 npcSkins = 5;
+    repeated int32 fashions = 6;
+}
+
+message SkinManualStageRewardReq_17403 {
+    optional int32 skinType = 1;
+    optional int32 gainId = 2;
+}
+
+message SkinManualStageRewardResp_17403 {
+    required int32 ret = 1;
+    repeated bf.messages.game.CommonMsgMessage.MsgResources rewards = 2;
+    optional MsgSkinManualExhibitionStage exhibitionStage = 3;
+}
+
+message SkinManualQueryReq_17404 {
+}
+
+message SkinManualQueryResp_17404 {
+    required int32 ret = 1;
+    optional MsgSkinManualPlayer playerData = 2;
+}
