@@ -36,6 +36,7 @@ async function login(c, opts) {
     platform: 1,
     channelId: opts.channelId || '0',
     version: Number(opts.version || 0),
+    lan: opts.lan || "zh_CN",
   };
   const body = xxtea.wrapLogin(pb.encode('LoginReq_4', req));
   const f = await c.call(4, body);
@@ -97,6 +98,7 @@ async function create(c, opts) {
     sex: '1',
     channelId: opts.channelId || '0',
     platform: 1,
+    lan: opts.lan || 'zh_CN',
   };
   const f = await c.call(6, pb.encode('CreatePlayerReq_6', req));
   let resp;

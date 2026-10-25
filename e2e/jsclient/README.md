@@ -38,7 +38,8 @@ npm install
 ## 用法
 
 ```bash
-node run.js login      --open-id open-001
+node run.js login      --open-id open-001   # 默认 WS 传输
+node run.js login      --open-id open-001 --transport tcp   # 裸帧，给自建服务端调试
 node run.js create     --open-id open-001 --name 测试角色
 node run.js handshake  --open-id open-001          # 登录 + cmd16 挑战回执
 node run.js item-use   --open-id open-001 --template 400001 --num 1
@@ -70,6 +71,12 @@ LoginResp_4 = {"ret":0,"ok":true,...,"loginvar":2025}
 | 二次登录 | ✅ `ok=true` + `loginvar` 挑战种子 |
 | 握手 cmd 16（客户端算法推密码） | ✅ 通过；**原版不回包**，等超时即成功 |
 | 道具 cmd 11002 | ⏳ 服务端尚未接线该 cmdId（无回包），见下 |
+
+## 传输层（重要）
+
+原版 10544 是 **WebSocket** 服务（`com.jery.ngsp.network.websocket.WebSocketServer`），裸 TCP 直连会返回 HTTP 400。
+所以 `client.js` 默认走 `ws://`，帧内容不变（同样 10 字节头 + body，作为二进制消息）。
+Rust 端目前只做 TCP accept —— 差分结果见 `DIFF.md`。
 
 ## 已知边界
 
