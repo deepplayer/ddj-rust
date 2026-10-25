@@ -127,6 +127,7 @@ pub struct ViewDeps {
     pub id_range: i64,
 }
 
+/// 注册全部业务处理器，返回注册条数。
 pub fn register(
     table: &mut HandlerTable,
     state: ServerState,
