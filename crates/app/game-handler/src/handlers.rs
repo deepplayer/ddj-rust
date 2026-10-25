@@ -165,6 +165,7 @@ pub fn register(
         n += crate::install_misc::install(table, world.clone(), clock.clone());
         n += crate::install_player::install(table, world.clone(), clock.clone());
         n += crate::install_sign::install(table, world.clone(), clock.clone());
+        n += crate::install_state::install(table, world.clone(), clock.clone());
         n += crate::install_mail::install(table, world, clock);
     }
     Ok(n)

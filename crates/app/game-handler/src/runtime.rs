@@ -81,6 +81,8 @@ pub struct PlayerBox {
     pub city_id: i32,
     /// `Player.resetAddressTimes`：已改定位次数。
     pub reset_address_times: i32,
+    /// 客户端缓存回写（`1100` 写，原版 `Player.newPlayerData`）。
+    pub new_player_data: crate::player::NewPlayerData,
 }
 
 impl MemWorld {

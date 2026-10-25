@@ -51,6 +51,7 @@ pub mod install_mail;
 pub mod install_misc;
 pub mod install_player;
 pub mod install_sign;
+pub mod install_state;
 pub mod item;
 pub mod login;
 pub mod loginvar;
