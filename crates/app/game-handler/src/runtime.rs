@@ -75,6 +75,12 @@ pub struct PlayerBox {
     pub update_name_used: bool,
     /// `p.getTimeOffForbidResetName()`：改名冷却截止。
     pub forbid_reset_name_until: i64,
+    /// 性别（`1` 男 / `2` 女，`1024` 可改）。
+    pub sex: i32,
+    /// `Player.cityId` 当前定位城市。
+    pub city_id: i32,
+    /// `Player.resetAddressTimes`：已改定位次数。
+    pub reset_address_times: i32,
 }
 
 impl MemWorld {

@@ -48,6 +48,7 @@ pub mod handshake;
 pub mod install_amber;
 pub mod install_item;
 pub mod install_mail;
+pub mod install_misc;
 pub mod install_player;
 pub mod install_sign;
 pub mod item;
