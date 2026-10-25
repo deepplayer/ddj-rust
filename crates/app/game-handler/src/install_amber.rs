@@ -206,11 +206,9 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
 
     // 17095 同步琥珀 VIP 状态（原版纯转发，`AmberModelState` 不落 vip 位）。
     {
-        let w = world.clone();
         table.insert(Box::new(FnHandler::new(17095, move |ctx, body| {
             let _req = AmberVipReq17095::decode(body).map_err(decode_err)?;
-            let p = ctx.require_player()?;
-            let _ = w.peek(p, |_| ());
+            ctx.require_player()?;
             Ok(Some(Reply::same(
                 AmberVipResp17095 { ret: 0 }.encode_to_vec(),
             )))
