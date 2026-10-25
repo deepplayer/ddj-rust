@@ -4,7 +4,6 @@
 //!
 //! 对应 Java：Netty `ChannelPipeline` 里串的 `Decoder`/`Encoder`/`Handler`。
 
-use bytes::Bytes;
 use ddj_codec::Frame;
 use ddj_core::Result;
 use ddj_registry::{GuardChain, HandlerCtx, HandlerTable};

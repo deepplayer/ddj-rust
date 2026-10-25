@@ -107,7 +107,7 @@ impl ErasedHandler for LoginHandler {
         if let (Some(p), Some(sess)) = (player, ctx.session.as_ref()) {
             sess.bind_player(p);
         }
-        Ok(Some(Bytes::from(resp.encode_to_vec())))
+        Ok(Some(Bytes::from(resp.encode_to_vec()).into()))
     }
 }
 
@@ -234,7 +234,7 @@ impl ErasedHandler for CreatePlayerHandler {
                     player::build_resp(ret).encode_to_vec()
                 };
                 tracing::info!(peer = %ctx.peer_ip, ret = ret.as_i32(), as_login = as_login_resp, "创角被拒");
-                Ok(Some(Bytes::from(bytes)))
+                Ok(Some(Bytes::from(bytes).into()))
             }
             CreateOutcome::Accept { face_ids } => {
                 let open_id = req.open_id.clone().unwrap_or_default();
@@ -262,14 +262,14 @@ impl ErasedHandler for CreatePlayerHandler {
                         );
                         return Ok(Some(Bytes::from(
                             player::build_resp(ddj_pb::cmd::RetCode::Ok).encode_to_vec(),
-                        )));
+                        ).into()));
                     }
                 }
                 // 两次都撞 → 原版 `createPlayer` 返回 null → PLAYER_ERROR_3(103)
                 tracing::warn!(peer = %ctx.peer_ip, name = %name, "创角落库连续冲突");
                 Ok(Some(Bytes::from(
                     player::build_resp(ddj_pb::cmd::RetCode::NameDuplicate).encode_to_vec(),
-                )))
+                ).into()))
             }
         }
     }
@@ -487,7 +487,7 @@ impl ErasedHandler for CacheGetHandler {
                 })
                 .collect(),
         };
-        Ok(Some(Bytes::from(resp.encode_to_vec())))
+        Ok(Some(Bytes::from(resp.encode_to_vec()).into()))
     }
 }
 
