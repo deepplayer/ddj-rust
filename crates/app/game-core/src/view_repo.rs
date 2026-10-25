@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use ddj_core::PlayerId;
 use ddj_game_handler::install_view::ViewRepo;
-use ddj_repo::PgPlayerRepo;
+use ddj_repo::{PgPlayerRepo, PlayerRepo};
 
 /// `PgPlayerRepo` 的视图适配。
 pub struct PgViewRepo {
