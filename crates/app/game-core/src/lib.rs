@@ -22,6 +22,7 @@ pub mod create_player_repo;
 pub mod gm_backend;
 pub mod lifecycle_modules;
 pub mod modules;
+pub mod player_stores;
 pub mod wiring;
 
 pub use bootstrap::{Bootstrap, Running, ServiceKind, Stats, StatsSource};

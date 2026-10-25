@@ -18,7 +18,7 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use bytes::Bytes;
-use ddj_core::Result;
+use ddj_core::{Clock, Result};
 use ddj_registry::{ErasedHandler, HandlerCtx, HandlerTable};
 use prost::Message;
 
@@ -27,6 +27,8 @@ use crate::handshake::{
 };
 use crate::login::{self, AccountLookup, ServerState};
 use crate::player::{self, CreateCtx, CreateOutcome, CreatePlayerRepo, NewPlayerRow};
+use crate::player_misc;
+use crate::player_state::PlayerStateStore;
 
 /// 登录消息号（`LoginMessage.LoginReq_4`）。
 pub const CMD_LOGIN: i32 = ddj_pb::cmd::login::LOGIN;
@@ -120,6 +122,7 @@ pub fn register(
     lookup: Option<Arc<dyn AccountLookup>>,
     create: Option<(Arc<dyn CreatePlayerRepo>, Arc<dyn player::FashionLookup>)>,
     handshake: Option<Arc<dyn HandshakeStore>>,
+    stores: Option<(Arc<dyn PlayerStateStore>, Arc<dyn Clock>)>,
 ) -> Result<usize> {
     let mut n = 0;
     let server_id = state.server_id;
@@ -143,6 +146,14 @@ pub fn register(
     }
     if let Some((repo, fashion)) = create {
         table.insert(Box::new(CreatePlayerHandler::new(repo, server_id, fashion)));
+        n += 1;
+    }
+    if let Some((st, clock)) = stores {
+        table.insert(Box::new(GuideHandler::new(st.clone(), clock)));
+        n += 1;
+        table.insert(Box::new(CacheSaveHandler::new(st.clone())));
+        n += 1;
+        table.insert(Box::new(CacheGetHandler::new(st)));
         n += 1;
     }
     Ok(n)
@@ -338,6 +349,140 @@ fn decode_first_string(buf: &[u8]) -> Option<String> {
         .map(str::to_owned)
 }
 
+/// 1103 引导存档。
+pub const CMD_SAVE_GUIDE: i32 = 1103;
+
+/// 1111 存客户端缓存。
+pub const CMD_SAVE_CACHE: i32 = 1111;
+
+/// 1112 读客户端缓存。
+pub const CMD_GET_CACHE: i32 = 1112;
+
+/// 1103：`playerSaveGuideIdReq` —— **不回包**，异常只打日志。
+pub struct GuideHandler {
+    stores: Arc<dyn PlayerStateStore>,
+    clock: Arc<dyn Clock>,
+}
+
+impl GuideHandler {
+    /// 构造。
+    #[must_use]
+    pub fn new(stores: Arc<dyn PlayerStateStore>, clock: Arc<dyn Clock>) -> Self {
+        Self { stores, clock }
+    }
+}
+
+#[async_trait]
+impl ErasedHandler for GuideHandler {
+    fn cmd_id(&self) -> i32 {
+        CMD_SAVE_GUIDE
+    }
+
+    async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Bytes>> {
+        let player = ctx.require_player()?;
+        let req = ddj_pb::gen::player_message::ClientSaveGuideIdReq1103::decode(body)
+            .map_err(|e| ddj_core::AppError::BadRequest(format!("引导存档包解码失败: {e}")))?;
+        let saved = player_misc::save_guide_info(
+            req.guide_id.unwrap_or_default(),
+            req.next_id.unwrap_or_default(),
+            req.is_pastt.unwrap_or_default(),
+            // 原版存的是 `player.dbId`；本项目里 `player.player_id` 就是库里那行。
+            player.get(),
+            self.clock.now_millis(),
+        );
+        // 原版：`EventLogSendRecord.guide(player, isPast, guideId, nextId)`
+        tracing::info!(
+            target: "eventlog",
+            event = "guide",
+            player = %player,
+            is_past = saved.event.is_past,
+            guide_id = saved.event.guide_id,
+            next_id = saved.event.next_id,
+            "引导节点存档"
+        );
+        self.stores.save_guide(player, saved.info).await?;
+        Ok(None)
+    }
+}
+
+/// 1111：`PlayerSaveCacheDataReq` —— 逐键合并，**不回包**。
+pub struct CacheSaveHandler {
+    stores: Arc<dyn PlayerStateStore>,
+}
+
+impl CacheSaveHandler {
+    /// 构造。
+    #[must_use]
+    pub fn new(stores: Arc<dyn PlayerStateStore>) -> Self {
+        Self { stores }
+    }
+}
+
+#[async_trait]
+impl ErasedHandler for CacheSaveHandler {
+    fn cmd_id(&self) -> i32 {
+        CMD_SAVE_CACHE
+    }
+
+    async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Bytes>> {
+        let player = ctx.require_player()?;
+        let req = ddj_pb::gen::player_message::PlayerSaveCacheDataReq1111::decode(body)
+            .map_err(|e| ddj_core::AppError::BadRequest(format!("缓存存档包解码失败: {e}")))?;
+        let items: Vec<(i32, String)> = req
+            .player_cache_temp
+            .iter()
+            .map(|t| {
+                (
+                    t.key.unwrap_or_default(),
+                    t.value.clone().unwrap_or_default(),
+                )
+            })
+            .collect();
+        let n = items.len();
+        self.stores.cache_put(player, items).await?;
+        tracing::debug!(player = %player, count = n, "客户端缓存合并");
+        Ok(None)
+    }
+}
+
+/// 1112：`GetPlayerCacheDataReq` —— 有回包。
+pub struct CacheGetHandler {
+    stores: Arc<dyn PlayerStateStore>,
+}
+
+impl CacheGetHandler {
+    /// 构造。
+    #[must_use]
+    pub fn new(stores: Arc<dyn PlayerStateStore>) -> Self {
+        Self { stores }
+    }
+}
+
+#[async_trait]
+impl ErasedHandler for CacheGetHandler {
+    fn cmd_id(&self) -> i32 {
+        CMD_GET_CACHE
+    }
+
+    async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Bytes>> {
+        let player = ctx.require_player()?;
+        let req = ddj_pb::gen::player_message::GetPlayerCacheDataReq1112::decode(body)
+            .map_err(|e| ddj_core::AppError::BadRequest(format!("读缓存包解码失败: {e}")))?;
+        let got = self.stores.cache_get(player, req.key.clone()).await?;
+        let resp = ddj_pb::gen::player_message::GetPlayerCacheDataResp1112 {
+            ret: 0,
+            player_cache_temp: got
+                .into_iter()
+                .map(|(k, v)| ddj_pb::gen::player_message::PlayerCacheTemp {
+                    key: Some(k),
+                    value: Some(v),
+                })
+                .collect(),
+        };
+        Ok(Some(Bytes::from(resp.encode_to_vec())))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::net::{IpAddr, Ipv4Addr};
@@ -364,7 +509,7 @@ mod tests {
     #[test]
     fn register_counts_login() {
         let mut t = HandlerTable::empty();
-        let n = register(&mut t, ServerState::healthy(1), None, None, None).expect("注册");
+        let n = register(&mut t, ServerState::healthy(1), None, None, None, None).expect("注册");
         assert_eq!(n, 1);
         assert!(t.get(CMD_LOGIN).is_some(), "登录应已入表");
         assert!(t.get(11002).is_none(), "未移植的链路不应凭空出现");

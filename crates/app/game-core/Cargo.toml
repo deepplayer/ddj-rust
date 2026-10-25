@@ -12,6 +12,7 @@ workspace = true
 
 [dependencies]
 ddj-game-handler.workspace = true
+dashmap.workspace = true
 ddj-core.workspace       = true
 ddj-config.workspace     = true
 ddj-telemetry.workspace  = true

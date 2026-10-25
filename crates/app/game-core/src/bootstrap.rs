@@ -384,6 +384,12 @@ impl Bootstrap {
                 Arc::new(crate::create_player_repo::EmptyFashion),
             )),
             Some(handshake_store),
+            Some((
+                Arc::new(crate::player_stores::PlayerStores::new(Arc::new(
+                    crate::player_stores::MemoryPlayerStateRepo,
+                ))) as Arc<dyn ddj_game_handler::player_state::PlayerStateStore>,
+                Arc::new(ddj_core::SystemClock) as Arc<dyn ddj_core::Clock>,
+            )),
         )?;
         tracing::info!(count = registered, "业务处理器已注册");
         let handlers = Arc::new(table);

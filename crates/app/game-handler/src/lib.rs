@@ -51,6 +51,7 @@ pub mod loginvar;
 pub mod mail;
 pub mod player;
 pub mod player_misc;
+pub mod player_state;
 pub mod push;
 pub mod rank;
 pub mod shop;
