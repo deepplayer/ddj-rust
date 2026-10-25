@@ -59,7 +59,17 @@ impl Default for ServiceCfg {
 #[serde(deny_unknown_fields)]
 pub struct NetCfg {
     /// 客户端 TCP 监听地址（对应原 `10544`）。
+    ///
+    /// 原版 `GameServer` 的 10544 **只讲 WebSocket**，所以纯客户端入口应配
+    /// [`NetCfg::ws_listen`]；本字段留给内部服务（cross / hall / battle / world）
+    /// 以及未启用 WS 时的裸 TCP 兜底。
     pub tcp_listen: SocketAddr,
+    /// 客户端 WebSocket 监听地址。
+    ///
+    /// `Some` 时该服务用 WebSocket 承载协议帧（对齐原版 `WebSocketServerProtocolHandler("/")`），
+    /// 否则用 [`NetCfg::tcp_listen`] 的裸 TCP。
+    #[serde(default)]
+    pub ws_listen: Option<SocketAddr>,
     /// HTTP 监听地址（对应原 Jetty `1544`）。
     pub http_listen: SocketAddr,
     /// 跨服 RPC 监听地址（对应原 `4544`）。
@@ -78,6 +88,7 @@ impl Default for NetCfg {
             // 用 `from` 而不是 `"".parse().expect()`：这是编译期常量，
             // 不会 panic，也满足「生产代码禁止 expect」的约束。
             tcp_listen: SocketAddr::from(([0, 0, 0, 0], 10_544)),
+            ws_listen: None,
             http_listen: SocketAddr::from(([127, 0, 0, 1], 1_544)),
             rpc_listen: None,
             idle_timeout_secs: 120,

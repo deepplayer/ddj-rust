@@ -1,0 +1,21 @@
+[package]
+name        = "ddj-ws"
+description = "WebSocket 长连：对齐 jery.ngsp.network.websocket 的行为（原版 10544 只认 WS，不认裸 TCP）"
+version.workspace      = true
+edition.workspace      = true
+rust-version.workspace = true
+license.workspace      = true
+
+[dependencies]
+ddj-core.workspace     = true
+ddj-config.workspace   = true
+ddj-codec.workspace    = true
+ddj-session.workspace  = true
+ddj-registry.workspace = true
+ddj-tcp.workspace      = true
+
+axum.workspace      = true
+bytes.workspace     = true
+tokio.workspace     = true
+tokio-util.workspace = true
+tracing.workspace   = true

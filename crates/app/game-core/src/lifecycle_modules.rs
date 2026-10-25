@@ -311,22 +311,41 @@ impl Module for TcpListenerModule {
         let c = comps();
         // 登录守卫：未登录时只放行白名单（`FREE_LOGIN_CMDS`），与原版一致。
         let guards = ddj_registry::GuardChain::new().with(ddj_registry::LoginGuard);
-        let server = ddj_tcp::TcpServer::new(
-            c.cfg.net.clone(),
-            Arc::clone(&c.sessions),
-            Arc::clone(&c.handlers),
-            Arc::new(guards),
-            c.cfg.service.server_id,
-        );
+        let guards = Arc::new(guards);
         let shutdown = wiring::shutdown().unwrap_or_else(|| {
             let (_tx, rx) = tokio::sync::watch::channel(false);
             rx
         });
-        self.task = Some(tokio::spawn(async move {
-            if let Err(e) = server.serve(shutdown).await {
-                tracing::error!(error = %e, "TCP 监听退出");
-            }
-        }));
+
+        // 原版 10544 只讲 WebSocket（`WebSocketServerProtocolHandler("/")`），
+        // 裸 TCP 连上去会先收到 HTTP 响应。配了 `ws_listen` 就走 WS，否则退回裸 TCP。
+        if c.cfg.net.ws_listen.is_some() {
+            let server = ddj_ws::WsServer::new(
+                c.cfg.net.clone(),
+                Arc::clone(&c.sessions),
+                Arc::clone(&c.handlers),
+                guards,
+                c.cfg.service.server_id,
+            );
+            self.task = Some(tokio::spawn(async move {
+                if let Err(e) = server.serve(shutdown).await {
+                    tracing::error!(error = %e, "WebSocket 监听退出");
+                }
+            }));
+        } else {
+            let server = ddj_tcp::TcpServer::new(
+                c.cfg.net.clone(),
+                Arc::clone(&c.sessions),
+                Arc::clone(&c.handlers),
+                guards,
+                c.cfg.service.server_id,
+            );
+            self.task = Some(tokio::spawn(async move {
+                if let Err(e) = server.serve(shutdown).await {
+                    tracing::error!(error = %e, "TCP 监听退出");
+                }
+            }));
+        }
         Ok(())
     }
 

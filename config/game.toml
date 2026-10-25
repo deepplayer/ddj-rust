@@ -11,7 +11,8 @@ server_id   = 7010544
 cross_group = 1
 
 [net]
-tcp_listen        = "0.0.0.0:10544"
+tcp_listen        = "127.0.0.1:10545"   # 未启用 WS 时的裸 TCP 兜底（原版 10544 并不讲裸 TCP）
+ws_listen         = "0.0.0.0:10544"     # 客户端入口：对齐原版 WebSocketServerProtocolHandler("/")
 http_listen       = "127.0.0.1:20881"
 rpc_listen          = "0.0.0.0:4544"
 idle_timeout_secs = 180
