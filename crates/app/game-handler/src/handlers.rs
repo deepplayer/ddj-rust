@@ -89,7 +89,7 @@ impl ErasedHandler for LoginHandler {
         // 原版 `UtilsTools.random(1, 10000)`。这里用高精度时间戳取模，
         // 在同一毫秒内多次登录会重复，但原版 prng 也不是密码学强度。
         let loginvar = i32::try_from((now.unsigned_abs() % 10_000) + 1).unwrap_or(1);
-        let resp = login::handle_with(
+        let (resp, player) = login::handle_with(
             ctx,
             &body,
             &self.state,
@@ -99,6 +99,11 @@ impl ErasedHandler for LoginHandler {
             self.handshake.as_deref(),
         )
         .await?;
+        // 登录成功 → 把角色绑进会话。之后 `player_id` 才有值，
+        // 需要登录的消息（握手回执 16/17/18、背包等）才会放行。
+        if let (Some(p), Some(sess)) = (player, ctx.session.as_ref()) {
+            sess.bind_player(p);
+        }
         Ok(Some(Bytes::from(resp.encode_to_vec())))
     }
 }
@@ -345,6 +350,7 @@ mod tests {
             player_id: None,
             peer_ip: IpAddr::V4(Ipv4Addr::LOCALHOST),
             cmd_id: CMD_LOGIN,
+            session: None,
         }
     }
 

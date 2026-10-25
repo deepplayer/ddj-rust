@@ -13,6 +13,16 @@ use ddj_pb::dispatch::MessageKind;
 use prost::Message;
 
 /// 一次请求的上下文。
+/// 会话控制：`protocol` 层不认识 `net/session`，只依赖这个最小接口。
+///
+/// 登录成功后处理器调 [`SessionControl::bind_player`]，连接任务再去
+/// [`HandlerCtx::player_id`] 里读出绑好的角色 —— 无需让协议层反向依赖会话层。
+pub trait SessionControl: Send + Sync {
+    /// 绑定角色（等价原版 `ChannelPlayer` 建会话）。
+    fn bind_player(&self, player: ddj_core::PlayerId);
+}
+
+/// 处理上下文。
 pub struct HandlerCtx {
     /// 会话 ID。
     pub session_id: u64,
@@ -22,6 +32,8 @@ pub struct HandlerCtx {
     pub peer_ip: std::net::IpAddr,
     /// 收到的原始 cmdId。
     pub cmd_id: i32,
+    /// 会话控制（未接入会话时为 `None`）。
+    pub session: Option<std::sync::Arc<dyn SessionControl>>,
 }
 
 impl HandlerCtx {

@@ -82,8 +82,9 @@ impl TcpServer {
 
                     let handlers = Arc::clone(&self.handlers);
                     let guards = Arc::clone(&self.guards);
+                    let sess = Arc::clone(&session);
                     tokio::spawn(async move {
-                        serve_conn(stream, peer, sid, handlers, guards, rx).await;
+                        serve_conn(stream, peer, sid, handlers, guards, sess, rx).await;
                     });
                 }
                 _ = shutdown.changed() => {
@@ -143,6 +144,22 @@ impl tokio_util::codec::Encoder<Frame> for ClientCodec {
     }
 }
 
+/// 把 `Session` 桥接成协议层能用的最小接口。
+struct ConnSession(Arc<ddj_session::Session>);
+
+impl ddj_registry::SessionControl for ConnSession {
+    fn bind_player(&self, player: ddj_core::PlayerId) {
+        if let Err(e) = self.0.authenticate(player) {
+            tracing::warn!(error = e, "绑定角色失败");
+            return;
+        }
+        if let Err(e) = self.0.enter_game() {
+            tracing::warn!(error = e, "进入游戏状态失败");
+        }
+        tracing::info!(player = player.get(), "会话已绑定角色");
+    }
+}
+
 /// 一条连接的生命周期：读帧 → 守卫 → 处理器 → 写回。
 ///
 /// ## 回包的消息号
@@ -159,6 +176,7 @@ async fn serve_conn(
     session_id: u64,
     handlers: Arc<HandlerTable>,
     guards: Arc<GuardChain>,
+    session: Arc<ddj_session::Session>,
     mut outbound: mpsc::Receiver<Frame>,
 ) {
     use futures::{SinkExt as _, StreamExt as _};
@@ -166,9 +184,10 @@ async fn serve_conn(
     let mut framed = Framed::new(stream, ClientCodec::new());
     let mut ctx = HandlerCtx {
         session_id,
-        player_id: None,
+        player_id: session.player(),
         peer_ip: peer.ip(),
         cmd_id: 0,
+        session: Some(Arc::new(ConnSession(Arc::clone(&session)))),
     };
 
     loop {
@@ -204,5 +223,8 @@ async fn serve_conn(
                 tracing::warn!(peer = %peer, cmd_id = ctx.cmd_id, error = %e, "处理器返回错误");
             }
         }
+        // 登录成功会通过 `SessionControl::bind_player` 把角色写进会话，
+        // 这里每帧同步一次，后续需要登录的消息（如握手回执 16/17/18）才放行。
+        ctx.player_id = session.player();
     }
 }

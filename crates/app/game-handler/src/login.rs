@@ -223,7 +223,7 @@ pub async fn handle_with(
     now_ms: i64,
     loginvar: i32,
     handshake: Option<&dyn HandshakeStore>,
-) -> Result<LoginResp4> {
+) -> Result<(LoginResp4, Option<PlayerId>)> {
     let LoginRequest { req } = LoginRequest::decrypt(body)?;
     let open_id = req.open_id.clone().unwrap_or_default();
     let server_id = req.server_id.unwrap_or(st.server_id);
@@ -238,7 +238,11 @@ pub async fn handle_with(
         ok = matches!(outcome, LoginOutcome::Accepted { .. }),
         "登录判定完成"
     );
-    Ok(build_resp(outcome))
+    let player = match &outcome {
+        LoginOutcome::Accepted { player_id, .. } => Some(*player_id),
+        _ => None,
+    };
+    Ok((build_resp(outcome), player))
 }
 
 /// 把结果填进回包。

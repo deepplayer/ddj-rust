@@ -170,3 +170,12 @@ allow_attributes_without_reason = "allow"
 cast_possible_truncation = "allow"
 cast_sign_loss           = "allow"
 cast_possible_wrap       = "allow"
+
+# `ddj-pb` 装着 prost 生成的 4.6 MB 单文件（约 8000 个 struct）。
+# 带 debuginfo 的测试构建会让 rustc 峰值内存冲到 OOM（远端实测 SIGKILL），
+# 所以只对这一个 crate 关掉 debuginfo；它本身没有手写逻辑，调试价值为零。
+[profile.dev.package.ddj-pb]
+debug = false
+
+[profile.test.package.ddj-pb]
+debug = false
