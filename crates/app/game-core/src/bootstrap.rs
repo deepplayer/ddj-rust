@@ -355,6 +355,8 @@ impl Bootstrap {
                 .scan()
                 .map_err(anyhow::Error::msg)
                 .context("扫描配置表失败")?;
+            // 道具/礼包走 RawTable（免代码生成），启动即装配到 handler。
+            crate::csv_templates::install(std::path::Path::new(&cfg.template.dir));
             tracing::info!(
                 tables = report.tables,
                 rows = report.rows,

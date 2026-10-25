@@ -31,6 +31,32 @@ use crate::runtime::{decode_err, resources_to_msg, FnHandler, MemWorld};
 /// 过渡期用的最小模板上限（真实值来自 `ItemDB.useLimit`）。
 const ASSUMED_USE_LIMIT: i32 = 999;
 
+/// 真实模板表的只读视图（由 `game-core` 在启动时注入）。
+///
+/// 认成 trait 而不是直接依赖 `ddj-template`：`game-handler` 保持零 IO、零数据层依赖，
+/// 便于单测用假表。原版对应 `ItemDBCache.getUseLimit()` / `GiftDBCache.getGiftDB()`。
+pub trait ItemTemplates: Send + Sync {
+    /// `ItemDB.useLimit`；`None` 表示该行没填（原版 `getUseLimit()` 得 0）。
+    fn use_limit(&self, template_id: i32) -> Option<i32>;
+    /// `ItemDB.type`。
+    fn item_type(&self, template_id: i32) -> Option<i32>;
+    /// `GiftDB.useCost` → `(资源 id, 每次数量)`。
+    fn use_cost(&self, template_id: i32) -> Option<(i32, i64)>;
+}
+
+/// 启动时装配一次；之后只读。
+static TEMPLATES: std::sync::OnceLock<std::sync::Arc<dyn ItemTemplates>> =
+    std::sync::OnceLock::new();
+
+/// 注入真实模板表（只第一次生效）。
+pub fn install_templates(t: std::sync::Arc<dyn ItemTemplates>) {
+    let _ = TEMPLATES.set(t);
+}
+
+fn templates() -> Option<&'static std::sync::Arc<dyn ItemTemplates>> {
+    TEMPLATES.get()
+}
+
 /// 从内存态合成模板与资源判定的查询器。
 struct MemLookups<'a> {
     world: &'a MemWorld,
@@ -45,16 +71,29 @@ impl ItemLookup for MemLookups<'_> {
         let has = self
             .world
             .peek(self.player, |p| p.bag.contains_key(&template_id));
-        Ok(has.then_some(ItemTemplate {
-            use_limit: ASSUMED_USE_LIMIT,
-            item_type: 0,
+        if !has {
+            return Ok(None);
+        }
+        // 有真表就取真值：`useLimit` 为空的行走 `unwrap_or(0)`，
+        // 与原版 `getUseLimit()` 返回 0 一致（这类道具根本不能用）。
+        Ok(Some(match templates() {
+            Some(t) => ItemTemplate {
+                use_limit: t.use_limit(template_id).unwrap_or(0),
+                item_type: t.item_type(template_id).unwrap_or(0),
+            },
+            None => ItemTemplate {
+                use_limit: ASSUMED_USE_LIMIT,
+                item_type: 0,
+            },
         }))
     }
 
     fn gift(&self, template_id: i32) -> Result<Option<Gift>> {
-        let _ = template_id;
-        // 过渡期：所有道具都按「无礼包配置」处理（`useCostJson = null`）。
-        Ok(None)
+        // 原版 `GiftDBCache.getGiftDB(templateId)`：表里没有这一行就返回 null。
+        // 真表里 1066 行礼包配置只有 10 行填了 `useCost`。
+        Ok(templates().and_then(|t| t.use_cost(template_id)).map(|(id, num)| Gift {
+            use_cost: Some((id, num)),
+        }))
     }
 
     fn gift_check_for_using(&self, gift: &Gift) -> Result<Option<ddj_pb::cmd::RetCode>> {
@@ -120,9 +159,10 @@ impl EffectiveUseLookup for MemLookups<'_> {
     }
 
     fn item_template(&self, template_id: i32) -> Result<Option<EffectiveUseTemplate>> {
-        let _ = template_id;
         Ok(Some(EffectiveUseTemplate {
-            use_limit: ASSUMED_USE_LIMIT,
+            use_limit: templates()
+                .and_then(|t| t.use_limit(template_id))
+                .unwrap_or(0),
         }))
     }
 
