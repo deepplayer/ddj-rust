@@ -65,6 +65,16 @@ pub struct PlayerBox {
     pub guide_id: i32,
     /// 新手引导进度（`List<Integer>`）。
     pub guide_list: Vec<i32>,
+    /// 角色名。
+    pub name: String,
+    /// 身份等级（`S-身份表-Status.csv`）。
+    pub level: i32,
+    /// 当前经验。
+    pub exp: i64,
+    /// `p.isUpdateName()`：免费改名是否已用掉。
+    pub update_name_used: bool,
+    /// `p.getTimeOffForbidResetName()`：改名冷却截止。
+    pub forbid_reset_name_until: i64,
 }
 
 impl MemWorld {
@@ -86,7 +96,12 @@ impl MemWorld {
             .players
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
-        f(guard.entry(player.get()).or_default())
+        f(guard.entry(player.get()).or_insert_with(||
+            PlayerBox {
+                level: 1,
+                ..PlayerBox::default()
+            },
+        ))
     }
 
     /// 只读访问。
