@@ -246,26 +246,33 @@ pub fn use_item(
     if bag.item_num < remove_num {
         return Ok(UseOutcome::Fail(UseFailure::Resp(RetCode::ItemError2)));
     }
-    // 分支 7（194-205）
-    let gift = lookups.gift(template_id)?;
+    // 分支 7（194-205）：`GiftDBCache.getGiftDB` 是纯 map 查表（`allGiftDB.get(id)`），
+    // 模板里没有这件道具时返回 **null**；原版紧接着调
+    // `GiftDBUtils.checkForUsing(null, player)`，其首行就是 `giftDB.getUseLimit()`
+    // → NullPointerException → 冒泡到 `ItemMessageHandler.itemUseReq` 的
+    // `catch (Exception)` → 统一回 `ItemUseResp_11002{ret=COMMON_SERVER_BUSY(2)}`，
+    // 道具不扣除、效果不生效。
+    //
+    // 实测覆盖面：`D-道具表-Item.csv` 2674 条里，只有 1066 条出现在
+    // `D-道具使用效果-Gift.csv`；剩下 **1608 条**（type 非 13/14）走到这里必然 NPE。
+    // 即原版对这些道具一律回「服务器繁忙」。这里按 1:1 复刻，不改原版行为。
+    let Some(gift) = gift else {
+        return Ok(UseOutcome::Fail(UseFailure::Handler(RetCode::ServerBusy)));
+    };
     // 分支 8（207-241）：礼包禁用检查 → 直接回该码
-    if let Some(g) = gift.as_ref() {
-        if let Some(code) = lookups.gift_check_for_using(g)? {
-            return Ok(UseOutcome::Fail(UseFailure::Resp(code)));
-        }
+    if let Some(code) = lookups.gift_check_for_using(&gift)? {
+        return Ok(UseOutcome::Fail(UseFailure::Resp(code)));
     }
     // 分支 9（242-292）：代价不足 → HandlerException(26)
     let mut cost = None;
-    if let Some(g) = gift.as_ref() {
-        if let Some((res_id, per)) = g.use_cost {
-            let total = per.saturating_mul(remove_num);
-            if !lookups.check_item(res_id, total)? {
-                return Ok(UseOutcome::Fail(UseFailure::Handler(
-                    RetCode::UseCostResourcesNo,
-                )));
-            }
-            cost = Some((res_id, total));
+    if let Some((res_id, per)) = gift.use_cost {
+        let total = per.saturating_mul(remove_num);
+        if !lookups.check_item(res_id, total)? {
+            return Ok(UseOutcome::Fail(UseFailure::Handler(
+                RetCode::UseCostResourcesNo,
+            )));
         }
+        cost = Some((res_id, total));
     }
     // 分支 10（296-402）：use()；异常按成功处理（原版注释明确）
     let applied = lookups.apply_use(&tpl, num).unwrap_or_else(|e| {
@@ -583,14 +590,17 @@ pub fn effective_use(
     if eff.num < remove_num {
         return Ok(UseOutcome::Fail(UseFailure::Resp(RetCode::ItemError2)));
     }
-    // 8
-    let gift = lookups.gift(eff.template_id)?;
+    // 8：与 11002 相同，原版在这里不判空 —— `checkForUsing(null)` 直接 NPE，
+    // 冒泡到 handler 的 catch → `ItemUseResp_11002{ret=2}`。
+    let Some(gift) = lookups.gift(eff.template_id)? else {
+        return Ok(UseOutcome::Fail(UseFailure::Handler(RetCode::ServerBusy)));
+    };
     // 9
     if let Some(code) = lookups.gift_check_for_using(eff.template_id)? {
         return Ok(UseOutcome::Fail(UseFailure::Resp(code)));
     }
     // 10
-    let cost = gift.and_then(|g| g.use_cost);
+    let cost = gift.use_cost;
     if let Some((cid, cnum)) = cost {
         if !lookups.check_item(cid, cnum.saturating_mul(remove_num))? {
             return Ok(UseOutcome::Fail(UseFailure::Handler(

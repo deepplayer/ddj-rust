@@ -102,12 +102,28 @@ pub struct RefreshOutcome {
 }
 
 /// `Sign.refresh()`：周期满且跨天才清空。
+///
+/// 原版只重置 `signedDay` 与 `boxIds`，**不动 `signedTime`**：
+/// ```java
+/// if (this.signedDay >= DailySignBoxDBCache.maxDailySignDBID) {
+///     long nowTime = LogicUtils.getNowTime();
+///     if (getTimeByHour(nowTime,0) != getTimeByHour(this.signedTime,0)) {
+///         this.signedDay = 0; this.boxIds.clear(); submitUpdate(this);
+///     }
+/// }
+/// ```
+/// `signedTime` 会被 `toMsgSign()` 原样下发给客户端，所以这里保留旧值，
+/// 不能整条 `SignState::default()`（那会把 `signedTime` 抹成 0）。
 pub fn refresh(state: &SignState, now: i64, tz_offset_ms: i64) -> RefreshOutcome {
     let crossed_day = day_start(now, tz_offset_ms) != day_start(state.signed_time, tz_offset_ms);
     if state.signed_day >= DAILY_SIGN_CYCLE && crossed_day {
         RefreshOutcome {
             reset: true,
-            state: SignState::default(),
+            state: SignState {
+                signed_day: 0,
+                box_ids: Vec::new(),
+                ..state.clone()
+            },
         }
     } else {
         RefreshOutcome {
