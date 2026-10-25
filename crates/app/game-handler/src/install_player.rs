@@ -10,7 +10,7 @@
 
 use std::sync::Arc;
 
-use ddj_core::{Clock, PlayerId};
+use ddj_core::Clock;
 use ddj_pb::gen::player_message::UpdateNameReq1002;
 use ddj_registry::HandlerTable;
 use ddj_registry::Reply;
@@ -91,7 +91,7 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
     // 1003 主动升级。
     {
         let (w, c) = (world.clone(), clock.clone());
-        table.insert(Box::new(FnHandler::new(1003, move |ctx, body| {
+        table.insert(Box::new(FnHandler::new(1003, move |ctx, _body| {
             let p = ctx.require_player()?;
             let (lv, exp) = w.peek(p, |b| (b.level, b.exp));
             let out = player::level_up(lv, exp, c.now_millis(), &MemLevels);
