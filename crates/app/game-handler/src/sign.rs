@@ -318,7 +318,10 @@ mod tests {
     fn refresh_resets_when_cycle_full_and_day_changed() {
         let r = refresh(&st(DAILY_SIGN_CYCLE, D1, &[1, 2]), D1 + DAY_MS, TZ);
         assert!(r.reset);
-        assert_eq!(r.state, SignState::default());
+        // 原版只清 signedDay 与 boxIds，signedTime 保留（会被 toMsgSign 下发）。
+        assert_eq!(r.state.signed_day, 0);
+        assert!(r.state.box_ids.is_empty());
+        assert_eq!(r.state.signed_time, D1, "signedTime 不应被重置");
     }
 
     #[test]

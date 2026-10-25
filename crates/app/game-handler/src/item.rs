@@ -852,6 +852,10 @@ mod tests {
                 item_type: 2,
             },
         );
+        // 原版 `GiftDBCache.getGiftDB` 返回 null 时会在 `checkForUsing(null)` 处 NPE，
+        // 被 handler 统一回 ret=2；所以「能正常使用」的道具必须在礼包表里有行。
+        // 这里显式给 11002 配一条空礼包记录，模拟模板里确实存在。
+        f.gifts.insert(11002, Gift { use_cost: None });
         f
     }
 
@@ -1401,7 +1405,9 @@ mod effective_use_tests {
             Ok(self.remove_num.unwrap_or(num))
         }
         fn gift(&self, _t: i32) -> Result<Option<Gift>> {
-            Ok(self.gift)
+            // 默认返回「有礼包行、无代价」，与 normal() 的做法一致；
+            // 需要测「模板缺行 → BUSY」的用例自己把 gift 设成 None。
+            Ok(Some(self.gift.unwrap_or(Gift { use_cost: None })))
         }
         fn gift_check_for_using(&self, _t: i32) -> Result<Option<RetCode>> {
             Ok(self.gift_block)
