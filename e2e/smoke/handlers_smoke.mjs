@@ -114,6 +114,12 @@ const CASES = [
   ['10001 拉邮件',   10001, Buffer.alloc(0)],
   ['10002 标记已读', 10002, Buffer.from([...str(1, '1')])],
   ['10004 删邮件',   10004, Buffer.from([...str(1, '1')])],
+  ['17091 琥珀数据',  17091, Buffer.alloc(0)],
+  ['17092 琥珀签到',  17092, Buffer.alloc(0)],
+  ['17093 琥珀专属',  17093, Buffer.alloc(0)],
+  ['17094 充值豪礼',  17094, Buffer.from([...i32(1, 1)])],
+  ['17095 琥珀VIP',   17095, Buffer.alloc(0)],
+  ['17097 HeyTapVIP', 17097, Buffer.alloc(0)],
 ];
 
 const main = async () => {
