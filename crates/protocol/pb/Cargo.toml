@@ -16,6 +16,10 @@ workspace = true
 # `expected one of '!' or '::', found MsgBoBingAchievement`。
 # 这些注释是协议文档的一部分必须原样保留 → 关掉本 crate 的 doctest。
 doctest = false
+# `cargo test --workspace` 会为每个 lib 目标编译一份 test harness；
+# 这个 crate 装着 4.6 MB 生成代码、自身零测试，harness 会让 rustc 峰值内存
+# 冲到 OOM（实测 SIGKILL）。关掉后不影响其他 crate 的测试。
+test = false
 
 [dependencies]
 ddj-core.workspace     = true

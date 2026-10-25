@@ -4,3 +4,6 @@
 *.log
 .env
 .env.local
+
+# 构建产物：二进制不进仓库（每次从远端 release 构建取回）
+/bin/

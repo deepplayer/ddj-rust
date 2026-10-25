@@ -29,6 +29,7 @@ use crate::login::{self, AccountLookup, ServerState};
 use crate::player::{self, CreateCtx, CreateOutcome, CreatePlayerRepo, NewPlayerRow};
 use crate::player_misc;
 use crate::player_state::PlayerStateStore;
+use crate::runtime::MemWorld;
 
 /// 登录消息号（`LoginMessage.LoginReq_4`）。
 pub const CMD_LOGIN: i32 = ddj_pb::cmd::login::LOGIN;
@@ -123,6 +124,7 @@ pub fn register(
     create: Option<(Arc<dyn CreatePlayerRepo>, Arc<dyn player::FashionLookup>)>,
     handshake: Option<Arc<dyn HandshakeStore>>,
     stores: Option<(Arc<dyn PlayerStateStore>, Arc<dyn Clock>)>,
+    runtime: Option<(Arc<MemWorld>, Arc<dyn Clock>)>,
 ) -> Result<usize> {
     let mut n = 0;
     let server_id = state.server_id;
@@ -155,6 +157,12 @@ pub fn register(
         n += 1;
         table.insert(Box::new(CacheGetHandler::new(st)));
         n += 1;
+    }
+    // 背包 / 签到 / 邮件 走过渡期内存态（见 crate::runtime 的模块文档）。
+    if let Some((world, clock)) = runtime {
+        n += crate::install_item::install(table, world.clone(), clock.clone());
+        n += crate::install_sign::install(table, world.clone(), clock.clone());
+        n += crate::install_mail::install(table, world, clock);
     }
     Ok(n)
 }
@@ -509,7 +517,7 @@ mod tests {
     #[test]
     fn register_counts_login() {
         let mut t = HandlerTable::empty();
-        let n = register(&mut t, ServerState::healthy(1), None, None, None, None).expect("注册");
+        let n = register(&mut t, ServerState::healthy(1), None, None, None, None, None).expect("注册");
         assert_eq!(n, 1);
         assert!(t.get(CMD_LOGIN).is_some(), "登录应已入表");
         assert!(t.get(11002).is_none(), "未移植的链路不应凭空出现");

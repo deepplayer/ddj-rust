@@ -390,6 +390,10 @@ impl Bootstrap {
                 ))) as Arc<dyn ddj_game_handler::player_state::PlayerStateStore>,
                 Arc::new(ddj_core::SystemClock) as Arc<dyn ddj_core::Clock>,
             )),
+            Some((
+                ddj_game_handler::runtime::MemWorld::new(),
+                Arc::new(ddj_core::SystemClock) as Arc<dyn ddj_core::Clock>,
+            )),
         )?;
         tracing::info!(count = registered, "业务处理器已注册");
         let handlers = Arc::new(table);

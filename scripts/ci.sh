@@ -21,7 +21,9 @@ step "fmt"
 RUSTFLAGS="-C link-arg=-fuse-ld=lld" cargo fmt --all -- --check
 
 step "clippy"
-RUSTFLAGS="-C link-arg=-fuse-ld=lld" cargo clippy --workspace --all-targets -- -D warnings
+# ddj-pb 装着 4.6 MB prost 生成代码（约 8000 struct），clippy 对它的 test target
+# 要跑几十分钟甚至不收敛；它零手写逻辑、clippy 无意义 → 排除。
+RUSTFLAGS="-C link-arg=-fuse-ld=lld" cargo clippy --workspace --exclude ddj-pb --all-targets -- -D warnings
 
 step "test"
 RUSTFLAGS="-C link-arg=-fuse-ld=lld" cargo test --workspace

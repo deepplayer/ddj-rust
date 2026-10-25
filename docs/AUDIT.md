@@ -69,3 +69,19 @@
 | 数值溢出 | Java `long` 乘法回绕 | `saturating_mul` | 极端数值才分叉，选择不 panic |
 | 反射注册 | `@LabelMessageHandler` + 反射扫包 | `inventory` 编译期注册 | 见 ADR-0002 |
 | 模板加载 | 反射按 CSV 列名赋值到 `ConfigDBCache` | 代码生成 + `prost`/serde | 见 ADR-0003 |
+
+---
+
+## 待修缺陷（2026-10-25 冒烟发现）
+
+### D1 `ErrorResp_1` 信封的帧头 cmdId 用错
+- **现象**：16002/16003 的错误分支回的是 `ErrorResp_1{msgId, errorCode}`，
+  但帧头 cmdId 仍是**请求**的 cmdId（16003），body 里 f1=16003、f2=1203。
+- **原版**：handler 抛 `HandlerException` → 框架回 `ErrorResp_1`，
+  帧头 cmdId 应是 **1**（`ErrorResp_1` 的消息号），body 的 `msgId` 才是请求号。
+- **影响**：客户端按帧 cmdId 派发，会拿 16003 的回包解析器去读 `msgId`，
+  把 16003 当成 `ret` —— 协议层错位。
+- **根因**：`FnHandler` 的返回类型只有 `Option<Bytes>`，无法表达「回包用不同 cmdId」；
+  `ddj_registry::ErasedHandler::handle_raw` 同样只返回 body，组帧处统一用请求 cmdId。
+- **修法**：把两个接口的返回值改成 `Reply{cmd: Option<i32>, body}`，
+  `None` 表示沿用请求 cmdId；`impl From<Bytes> for Reply` 保证现有 21 个 handler 零改动。

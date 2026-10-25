@@ -1,0 +1,185 @@
+//! 运行时接线层：把纯函数挂到 `cmdId → 处理器` 上。
+//!
+//! ## 为什么需要这一层
+//! 各业务模块（[`crate::item`]、[`crate::sign`] …）只暴露**无 IO 的纯函数**，
+//! 依赖通过 trait 注入。这一层负责把裸字节翻译成入参、把出参编码回字节。
+//!
+//! ## `FnHandler` 的作用
+//! 20 多条消息如果每条写一个 `struct + impl ErasedHandler`，光样板就要上千行。
+//! 这里用闭包 + 一个泛型适配器，每条消息压缩到 10 行以内：
+//!
+//! ```ignore
+//! table.insert(Box::new(FnHandler::new(11002, move |ctx, body| {
+//!     let req = ItemUseReq11002::decode(body).map_err(bad)?;
+//!     // …调纯函数、编码回包
+//! })));
+//! ```
+//!
+//! ## 过渡期状态：`MemWorld`
+//! 真正的持久化（PostgreSQL）在 `ddj-game-core` 的仓储层，但背包/邮件/签到/琥珀
+//! 的仓储接口还没实现。为了**先让链路可回归**（能被打到、错误码正确），
+//! 这里用进程内内存态顶住：
+//!
+//! - 好处：12 条消息立刻进入冒烟覆盖，后续换 PG 只需替换 `MemWorld`；
+//! - 边界：进程重启即丢，**不能当生产用**；空模板表下走到的是「没有道具/没有邮件」
+//!   这类分支，恰好可以用来验证错误码。
+//!
+//! 模板数据（`useLimit`、签到奖励、邮件模板）等接入 `ddj-template` 后，
+//! 由 `Lookup` 实现从 `TemplateStore` 读取，本文件不用改。
+
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
+
+use async_trait::async_trait;
+use bytes::Bytes;
+use ddj_core::{AppError, PlayerId, Result};
+use ddj_registry::{ErasedHandler, HandlerCtx};
+
+use crate::amber::AmberModelState;
+use crate::mail::MailRecord;
+use crate::sign::SignState;
+
+/// 过渡期内���态：一个玩家一份。
+#[derive(Debug, Default)]
+pub struct MemWorld {
+    /// 玩家状态容器（按 `player_id` 分片）。
+    players: Mutex<HashMap<i64, PlayerBox>>,
+}
+
+/// 单个玩家的全部内存态。
+#[derive(Debug, Default)]
+pub struct PlayerBox {
+    /// 背包：`templateId → num`。
+    pub bag: HashMap<i32, i64>,
+    /// 时效道具：`id → (templateId, num, deadline)`。
+    pub effective: HashMap<i64, (i32, i64, i64)>,
+    /// 邮件箱，按发送时间保序。
+    pub mails: Vec<MailRecord>,
+    /// 每日签到。
+    pub sign: SignState,
+    /// 琥珀会员。
+    pub amber: AmberModelState,
+    /// 客户端缓存（`1111` 写 / `1112` 读）。
+    pub cache: HashMap<i32, String>,
+    /// 新手引导 id。
+    pub guide_id: i32,
+    /// 新手引导进度（`List<Integer>`）。
+    pub guide_list: Vec<i32>,
+}
+
+impl MemWorld {
+    /// 建一个空世界。
+    #[must_use]
+    pub fn new() -> Arc<Self> {
+        Arc::new(Self::default())
+    }
+
+    /// 在玩家状态上执行一段临界区代码。
+    ///
+    /// 用 `std::sync::Mutex` 而不是异步锁：所有临界区都是纯内存操作，不跨 `await`，
+    /// 持锁时间在微秒级。若换成 `tokio::sync::Mutex` 反而会因为跨 `.await` 而更慢。
+    ///
+    /// # Panics
+    /// 只在前一个持锁线程 panic（中毒）时 panic —— 那时进程状态已不可信。
+    pub fn with<T>(&self, player: PlayerId, f: impl FnOnce(&mut PlayerBox) -> T) -> T {
+        let mut guard = self
+            .players
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        f(guard.entry(player.get()).or_default())
+    }
+
+    /// 只读访问。
+    pub fn peek<T>(&self, player: PlayerId, f: impl FnOnce(&PlayerBox) -> T) -> T {
+        self.with(player, |b| f(b))
+    }
+}
+
+/// `prost::DecodeError` → `AppError`（原版对应「解包失败」直接断开）。
+pub fn decode_err(e: prost::DecodeError) -> AppError {
+    AppError::BadRequest(format!("请求解包失败: {e}"))
+}
+
+/// 闭包式处理器：每条消息只需一个闭包。
+pub struct FnHandler<F> {
+    cmd: i32,
+    requires_login: bool,
+    f: F,
+}
+
+impl<F> FnHandler<F>
+where
+    F: Fn(&HandlerCtx, Bytes) -> Result<Option<Bytes>> + Send + Sync + 'static,
+{
+    /// 需要登录的消息。
+    pub fn new(cmd: i32, f: F) -> Self {
+        Self {
+            cmd,
+            requires_login: true,
+            f,
+        }
+    }
+
+    /// 免登录消息（对应原版白名单 `0,3,4,5,6,7,11,98`）。
+    #[must_use]
+    pub fn free(mut self) -> Self {
+        self.requires_login = false;
+        self
+    }
+}
+
+#[async_trait]
+impl<F> ErasedHandler for FnHandler<F>
+where
+    F: Fn(&HandlerCtx, Bytes) -> Result<Option<Bytes>> + Send + Sync + 'static,
+{
+    fn cmd_id(&self) -> i32 {
+        self.cmd
+    }
+
+    fn requires_login(&self) -> bool {
+        self.requires_login
+    }
+
+    async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Bytes>> {
+        (self.f)(ctx, body)
+    }
+}
+
+/// 把 `MsgResources` 列表编码成回包字段用的 `(id, num)` 对。
+///
+/// `MsgResources.num` 在 proto 里是 **string**（`optional string num = 2;`），
+/// 原版也是 `String.valueOf(num)`，所以这里统一转字符串。
+#[must_use]
+pub fn resources_to_msg(list: &[(i32, i64)]) -> Vec<ddj_pb::gen::common_msg_message::MsgResources> {
+    list.iter()
+        .map(|(id, num)| ddj_pb::gen::common_msg_message::MsgResources {
+            id: Some(*id),
+            num: Some(num.to_string()),
+            ..Default::default()
+        })
+        .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn world_is_per_player() {
+        let w = MemWorld::new();
+        let a = PlayerId::new(1);
+        let b = PlayerId::new(2);
+        w.with(a, |p| p.bag.insert(100, 5));
+        assert_eq!(w.peek(a, |p| p.bag.get(&100).copied()), Some(5));
+        assert_eq!(w.peek(b, |p| p.bag.get(&100).copied()), None);
+    }
+
+    #[test]
+    fn resources_num_is_string() {
+        let got = resources_to_msg(&[(1, 50), (22, 1)]);
+        assert_eq!(got[0].id, Some(1));
+        assert_eq!(got[0].num.as_deref(), Some("50"));
+        assert_eq!(got[1].num.as_deref(), Some("1"));
+    }
+}
