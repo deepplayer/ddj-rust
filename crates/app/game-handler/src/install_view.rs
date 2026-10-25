@@ -33,7 +33,6 @@ pub trait ViewRepo: Send + Sync {
 }
 
 struct Lookup {
-    my_server_id: i64,
     id_range: i64,
     exists: bool,
 }
@@ -96,7 +95,6 @@ pub fn install(
                     Err(_) => None,
                 };
                 let lk = Lookup {
-                    my_server_id,
                     id_range,
                     exists: row.is_some(),
                 };
@@ -145,7 +143,6 @@ pub fn install(
                     Err(_) => None,
                 };
                 let lk = Lookup {
-                    my_server_id,
                     id_range,
                     exists: row.is_some(),
                 };
