@@ -176,13 +176,8 @@ async fn conn(mut socket: WebSocket, peer: SocketAddr, srv: WsServer) {
                 }
                 for frame in frames {
                     ctx.cmd_id = frame.cmd_id;
-                    match ddj_tcp::pipeline::dispatch(
-                        &inner.handlers,
-                        &inner.guards,
-                        &ctx,
-                        frame,
-                    )
-                    .await
+                    match ddj_tcp::pipeline::dispatch(&inner.handlers, &inner.guards, &ctx, frame)
+                        .await
                     {
                         Ok(Some(body)) => {
                             let resp = Frame::new(ctx.cmd_id, body);
