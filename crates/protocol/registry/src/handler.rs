@@ -74,3 +74,47 @@ pub trait ErasedHandler: Send + Sync {
     /// 处理裸字节，返回待回包（`Reply::cmd` 为 `None` 时沿用请求的消息号）。
     async fn handle_raw(&self, ctx: &HandlerCtx, body: Bytes) -> Result<Option<Reply>>;
 }
+
+/// 处理器回包。
+///
+/// ## 为什么要带 `cmd`
+/// 原版框架的 `HandlerException` 出口发的是 **`ErrorResp_1`**，帧头消息号是
+/// `ErrorResp_1` 自己的 `1`，body 里的 `msgId` 才是触发错误的请求号。
+/// 若沿用请求号组帧，客户端会拿该请求的解析器去读 `msgId`（实测把 16003 当成 ret）。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Reply {
+    /// `None` = 沿用请求的消息号。
+    pub cmd: Option<i32>,
+    /// 响应体。
+    pub body: Bytes,
+}
+
+impl Reply {
+    /// 沿用请求消息号。
+    pub fn same(body: impl Into<Bytes>) -> Self {
+        Self {
+            cmd: None,
+            body: body.into(),
+        }
+    }
+
+    /// 换一个消息号（典型：`ErrorResp_1` 用 1）。
+    pub fn with_cmd(cmd: i32, body: impl Into<Bytes>) -> Self {
+        Self {
+            cmd: Some(cmd),
+            body: body.into(),
+        }
+    }
+}
+
+impl From<Bytes> for Reply {
+    fn from(body: Bytes) -> Self {
+        Self::same(body)
+    }
+}
+
+impl From<Vec<u8>> for Reply {
+    fn from(body: Vec<u8>) -> Self {
+        Self::same(body)
+    }
+}

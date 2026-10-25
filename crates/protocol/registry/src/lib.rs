@@ -13,7 +13,7 @@ pub mod handler;
 pub mod table;
 
 pub use guard::{Guard, GuardChain, GuardOutcome, LoginGuard};
-pub use handler::{ErasedHandler, HandlerCtx, MessageHandler, SessionControl};
+pub use handler::{ErasedHandler, HandlerCtx, MessageHandler, Reply, SessionControl};
 pub use table::HandlerTable;
 
 /// 免登录 cmdId 白名单 —— 与原服务端完全一致。
