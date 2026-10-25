@@ -23,6 +23,7 @@ pub trait SessionControl: Send + Sync {
 }
 
 /// 处理上下文。
+#[derive(Clone)]
 pub struct HandlerCtx {
     /// 会话 ID。
     pub session_id: u64,

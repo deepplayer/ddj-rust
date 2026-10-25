@@ -206,3 +206,53 @@ mod tests {
         assert_eq!(got[1].num.as_deref(), Some("1"));
     }
 }
+
+// ────────────────────────── 异步处理器 ──────────────────────────
+
+/// 需要 `await`（查库、跨服 RPC）的处理器。
+///
+/// `FnHandler` 的闭包是同步的，查 PG 放不进去。原版这些 handler 在 Netty 线程里
+/// 直接读缓存，Rust 侧缓存未铺开前只能走 IO，所以单开一个异步外壳。
+pub struct AsyncHandler<F> {
+    cmd: i32,
+    requires_login: bool,
+    f: F,
+}
+
+impl<F, Fut> AsyncHandler<F>
+where
+    F: Fn(ddj_registry::HandlerCtx, bytes::Bytes) -> Fut + Send + Sync + 'static,
+    Fut: std::future::Future<Output = ddj_core::Result<Option<Reply>>> + Send + 'static,
+{
+    /// 需要登录的消息。
+    pub fn new(cmd: i32, f: F) -> Self {
+        Self {
+            cmd,
+            requires_login: true,
+            f,
+        }
+    }
+}
+
+#[async_trait::async_trait]
+impl<F, Fut> ddj_registry::ErasedHandler for AsyncHandler<F>
+where
+    F: Fn(ddj_registry::HandlerCtx, bytes::Bytes) -> Fut + Send + Sync + 'static,
+    Fut: std::future::Future<Output = ddj_core::Result<Option<Reply>>> + Send + 'static,
+{
+    fn cmd_id(&self) -> i32 {
+        self.cmd
+    }
+
+    fn requires_login(&self) -> bool {
+        self.requires_login
+    }
+
+    async fn handle_raw(
+        &self,
+        ctx: &ddj_registry::HandlerCtx,
+        body: bytes::Bytes,
+    ) -> ddj_core::Result<Option<Reply>> {
+        (self.f)(ctx.clone(), body).await
+    }
+}
