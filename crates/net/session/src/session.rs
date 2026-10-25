@@ -172,4 +172,24 @@ impl Session {
     pub async fn send(&self, frame: ddj_codec::Frame) -> Result<(), SessionClosed> {
         self.tx.send(frame).await.map_err(|_| SessionClosed)
     }
+
+    /// 从**同步上下文**下发一帧（处理器内部主动推送用）。
+    ///
+    /// 原版 `MessageUtil.sendToPlayerId` 是同步的（Netty `channel.writeAndFlush`），
+    /// 处理器里随用随发。Rust 侧处理器是同步闭包，不能 `.await`，
+    /// 所以这里走 `try_send`：队列满就丢弃并记警告 —— 与原版
+    /// 「写缓冲满则丢弃」在可观察层面一致（客户端收不到那一条推送）。
+    ///
+    /// # Errors
+    /// 下行通道已关闭，或队列已满。
+    pub fn try_push(&self, frame: ddj_codec::Frame) -> Result<(), SessionClosed> {
+        match self.tx.try_send(frame) {
+            Ok(()) => Ok(()),
+            Err(mpsc::error::TrySendError::Full(_)) => {
+                tracing::warn!(session = self.id, "下行队列已满，丢弃推送");
+                Err(SessionClosed)
+            }
+            Err(mpsc::error::TrySendError::Closed(_)) => Err(SessionClosed),
+        }
+    }
 }

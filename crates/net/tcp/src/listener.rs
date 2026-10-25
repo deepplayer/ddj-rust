@@ -158,6 +158,13 @@ impl ddj_registry::SessionControl for ConnSession {
         }
         tracing::info!(player = player.get(), "会话已绑定角色");
     }
+
+    fn push(&self, cmd: i32, body: bytes::Bytes) {
+        // 原版 `MessageUtil.sendToPlayerId` 是同步发；这里同样不等下游。
+        if let Err(e) = self.0.try_push(Frame::new(cmd, body)) {
+            tracing::debug!(error = %e, cmd, "推送失败");
+        }
+    }
 }
 
 /// 一条连接的生命周期：读帧 → 守卫 → 处理器 → 写回。

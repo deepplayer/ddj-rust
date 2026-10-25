@@ -29,6 +29,18 @@ pub mod login {
 pub mod item {
     /// 使用道具 —— 本次逆向的起点。
     pub const USE_REQ: i32 = 11002;
+    /// 合成道具。
+    pub const COMPOUND_REQ: i32 = 11003;
+    /// 背包变化推送（`ItemUpdateResp_11004`，服务端主动发）。
+    pub const UPDATE_RESP_11004: i32 = 11004;
+    /// 时效道具使用。
+    pub const EFFECTIVE_USE_REQ: i32 = 11005;
+    /// 时效道具一键使用。
+    pub const EFFECTIVE_ONE_KEY_REQ: i32 = 11006;
+    /// 时效道具变化推送（`ItemEffectiveUpdateResp_11007`）。
+    pub const EFFECTIVE_UPDATE_RESP_11007: i32 = 11007;
+    /// 过期道具确认。
+    pub const CONFIRM_OVERDUE_REQ: i32 = 11008;
 }
 
 /// 通用错误码（`bf.common.utils.LanguageUtils`）。

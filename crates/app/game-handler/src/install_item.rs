@@ -24,7 +24,7 @@ use prost::Message;
 use crate::item::{
     self, BagSnapshot, CompoundInput, CompoundLookup, CompoundOutcome, CompoundTemplate,
     EffectiveItem, EffectiveLookup, EffectiveUseLookup, EffectiveUseTemplate, Gift, ItemLookup,
-    ItemTemplate, OneKeyApplied, OneKeyLookup, OneKeyOutcome, UseApply, UseFailure, UseOutcome,
+    ItemTemplate, OneKeyApplied, OneKeyLookup, OneKeyOutcome, UseApply, UseOutcome,
 };
 use crate::runtime::{decode_err, resources_to_msg, FnHandler, MemWorld};
 
@@ -44,6 +44,11 @@ pub trait ItemTemplates: Send + Sync {
     fn item_type(&self, template_id: i32) -> Option<i32>;
     /// `GiftDB.useCost` → `(资源 id, 每次数量)`。
     fn use_cost(&self, template_id: i32) -> Option<(i32, i64)>;
+    /// `ItemDB.compoundItem` → `(被消耗的道具 id, 每次数量)`。
+    ///
+    /// 原版是 `List<Integer>`，只取前两个元素（`getCompoundItem().get(0)/(1)`）。
+    /// 真表里 2674 行只有 37 行非 0，格式 `12=10`。
+    fn compound_item(&self, template_id: i32) -> Option<(i32, i32)>;
 }
 
 /// 启动时装配一次；之后只读。
@@ -67,16 +72,8 @@ struct MemLookups<'a> {
 
 impl ItemLookup for MemLookups<'_> {
     fn item_template(&self, template_id: i32) -> Result<Option<ItemTemplate>> {
-        // 背包里没有这条模板 → 原版 `getItemTemplate` 也不会凭空造出来，
-        // 但调用点在 `allItem.get` 之后，所以拿不到模板就等于「数据不一致」。
-        let has = self
-            .world
-            .peek(self.player, |p| p.bag.contains_key(&template_id));
-        if !has {
-            return Ok(None);
-        }
-        // 有真表就取真值：`useLimit` 为空的行走 `unwrap_or(0)`，
-        // 与原版 `getUseLimit()` 返回 0 一致（这类道具根本不能用）。
+        // 原版 `ItemDBCache.getCache().getItemTemplate(templateId)`：**纯模板查表**，
+        // 与背包内容无关。表里没有这一行才返回 null（之后的 NPE 由调用方复刻）。
         Ok(Some(match templates() {
             Some(t) => ItemTemplate {
                 use_limit: t.use_limit(template_id).unwrap_or(0),
@@ -122,10 +119,20 @@ impl ItemLookup for MemLookups<'_> {
 
 impl CompoundLookup for MemLookups<'_> {
     fn item(&self, id: i32) -> Result<Option<CompoundTemplate>> {
-        let has = self.world.peek(self.player, |p| p.bag.contains_key(&id));
-        Ok(has.then_some(CompoundTemplate {
-            item_type: 0,
-            compound_item: Vec::new(),
+        // 原版 `itemCache.getItemTemplate(templateId)`：同样只看模板表。
+        let Some(t) = templates() else {
+            // 无模板表时无从判断，等价「查不到」→ PARAM_ERROR（原版 null 分支）。
+            return Ok(None);
+        };
+        let item_type = t.item_type(id).unwrap_or(0);
+        // `getCompoundItem()` 恒为 2 元素列表；表里没填时原版拿到的是 [0, 0]。
+        let compound_item = match t.compound_item(id) {
+            Some((a, b)) => vec![a, b],
+            None => vec![0, 0],
+        };
+        Ok(Some(CompoundTemplate {
+            item_type,
+            compound_item,
         }))
     }
 
@@ -216,6 +223,37 @@ impl OneKeyLookup for MemLookups<'_> {
     }
 }
 
+/// `TypeResources.ITEM`：真正进背包的道具类型。`ItemSet.addItem` 只对这类生效。
+pub const TYPE_ITEM: i32 = 2;
+
+/// `ItemServerModule.sendItemUpdate(playerId, item)` → `ItemUpdateResp_11004`。
+///
+/// 原版这是与请求回包**并列的第二条消息**（`MessageUtil.sendToPlayerId`）。
+/// 客户端靠它刷新背包格子，缺了它玩家看不到数量变化。
+fn push_item_update(ctx: &ddj_registry::HandlerCtx, template_id: i32, num: i64) {
+    let Some(sess) = ctx.session.as_ref() else {
+        return;
+    };
+    let Some(msg) = crate::push::build_item_update(&[crate::push::BagItem { template_id, num }])
+    else {
+        return;
+    };
+    let cmd = ddj_pb::cmd::item::UPDATE_RESP_11004;
+    sess.push(cmd, msg.encode_to_vec().into());
+}
+
+/// `ItemServerModule.sendItemEffectiveUpdate(playerId, item)` → `ItemEffectiveUpdateResp_11007`。
+fn push_effective_update(ctx: &ddj_registry::HandlerCtx, item: crate::push::BagEffectiveItem) {
+    let Some(sess) = ctx.session.as_ref() else {
+        return;
+    };
+    let Some(msg) = crate::push::build_effective_update(&[item]) else {
+        return;
+    };
+    let cmd = ddj_pb::cmd::item::EFFECTIVE_UPDATE_RESP_11007;
+    sess.push(cmd, msg.encode_to_vec().into());
+}
+
 /// `ItemUseResp_11002`：`ret` 由 [`UseOutcome::resolve_ret`] 决定。
 fn use_resp(out: &UseOutcome) -> ItemUseResp11002 {
     match out {
@@ -254,21 +292,30 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
                 now: c.now_millis(),
             };
             let out = item::use_item(bag, template_id, num, &lk)?;
-            // 副作用放在纯函数之后，与原版分支序一致（分支 11/12）。
+            // 副作用放在纯函数之后，与原版分支序一致（分支 12/13）。
             if let UseOutcome::Accept {
                 remove_num, cost, ..
             } = &out
             {
-                w.with(p, |b| {
+                // `Item.removeNum` 的 clample：`num -= removeNum; num = num < 0 ? 0 : num`。
+                let left = w.with(p, |b| {
                     if let Some(v) = b.bag.get_mut(&template_id) {
                         *v = (*v - remove_num).max(0);
+                        *v
+                    } else {
+                        0
                     }
-                    if let Some((res, total)) = cost {
+                });
+                if let Some((res, total)) = cost {
+                    w.with(p, |b| {
                         if let Some(v) = b.bag.get_mut(res) {
                             *v = (*v - total).max(0);
                         }
-                    }
-                });
+                    });
+                }
+                // 原版 `ItemServerModule.sendItemUpdate(playerId, item)` → `ItemUpdateResp_11004`。
+                // 这是**额外的推送包**，与请求的回包（11002）是两条消息。
+                push_item_update(ctx, template_id, left);
             }
             Ok(Some(use_resp(&out).encode_to_vec().into()))
         })));
@@ -297,12 +344,32 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
                     consume_id,
                     consume_num,
                 } => {
-                    let (id, num) = (*consume_id, *consume_num);
-                    w.with(p, |b| {
-                        if let Some(v) = b.bag.get_mut(&id) {
-                            *v = (*v - num).max(0);
+                    let (cid, cnum) = (*consume_id, *consume_num);
+                    // 原版 `removeItem(..., check=true, TYPE_506, ...)`：
+                    // check 通过后逐条 `item.removeNum`，末尾 `sendItemUpdate(list)`。
+                    let left = w.with(p, |b| {
+                        if let Some(v) = b.bag.get_mut(&cid) {
+                            *v = (*v - cnum).max(0);
                         }
+                        b.bag.get(&cid).copied().unwrap_or(0)
                     });
+                    push_item_update(ctx, cid, left);
+                    // 原版 L384 `addItem(player, compoundId, compoundNum, TYPE_506, [])`：
+                    // 只有 `ItemDB.type == TypeResources.ITEM(2)` 且 num > 0 才真的加，
+                    // 且 addItem 内部**无条件** `sendItemUpdate(list)`（列表为空时自己 return）。
+                    let out_id = input.compound_id;
+                    let out_num = input.compound_num;
+                    if let Some(t) = templates() {
+                        let is_item = t.item_type(out_id).unwrap_or(0) == TYPE_ITEM;
+                        if is_item && out_num > 0 {
+                            let added = w.with(p, |b| {
+                                let slot = b.bag.entry(out_id).or_insert(0);
+                                *slot += out_num;
+                                *slot
+                            });
+                            push_item_update(ctx, out_id, added);
+                        }
+                    }
                     0
                 }
                 CompoundOutcome::Reject(code) => code.as_i32(),
@@ -329,11 +396,32 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
             let out = item::effective_use(id, num, now, &lk)?;
             if let UseOutcome::Accept { remove_num, .. } = &out {
                 let (rid, rn) = (id, *remove_num);
-                w.with(p, |b| {
-                    if let Some((_, have, _)) = b.effective.get_mut(&rid) {
+                let snap = w.with(p, |b| {
+                    b.effective.get_mut(&rid).map(|(tid, have, deadline)| {
                         *have = (*have - rn).max(0);
-                    }
+                        crate::push::BagEffectiveItem {
+                            id: rid,
+                            template_id: *tid,
+                            num: *have,
+                            deadline: *deadline,
+                        }
+                    })
                 });
+                // 原版 `item.removeNum(player, removeNum, true, ...)`：
+                // 第 3 参 `sendClient=true` → `sendItemEffectiveUpdate` → 11007。
+                // 11002 那边传的是 `false`，所以 11002 不推 11007。
+                if let Some(it) = snap {
+                    push_effective_update(ctx, it);
+                }
+            }
+            // 原版 11005 的失败出口有两个，**都不是** `ItemEffectiveUseResp_11005`：
+            //   1. `sendToPlayerId(ItemUseResp_11002{ret})` —— 数量不足(1102)、
+            //      `checkForUsing` 非空时走这条（复制粘贴自 11002）；
+            //   2. `catch(Exception)` → `sendToPlayerId(ItemUseResp_11002{ret=2})`
+            //      —— `HandlerException` 全部被遮罩。
+            // 只有成功分支才发 11005。这里照抄，不做「修正」。
+            if let UseOutcome::Fail(_) = &out {
+                return Ok(Some(use_resp(&out).encode_to_vec().into()));
             }
             let resp = match &out {
                 UseOutcome::Accept {
@@ -342,15 +430,7 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
                     ret: 0,
                     msg_use_result: has_msg_use_result.then(MsgUseResult::default),
                 },
-                UseOutcome::Fail(UseFailure::Resp(code)) => ItemEffectiveUseResp11005 {
-                    ret: code.as_i32(),
-                    msg_use_result: None,
-                },
-                // 11005 的 `use()` 不捕获异常，`Handler` 类失败不该出现；出现也按原版遮罩。
-                UseOutcome::Fail(UseFailure::Handler(_)) => ItemEffectiveUseResp11005 {
-                    ret: ddj_pb::cmd::RetCode::ServerBusy.as_i32(),
-                    msg_use_result: None,
-                },
+                UseOutcome::Fail(_) => unreachable!("上一段已提前返回"),
             };
             Ok(Some(resp.encode_to_vec().into()))
         })));
@@ -385,31 +465,66 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
             let out = item::effective_one_key_use(template_id, now, &items, &lk)?;
             let resp = match &out {
                 OneKeyOutcome::Accept(plan) => {
-                    // 过期条目原版顺手清掉（`iterator.remove()`）。
+                    // 1) 过期条目：原版在扫描阶段就 `iterator.remove()`。
                     let expired: Vec<i64> = plan.expired.clone();
-                    let used: Vec<i64> = plan.used.iter().map(|(id, _)| *id).collect();
-                    w.with(p, |b| {
+                    // 2) 用掉的条目：`removeNum(player, removeNum, false, ...)`
+                    //    第 3 参是 **false**，所以只把 `num` 扣到 0（含 clamp），
+                    //    **不从 map 里删除** —— 删除只有 `Iterator.remove` 才做。
+                    let used: Vec<(i64, i64)> = plan.used.clone();
+                    let pushed: Vec<crate::push::BagEffectiveItem> = w.with(p, |b| {
                         for id in &expired {
                             b.effective.remove(id);
                         }
-                        for id in &used {
-                            b.effective.remove(id);
+                        let mut out = Vec::new();
+                        for (id, rn) in &used {
+                            if let Some((tid, have, deadline)) = b.effective.get_mut(id) {
+                                *have = (*have - rn).max(0);
+                                out.push(crate::push::BagEffectiveItem {
+                                    id: *id,
+                                    template_id: *tid,
+                                    num: *have,
+                                    deadline: *deadline,
+                                });
+                            }
                         }
+                        out
                     });
+                    // 原版循环结束后：`if (useChessPot.size() > 0) sendItemEffectiveUpdate(...)`
+                    // → 一条 11007 带全部用过的条目（空列表时不发）。
+                    if !pushed.is_empty() {
+                        if let Some(sess) = ctx.session.as_ref() {
+                            if let Some(msg) = crate::push::build_effective_update(&pushed) {
+                                let cmd = ddj_pb::cmd::item::EFFECTIVE_UPDATE_RESP_11007;
+                                sess.push(cmd, msg.encode_to_vec().into());
+                            }
+                        }
+                    }
+                    // 3) 消耗的资源：`removeKeysJson` 合并后 `revmoeResources`。
+                    //    当前 MemWorld 的 `check_item` 只看背包，实际扣减在此补齐。
+                    for (cid, cnum) in &plan.cost {
+                        w.with(p, |b| {
+                            if let Some(v) = b.bag.get_mut(cid) {
+                                *v = (*v - cnum).max(0);
+                            }
+                        });
+                    }
+                    // 原版 L56-58：先 `builder.setMsgUseResult(useResultBuilder)`，
+                    // **无条件**设置 —— 即使 `getItemGain()` 为空也带一个空的
+                    // `MsgUseResult`（proto2 下表现为 presence=true、无子字段）。
                     ItemEffectiveOneKeyUseResp11006 {
                         ret: 0,
-                        msg_use_result: (!plan.gains.is_empty()).then(|| MsgUseResult {
+                        msg_use_result: Some(MsgUseResult {
                             msg_resources: resources_to_msg(&plan.gains),
                             ..Default::default()
                         }),
                     }
                 }
-                OneKeyOutcome::Reject(f) => ItemEffectiveOneKeyUseResp11006 {
-                    ret: UseOutcome::Fail(*f)
-                        .resolve_ret()
-                        .map_or(0, ddj_pb::cmd::RetCode::as_i32),
-                    msg_use_result: None,
-                },
+                // 原版 11006 的 `catch(Exception)` 同样发 `ItemUseResp_11002{ret=2}`
+                // （从 11002 复制粘贴，连消息类型都没改）。照抄。
+                OneKeyOutcome::Reject(f) => {
+                    let fail = UseOutcome::Fail(*f);
+                    return Ok(Some(use_resp(&fail).encode_to_vec().into()));
+                }
             };
             Ok(Some(resp.encode_to_vec().into()))
         })));

@@ -251,6 +251,18 @@ pub fn build_sign_resp(state: &SignState, rewards: &[Reward]) -> MsgSignResp1600
     }
 }
 
+/// 同上，但错误码直接给数值。
+///
+/// 原版 `ErrorResp_1.errorCode` 是 `int32`，取自 `LanguageUtils.getValue()`；
+/// `RetCode` 只收录了实测需要断言的码，`PLAYER_ERROR_8(108)` 这类未收录的
+/// 走这个入口，**不要**给 `RetCode` 补枚举值（那是发明原版没有的码表）。
+pub fn error_resp_raw(msg_id: i32, code: i32) -> ErrorResp1 {
+    ErrorResp1 {
+        msg_id: Some(msg_id),
+        error_code: Some(code),
+    }
+}
+
 /// `HandlerException` 的框架级出口：`ErrorResp_1{msgId, errorCode}`。
 pub fn error_resp(msg_id: i32, code: RetCode) -> ErrorResp1 {
     ErrorResp1 {

@@ -20,6 +20,17 @@ use prost::Message;
 pub trait SessionControl: Send + Sync {
     /// 绑定角色（等价原版 `ChannelPlayer` 建会话）。
     fn bind_player(&self, player: ddj_core::PlayerId);
+
+    /// 主动下发一帧（等价 `MessageUtil.sendToPlayerId` / `player.sendMessage`）。
+    ///
+    /// 原版大量处理器是「返回 void + 自己发包」，例如
+    /// `ItemServerModule.sendItemUpdate` → `ItemUpdateResp_11004`。
+    /// 这些包与「请求的回包」是**两条独立消息**，不能塞进 `Reply`。
+    ///
+    /// 默认实现不做事：单测与未接会话的场景不需要真实下行。
+    fn push(&self, cmd: i32, body: Bytes) {
+        let _ = (cmd, body);
+    }
 }
 
 /// 处理上下文。

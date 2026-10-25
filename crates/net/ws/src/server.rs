@@ -235,4 +235,10 @@ impl ddj_registry::SessionControl for ConnSession {
         }
         tracing::info!(player = player.get(), "会话已绑定角色");
     }
+
+    fn push(&self, cmd: i32, body: bytes::Bytes) {
+        if let Err(e) = self.0.try_push(ddj_codec::Frame::new(cmd, body)) {
+            tracing::debug!(error = %e, cmd, "推送失败");
+        }
+    }
 }

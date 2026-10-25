@@ -365,6 +365,15 @@ pub struct AmberModelState {
     pub charge_num: i32,
     /// 已领取的充值豪礼 id（原版是 `ConcurrentHashSet<Integer>`）。
     pub charge_reward_ids: Vec<i32>,
+    /// `AmberWelfareModel.heyTapVip`：17097 校验通过/失败后由 `onBecomeHeyTapVip()`
+    /// 或 `onExpireHeyTapVip()` 改写，`toMsgAmberWelfareData()` 原样下发。
+    pub hey_tap_vip: bool,
+    /// `AmberWelfareModel.amberVip`：**持久化字段，默认 false**。
+    ///
+    /// 原版只有两条路会置 true：`checkAmberVip()`（查平台 HTTP 的 `vipLevel > 0`）
+    /// 与 `onBecomeAmberVip()`。所以新建角色第一次登录时 `amberVip == false`，
+    /// 17092/17093/17094 必然走 `AMBER_WELFARE_IS_NOT_VIP(4701)` —— 这是原版行为。
+    pub amber_vip: bool,
 }
 
 /// 三个动作共同的副作用出口。

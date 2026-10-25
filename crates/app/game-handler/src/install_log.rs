@@ -43,7 +43,7 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, _clock: Arc<dyn C
                 // 原版 `throw new HandlerException(PLAYER_ERROR_8)` → 框架出口 ErrorResp_1。
                 return Ok(Some(Reply::with_cmd(
                     ERROR_RESP_CMD,
-                    crate::sign::error_resp(1016, ddj_pb::cmd::RetCode::from_i32(PLAYER_ERROR_8))
+                    crate::sign::error_resp_raw(1016, PLAYER_ERROR_8)
                         .encode_to_vec(),
                 )));
             }
@@ -92,6 +92,7 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, _clock: Arc<dyn C
 pub fn busy_as_1009() -> Vec<u8> {
     PlayerUseGiftKeyResp1009 {
         ret: ddj_pb::cmd::RetCode::ServerBusy.as_i32(),
+        ..Default::default()
     }
     .encode_to_vec()
 }

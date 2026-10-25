@@ -68,6 +68,23 @@ impl ItemTemplates for CsvItemTemplates {
     fn use_cost(&self, template_id: i32) -> Option<(i32, i64)> {
         parse_cost(self.gift.text_of(template_id, "useCost")?)
     }
+
+    /// `compoundItem` 列的类型是 `list;`，单元格形如 `12=10`。
+    ///
+    /// 原版 `ItemDB.getCompoundItem()` 返回 `List<Integer>`；解析器把 `12=10`
+    /// 展平成 `[12, 10]`，所以 `get(0)=12`（被消耗道具）、`get(1)=10`（每次数量）。
+    /// 表里 2674 行只有 37 行非 0，其余是 `0` 或空 —— 两者都得到 `None`。
+    fn compound_item(&self, template_id: i32) -> Option<(i32, i32)> {
+        parse_compound(self.item.text_of(template_id, "compoundItem")?)
+    }
+}
+
+/// 解析 `12=10`（`list;` 的单元格）。`0` / 空 / 缺 `=` 都返回 `None`。
+fn parse_compound(s: &str) -> Option<(i32, i32)> {
+    let (a, b) = s.trim().split_once('=')?;
+    let id: i32 = a.trim().parse().ok()?;
+    let num: i32 = b.trim().parse().ok()?;
+    Some((id, num))
 }
 
 /// 启动时装配；失败只记日志不阻塞启动（模板缺失时业务走过渡默认值）。
