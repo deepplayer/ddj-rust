@@ -85,3 +85,13 @@
   `ddj_registry::ErasedHandler::handle_raw` 同样只返回 body，组帧处统一用请求 cmdId。
 - **修法**：把两个接口的返回值改成 `Reply{cmd: Option<i32>, body}`，
   `None` 表示沿用请求 cmdId；`impl From<Bytes> for Reply` 保证现有 21 个 handler 零改动。
+
+## A1' 新发现：模板默认值与原版偏差（RawTable 接真数据时暴露）
+
+| 项 | 原版（真 CSV 实测） | 当前 Rust 过渡值 | 影响 |
+|---|---|---|---|
+| `ItemDB.useLimit` | 2674 行道具中仅 **1178 行**填了值，其余为空 | `ASSUMED_USE_LIMIT = 999` | 空值 ⇒ `getUseLimit()==0` ⇒ 任何 `num>=1` 都触发 `num > useLimit` → throw BUSY。即**这类道具原版不可使用**，而当前实现会放行 |
+| `GiftDB.useCost` 列名 | CSV 列名是 **`useCost`**（Java 字段 `useCostJson`） | 未接 | 接表时别按 `useCostJson` 找列 |
+| `GiftDB` 有消耗的行 | 1066 行中仅 **10 行**填了 `useCost` | 未接 | 绝大多数礼包无消耗，`cost` 分支很少触发 |
+
+结论：`ASSUMED_USE_LIMIT = 999` 是**已知偏差**，接 `RawTable` + `ItemLookup` 时改为按 CSV 取值，空值即 0。
