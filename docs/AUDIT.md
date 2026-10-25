@@ -42,6 +42,9 @@
 
 （待填：创角 17 分支 / 1002 改名 11 段 / 1003 升级 / 1100 存档 / 1008 / 1020）
 
+> 现状：代码已实现并有单测（`player.rs` 1771 行），但**未逐分支登记到本表**。
+> 补齐时按 A1 的列结构（分支 / 原版位置 / 原版行为 / Rust / 用例 / 状态）填。
+
 ## A3 `crates/app/game-handler/src/sign.rs`
 
 | 分支 | 原版位置 | 原版行为 | Rust | 用例 | 状态 |
@@ -54,10 +57,33 @@
 | rand | `DailySignDB.rand` | 不放回抽 `randTimes` 个 | `rand_pick`，池空 break（原版抛 IndexOutOfBounds） | — | ⚠ 护栏 |
 
 ## A4 `mail.rs`（待填）
+
+> 现状：4 条消息（10001-10004）已接线，`mail.rs` 641 行 + `install_mail.rs` 182 行，有单测。
+> 未登记逐分支台账。模板 `MailTemplateDB` 未接（`template` 闭包恒 `None`）。
+
 ## A5 `amber.rs`（待填）
+
+> 现状：6 条消息（17091-17095/17097）已接线，`amber.rs` 1013 行 + `install_amber.rs`，
+> 31 行真实 CSV 已接。本轮补了 17093/17094 的 VIP 门禁与 17097 的 `checkHeyTapVip`。
+> 未登记逐分支台账。`17096` 推送未发（原版在异步任务里发）。
+
 ## A6 `player_misc.rs`（待填）
+
+> 现状：4 条消息（1009/1010/1015/1024）已接线，`player_misc.rs` 588 行，有单测。
+> 未登记逐分支台账。过渡期保守默认见 `install_misc.rs` 头部注释。
+
 ## A7 `login.rs` + `loginvar.rs` + `handshake.rs`（待填）
+
+> 现状：登录 4 / 创角 6 / 握手 16-18 已接线，走真实 PG。`login.rs` 630 行。
+> 已复核的分支：区服不符→2、维护→1、未开服→23、版本→99、人数满→4。
+> **未实现**：`WorkTaskPlayerSignIn` 的游客/token/白名单三段判定（原版 L「非游客+无 token+
+> 非白名单 → ret=1」），以及 `PlayerNameMgr.randomNames` 的 10 个候选名。
+
 ## A8 `player_state.rs` + `push.rs` + `handlers.rs`（待填）
+
+> 现状：1100/1103/1111/1112 已接线，`push.rs` 的 11004/11007 构造器已就绪且本轮已
+> 在 `install_item.rs` 里真正用上（此前从未被调用）。
+> 未登记逐分支台账。
 
 ---
 
@@ -66,9 +92,25 @@
 | 差异 | 原版 | 本项目 | 理由 |
 |---|---|---|---|
 | 并发控制 | 每对象 `GameReadWriteLock`，`lockWrite` 包住整个方法 | 纯函数 + 上层持锁 / 分片容器 | 锁语义保留在调用方，函数可测 |
-| 数值溢出 | Java `long` 乘法回绕 | `saturating_mul` | 极端数值才分叉，选择不 panic |
+| 数值溢出 | Java `long` 乘法回绕 | `saturating_mul` | **⚠ 待裁决**，见下 §待裁决偏离 |
 | 反射注册 | `@LabelMessageHandler` + 反射扫包 | `inventory` 编译期注册 | 见 ADR-0002 |
 | 模板加载 | 反射按 CSV 列名赋值到 `ConfigDBCache` | 代码生成 + `prost`/serde | 见 ADR-0003 |
+
+---
+
+## 待裁决偏离（按 AGENTS.md §3，需明确「照抄」还是「保留护栏」）
+
+这三处都是「原版会挂死 / panic，Java 那边靠 JVM 或外层 catch 兜住」的情形。
+Rust 没有对应机制，只能二选一：照抄（自己模拟异常）或保留护栏（行为分叉）。
+
+| # | 位置 | 原版行为 | 当前 Rust | 何时分叉 | 状态 |
+|---|---|---|---|---|---|
+| P1 | `item.rs:356` `MAX_COMPOUND_DEPTH = 64` | `ItemSet.itemCompound` 的链式 `while(true)` 无环检测，`compoundItem` 成环时**死循环**，该玩家线程永久卡住 | 达到上限 return `PARAM_ERROR(29)` | 仅当模板数据成环（真表 37 行非 0，当前无环） | ⬜ 待裁决 |
+| P2 | `sign.rs:214` `rand_pick` | `DailySignDB.rand` 用 `pool.remove(randomIndex(pool.size()))`，`randTimes > rewardJson.size()` 时池空 → `IndexOutOfBoundsException` → 被 handler 外层 catch → ret=2 | 池空提前 `break`，返回已抽到的部分 | 仅当 `randTimes` 大于奖励条数（真表 21 天全是 1-3 条，`randTimes=3` 时可能触发） | ⬜ 待裁决 |
+| P3 | `item.rs` 全文 8 处 `saturating_*` | Java `long` 乘法溢出会**回绕成负数**，随后 `num < removeNum` 等比较结果与原值不同 | 饱和到 `i64::MAX` | 仅当数量级接近 `i64::MAX`（实际不可能） | ⬜ 待裁决 |
+
+**裁决方式**：在 `AGENTS.md` §3 表格里把「当前 Rust」一列改成最终决定，然后改代码。
+若选「照抄」，P1 需要显式 `panic!`/超时；P2 需要返回错误码而不是 break；P3 需要用 `wrapping_mul`。
 
 ---
 
