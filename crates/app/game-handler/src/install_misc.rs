@@ -57,7 +57,10 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
             };
             let _ = w.peek(p, |_| ());
             Ok(Some(Reply::same(
-                PlayerUseGiftKeyResp1009 { ret }.encode_to_vec(),
+                PlayerUseGiftKeyResp1009 {
+                    ret,
+                    ..Default::default()
+                }.encode_to_vec(),
             )))
         })));
         n += 1;
