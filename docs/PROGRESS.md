@@ -103,6 +103,38 @@ cargo xt check-arch                                         4 条规则通过
 3. **`FamilyMessageHandler`(33) / `TalentMessageHandler`(30) / `PetMessageHandler`** —— 完成 M3 的一角。
 4. **活动族试点 1 个**（如 `FeastMessageHandler` 49 条）—— 验证活动族的通用装配模式，再铺开。
 
+## 六点五、构建与产物（2026-10-25 实测）
+
+**规则：本地不编译 release，一律远端构建后取回。**
+
+远端 web-shell 的一个坑：**每次请求可能落到不同容器，但 `/workspace` 是共享卷**。
+不同节点的 `target/` 缓存会互相污染，实测出现过 `Exec format error`
+（`target/debug/deps/ddj-*` 变成 `data`，target 涨到 66G）。
+
+因此正确的做法是**单任务内跑完整条链路**，不要拆成多次请求：
+
+```bash
+# 远端，一条命令做完 check/clippy/test/release
+python3 scripts/ws.py exec --max-wait 900 "
+  cd /workspace/ddj-rust &&
+  RUSTFLAGS='-C link-arg=-fuse-ld=lld' CARGO_INCREMENTAL=0 cargo build --release -p ddj-cli 2>&1 | tail -6;
+  sha256sum target/release/ddj; stat -c '%s' target/release/ddj"
+```
+
+脚本 `scripts/remote_release.sh` 是给「同一节点上重跑」用的（含 flock、节点切换检测、
+`build_result.json`），在节点频繁切换时它会反复清 target 反而更慢 ——
+跨节点场景优先用上面的一次性命令。
+
+最近一次成功构建：
+
+| 项 | 值 |
+|---|---|
+| commit | `5c5b162` |
+| sha256 | `a07f8763ae57d7894a0c98c04350f254953b42daebfadd2db40eb48911a3e7c3` |
+| 大小 | 15 238 936 字节 |
+| 编译耗时 | 2m 51s（release，32 核） |
+| 验证 | `./bin/ddj --version` → `ddj 0.1.0`；`./bin/ddj list` 列出 7 个服务；`./bin/ddj run game` 读到配置后因本机无 PG 而退出（预期） |
+
 ## 七、常用命令
 
 ```bash

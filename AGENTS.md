@@ -80,34 +80,63 @@
 ```
 
 - `type`：`feat`（接线新消息）/ `fix`（修正偏离）/ `test` / `docs` / `refactor` / `chore`
-- 提交前必须跑过：
-  ```bash
-  cargo check --workspace --all-targets
-  cargo clippy --workspace --exclude ddj-pb --lib --bins -- -D warnings
-  cargo test --workspace
-  ```
+- 门禁在**远端**跑（见 §5）：commit → push → 远端 `scripts/ci.sh`（clippy + test + release）→
+  取回二进制本机验证。本机不跑 clippy/test 全量。
 
 ## 5. 构建与验证
 
-**本机内存有限，不要在本地跑全量 release。** 本地只跑 `cargo check` /
-`cargo test -p <crate>`，release 交给远端 `/workspace/ddj-rust`。
+**本地一律不编译。** 流程固定为：
 
-```bash
-# 只编骨架（跳过 4.6 MB 的 proto 生成，省 ~900 MB 内存）
-DDJ_PB_STUB=1 cargo check --workspace
-
-# 本地单测（纯函数，不依赖 DB/网络）
-cargo test -p ddj-game-handler
-
-# 分层依赖校验
-cargo xt check-arch
-
-# 远端 CI（拉 gitee/main → clippy → test → release）
-bash scripts/ci.sh
+```
+改代码 → commit → push gitee → web-shell 远端拉取 → 远端 check/clippy/test + release
+      → 把二进制传回本机 bin/ddj → 本机执行验证
 ```
 
-> `target/debug/incremental` 会涨到 11 GB 级别，磁盘紧时
-> `rm -rf target/debug/incremental` 再 `CARGO_INCREMENTAL=0` 重跑。
+### 远端构建的硬性要求
+
+web-shell **每次请求可能落到不同容器，但 `/workspace` 是共享卷**。
+不同节点的 `target/` 会互相污染，实测出现过 `Exec format error`
+（`target/debug/deps/ddj-*` 变成 `data`，target 涨到 66G）。
+
+所以：
+
+1. **一次请求内跑完整条链路**，不要把 build 拆到多次 `exec` ——
+   下一次请求可能已在另一个节点，前台进程也会被回收。
+2. **不要在远端后台跑构建**：`nohup` / `setsid` 都躲不过节点回收，
+   实测两次后台构建都在中途消失。
+3. 产物必须**校验 sha256** 再取回，取回后本机再跑一次 `./bin/ddj --version` 确认。
+4. `bin/` 不入库（`.gitignore` 已排除），每次构建重新取回。
+
+```bash
+# 远端（一条命令）
+python3 scripts/ws.py exec --max-wait 900 "
+  cd /workspace/ddj-rust &&
+  RUSTFLAGS='-C link-arg=-fuse-ld=lld' CARGO_INCREMENTAL=0 cargo build --release -p ddj-cli 2>&1 | tail -6;
+  sha256sum target/release/ddj; stat -c '%s' target/release/ddj"
+
+# 取回
+python3 scripts/ws.py read /workspace/ddj-rust/target/release/ddj /tmp/ddj-new
+sha256sum /tmp/ddj-new && cp /tmp/ddj-new bin/ddj && chmod +x bin/ddj
+./bin/ddj --version
+```
+
+本地只允许跑 `cargo check`（省时间）与 `cargo test -p <crate>`（纯函数单测），
+**不允许** `cargo build --release`。
+
+### 提交前的门禁（远端跑，本机不跑）
+
+`scripts/ci.sh` 会做：`git reset gitee/main` → clippy → test → release。
+提交后由远端执行，本机只看结果：
+
+```bash
+# 远端一条命令跑完三关（约 3-5 分钟，32 核）
+python3 scripts/ws.py exec --max-wait 900 "cd /workspace/ddj-rust && SKIP_FMT=1 bash scripts/ci.sh 2>&1 | tail -30"
+```
+
+本机最多跑：
+- `cargo check --workspace`（省时间，只验语法/类型）
+- `cargo xt check-arch`（纯静态，秒级）
+- `cargo test -p ddj-game-handler`（单个 crate 的纯函数单测，秒级）
 
 ## 6. 代码组织
 
