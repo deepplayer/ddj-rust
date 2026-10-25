@@ -160,6 +160,16 @@ pub enum RetCode {
     MailError1 = 301,
     /// 改名冷却未结束（`PLAYER_ERROR_23`）。
     PlayerError23 = 131,
+    /// 礼包码不存在。
+    PlayerError10 = 110,
+    /// 改定位次数已用尽 / 无免费次数。
+    PlayerError15 = 115,
+    /// 目标城市不存在。
+    PlayerError16 = 116,
+    /// 免费改定位只能用一次。
+    PlayerError21 = 121,
+    /// 已经在该城市。
+    PlayerError22 = 122,
     /// 道具合成 - 资源不够（`ITEM_ERROR_1`）。
     ItemError1 = 1101,
     /// 道具数量不足（`ITEM_ERROR_2`）。
@@ -233,6 +243,11 @@ impl RetCode {
             106 => Self::NotLoginPlatform,
             107 => Self::InQueue,
             131 => Self::PlayerError23,
+            110 => Self::PlayerError10,
+            115 => Self::PlayerError15,
+            116 => Self::PlayerError16,
+            121 => Self::PlayerError21,
+            122 => Self::PlayerError22,
             4701 => Self::AmberWelfareIsNotVip,
             4702 => Self::AmberWelfareSignError,
             4703 => Self::AmberWelfareIsNotExclusiveDay,
@@ -315,6 +330,11 @@ impl RetCode {
             Self::SignErrorNotSigned => "签到天数还不够开这个宝箱",
             Self::MailError1 => "邮件领取失败",
             Self::PlayerError23 => "改名冷却未结束",
+            Self::PlayerError10 => "礼包码不存在",
+            Self::PlayerError15 => "没有可用的改定位次数",
+            Self::PlayerError16 => "目标城市不存在",
+            Self::PlayerError21 => "免费改定位只能使用一次",
+            Self::PlayerError22 => "已经在该城市",
             Self::ItemError1 => "道具合成 - 资源不够",
             Self::ItemError2 => "道具数量不足",
             Self::ItemError3 => "道具错误 3",
