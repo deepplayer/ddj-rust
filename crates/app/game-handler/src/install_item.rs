@@ -42,7 +42,9 @@ impl ItemLookup for MemLookups<'_> {
     fn item_template(&self, template_id: i32) -> Result<Option<ItemTemplate>> {
         // 背包里没有这条模板 → 原版 `getItemTemplate` 也不会凭空造出来，
         // 但调用点在 `allItem.get` 之后，所以拿不到模板就等于「数据不一致」。
-        let has = self.world.peek(self.player, |p| p.bag.contains_key(&template_id));
+        let has = self
+            .world
+            .peek(self.player, |p| p.bag.contains_key(&template_id));
         Ok(has.then_some(ItemTemplate {
             use_limit: ASSUMED_USE_LIMIT,
             item_type: 0,
@@ -61,7 +63,9 @@ impl ItemLookup for MemLookups<'_> {
     }
 
     fn check_item(&self, res_id: i32, num: i64) -> Result<bool> {
-        let have = self.world.peek(self.player, |p| p.bag.get(&res_id).copied().unwrap_or(0));
+        let have = self
+            .world
+            .peek(self.player, |p| p.bag.get(&res_id).copied().unwrap_or(0));
         Ok(have >= num)
     }
 
@@ -92,7 +96,9 @@ impl CompoundLookup for MemLookups<'_> {
 
 impl EffectiveLookup for MemLookups<'_> {
     fn get(&self, id: i64) -> Result<Option<EffectiveItem>> {
-        let raw = self.world.peek(self.player, |p| p.effective.get(&id).copied());
+        let raw = self
+            .world
+            .peek(self.player, |p| p.effective.get(&id).copied());
         Ok(raw.map(|(template_id, num, deadline)| EffectiveItem {
             id,
             template_id,
@@ -113,10 +119,7 @@ impl EffectiveUseLookup for MemLookups<'_> {
         <Self as EffectiveLookup>::get(self, id)
     }
 
-    fn item_template(
-        &self,
-        template_id: i32,
-    ) -> Result<Option<EffectiveUseTemplate>> {
+    fn item_template(&self, template_id: i32) -> Result<Option<EffectiveUseTemplate>> {
         let _ = template_id;
         Ok(Some(EffectiveUseTemplate {
             use_limit: ASSUMED_USE_LIMIT,
@@ -182,9 +185,7 @@ fn use_resp(out: &UseOutcome) -> ItemUseResp11002 {
             msg_use_result: has_msg_use_result.then(MsgUseResult::default),
         },
         UseOutcome::Fail(_) => ItemUseResp11002 {
-            ret: out
-                .resolve_ret()
-                .map_or(0, ddj_pb::cmd::RetCode::as_i32),
+            ret: out.resolve_ret().map_or(0, ddj_pb::cmd::RetCode::as_i32),
             msg_use_result: None,
         },
     }
@@ -265,9 +266,7 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
                 }
                 CompoundOutcome::Reject(code) => code.as_i32(),
             };
-            Ok(Some(
-                ItemCompoundResp11003 { ret }.encode_to_vec().into(),
-            ))
+            Ok(Some(ItemCompoundResp11003 { ret }.encode_to_vec().into()))
         })));
         n += 1;
     }
@@ -297,8 +296,7 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
             }
             let resp = match &out {
                 UseOutcome::Accept {
-                    has_msg_use_result,
-                    ..
+                    has_msg_use_result, ..
                 } => ItemEffectiveUseResp11005 {
                     ret: 0,
                     msg_use_result: has_msg_use_result.then(MsgUseResult::default),
@@ -331,19 +329,18 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
                 player: p,
                 now,
             };
-            let items: Vec<EffectiveItem> =
-                w.peek(p, |b| {
-                    b.effective
-                        .iter()
-                        .map(|(id, (template_id, num, deadline))| EffectiveItem {
-                            id: *id,
-                            template_id: *template_id,
-                            num: *num,
-                            deadline: *deadline,
-                        })
-                        .filter(|e| e.template_id == template_id)
-                        .collect()
-                });
+            let items: Vec<EffectiveItem> = w.peek(p, |b| {
+                b.effective
+                    .iter()
+                    .map(|(id, (template_id, num, deadline))| EffectiveItem {
+                        id: *id,
+                        template_id: *template_id,
+                        num: *num,
+                        deadline: *deadline,
+                    })
+                    .filter(|e| e.template_id == template_id)
+                    .collect()
+            });
             let out = item::effective_one_key_use(template_id, now, &items, &lk)?;
             let resp = match &out {
                 OneKeyOutcome::Accept(plan) => {

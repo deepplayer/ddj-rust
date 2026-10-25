@@ -15,7 +15,8 @@ use std::sync::{Arc, Mutex};
 
 use ddj_core::Clock;
 use ddj_pb::gen::sign_message::{
-    MsgGetSignReq16004, MsgGetSignResp16004, MsgSignBoxReq16003, MsgSignBoxResp16003, MsgSignReq16002,
+    MsgGetSignReq16004, MsgGetSignResp16004, MsgSignBoxReq16003, MsgSignBoxResp16003,
+    MsgSignReq16002,
 };
 use ddj_registry::HandlerTable;
 use prost::Message;
@@ -61,7 +62,9 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
             let rewards = sign::rand_pick(&[], RAND_TIMES, &*guard);
             drop(guard);
             Ok(Some(
-                sign::build_sign_resp(&next, &rewards).encode_to_vec().into(),
+                sign::build_sign_resp(&next, &rewards)
+                    .encode_to_vec()
+                    .into(),
             ))
         })));
         n += 1;

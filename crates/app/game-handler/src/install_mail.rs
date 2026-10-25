@@ -11,7 +11,7 @@ use std::sync::Arc;
 
 use ddj_core::{Clock, Result};
 use ddj_pb::gen::mail_message::{
-    MailGetReq10001, MailReceiveReq10003, MailRemoveReq10004, MailReadReq10002,
+    MailGetReq10001, MailReadReq10002, MailReceiveReq10003, MailRemoveReq10004,
 };
 use ddj_registry::HandlerTable;
 use prost::Message;
@@ -58,9 +58,7 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
             let _req = MailGetReq10001::decode(body).map_err(decode_err)?;
             let p = ctx.require_player()?;
             let mails = w.peek(p, |b| b.mails.clone());
-            Ok(Some(
-                mail::mail_get_resp(&mails).encode_to_vec().into(),
-            ))
+            Ok(Some(mail::mail_get_resp(&mails).encode_to_vec().into()))
         })));
         n += 1;
     }

@@ -517,7 +517,16 @@ mod tests {
     #[test]
     fn register_counts_login() {
         let mut t = HandlerTable::empty();
-        let n = register(&mut t, ServerState::healthy(1), None, None, None, None, None).expect("注册");
+        let n = register(
+            &mut t,
+            ServerState::healthy(1),
+            None,
+            None,
+            None,
+            None,
+            None,
+        )
+        .expect("注册");
         assert_eq!(n, 1);
         assert!(t.get(CMD_LOGIN).is_some(), "登录应已入表");
         assert!(t.get(11002).is_none(), "未移植的链路不应凭空出现");
