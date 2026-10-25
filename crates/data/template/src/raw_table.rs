@@ -167,9 +167,15 @@ mod tests {
         assert_eq!(t.col("id"), Some(0));
         assert_eq!(t.col("type"), Some(8));
         assert_eq!(t.col("useLimit"), Some(18));
-        // 1 号道具「元宝」：type 是枚举、useLimit=1
         assert!(t.get(1).is_some(), "1 号道具应存在");
-        assert!(t.int_of(1, "useLimit").is_some());
+        // 大量行的 `useLimit` 是空值（策划只给可用次数有限的道具填），
+        // 所以断言「至少有一行填了」而不是「1 号填了」。
+        let with_limit = t
+            .rows
+            .iter()
+            .filter(|r| t.int(r, "useLimit").is_some())
+            .count();
+        assert!(with_limit > 0, "应当有道具填了 useLimit");
     }
 
     #[test]
@@ -181,6 +187,8 @@ mod tests {
         let t = load_raw(&dir.join("D-道具使用效果-Gift.csv")).expect("读 Gift.csv");
         assert_eq!(t.entity, "GiftDB");
         assert!(t.col("id").is_some());
-        assert!(t.col("useCostJson").is_some(), "列名: {:?}", t.columns);
+        // 实测列名：id,name,type,reward,useLimit,useCost,noticeType,showEffect,bf_desc1
+        // 注意是 `useCost` 不是 `useCostJson`（Java 字段名 useCostJson 对应列 useCost）。
+        assert!(t.col("useCost").is_some(), "列名: {:?}", t.columns);
     }
 }
