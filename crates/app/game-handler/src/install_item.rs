@@ -4,7 +4,7 @@
 //! 真正的模板表（`ItemDB` / `GiftDB`）要从 `ddj-template` 的 CSV 里读，
 //! 仓储接口还没接。这里用「**背包里存在的模板就合成一条最小模板**」顶住：
 //!
-//! - 有道具 → `useLimit = 999`、`type = 0`（普通道具）→ 能走到扣数量那一步；
+//! - 有道具 → 启动时注入了真实 `ItemDB` 就取 `useLimit`/`type`，否则回退 `useLimit = 999`、`type = 0`；
 //! - 没有道具 → `item_template = None` → 原版在此处 NPE，被 handler 遮罩成 `ret=2`。
 //!
 //! 这样 5 条消息在冒烟里都有确定性输出，等 `TemplateStore` 接好后只需替换
@@ -29,6 +29,8 @@ use crate::item::{
 use crate::runtime::{decode_err, resources_to_msg, FnHandler, MemWorld};
 
 /// 过渡期用的最小模板上限（真实值来自 `ItemDB.useLimit`）。
+use std::sync::{Arc, OnceLock};
+
 const ASSUMED_USE_LIMIT: i32 = 999;
 
 /// 真实模板表的只读视图（由 `game-core` 在启动时注入）。
@@ -45,15 +47,14 @@ pub trait ItemTemplates: Send + Sync {
 }
 
 /// 启动时装配一次；之后只读。
-static TEMPLATES: std::sync::OnceLock<std::sync::Arc<dyn ItemTemplates>> =
-    std::sync::OnceLock::new();
+static TEMPLATES: OnceLock<Arc<dyn ItemTemplates>> = OnceLock::new();
 
 /// 注入真实模板表（只第一次生效）。
-pub fn install_templates(t: std::sync::Arc<dyn ItemTemplates>) {
+pub fn install_templates(t: Arc<dyn ItemTemplates>) {
     let _ = TEMPLATES.set(t);
 }
 
-fn templates() -> Option<&'static std::sync::Arc<dyn ItemTemplates>> {
+fn templates() -> Option<&'static Arc<dyn ItemTemplates>> {
     TEMPLATES.get()
 }
 
