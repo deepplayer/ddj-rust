@@ -160,6 +160,7 @@ pub fn register(
     }
     // 背包 / 签到 / 邮件 走过渡期内存态（见 crate::runtime 的模块文档）。
     if let Some((world, clock)) = runtime {
+        n += crate::install_amber::install(table, world.clone(), clock.clone());
         n += crate::install_item::install(table, world.clone(), clock.clone());
         n += crate::install_sign::install(table, world.clone(), clock.clone());
         n += crate::install_mail::install(table, world, clock);

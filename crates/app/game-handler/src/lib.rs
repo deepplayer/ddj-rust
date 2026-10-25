@@ -45,6 +45,7 @@ pub mod gm;
 pub mod guild;
 pub mod handlers;
 pub mod handshake;
+pub mod install_amber;
 pub mod install_item;
 pub mod install_mail;
 pub mod install_sign;
