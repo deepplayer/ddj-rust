@@ -11,6 +11,7 @@
 
 use bytes::BytesMut;
 use ddj_codec::{Frame, FrameDecoder, FrameError};
+use tokio_util::codec::Decoder as _;
 
 /// 把 WebSocket 二进制消息切成协议帧。
 pub struct MessageCodec {
