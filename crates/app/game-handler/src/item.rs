@@ -256,6 +256,7 @@ pub fn use_item(
     // 实测覆盖面：`D-道具表-Item.csv` 2674 条里，只有 1066 条出现在
     // `D-道具使用效果-Gift.csv`；剩下 **1608 条**（type 非 13/14）走到这里必然 NPE。
     // 即原版对这些道具一律回「服务器繁忙」。这里按 1:1 复刻，不改原版行为。
+    let gift = lookups.gift(template_id)?;
     let Some(gift) = gift else {
         return Ok(UseOutcome::Fail(UseFailure::Handler(RetCode::ServerBusy)));
     };
