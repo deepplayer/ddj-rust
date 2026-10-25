@@ -72,9 +72,10 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
             let p = ctx.require_player()?;
             let city = req.city_id;
             let kind = req.r#type.unwrap_or(0);
-            let (reset_times, _old_city) = w.peek(p, |b| (b.reset_address_times, b.city_id));
+            let (reset_times, old_city) = w.peek(p, |b| (b.reset_address_times, b.city_id));
             let cx = LocationCtx {
-                city_id: city,
+                // 这里是**当前**城市：原版先比 `cityId == newCityId` 才判 kind。
+                city_id: old_city,
                 reset_times,
                 address_exists: true,
             };
