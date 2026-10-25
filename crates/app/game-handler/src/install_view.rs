@@ -103,10 +103,10 @@ pub fn install(
                 match player::view_other_plan(&pid, my_server_id, &lk) {
                     ViewPlan::Local { friend_scope } => {
                         let msg = row.map(|(name, lv, vip)| MsgOtherPlayer {
-                            playerId: Some(pid.clone()),
+                            player_id: Some(pid.clone()),
                             name: Some(name),
                             lv: Some(lv),
-                            vipLv: Some(vip),
+                            vip_lv: Some(vip),
                             sex: Some(1),
                             ..Default::default()
                         });
@@ -153,10 +153,10 @@ pub fn install(
                     ViewPlan::Local { .. } => {
                         let msg = row.map(|(name, lv, vip)| MsgOtherPlayerDetail {
                             player_data: Some(MsgOtherPlayer {
-                                playerId: Some(pid.clone()),
+                                player_id: Some(pid.clone()),
                                 name: Some(name),
                                 lv: Some(lv),
-                                vipLv: Some(vip),
+                                vip_lv: Some(vip),
                                 sex: Some(1),
                                 ..Default::default()
                             }),
