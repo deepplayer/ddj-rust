@@ -400,9 +400,12 @@ impl Bootstrap {
                 ddj_game_handler::runtime::MemWorld::new(),
                 Arc::new(ddj_core::SystemClock) as Arc<dyn ddj_core::Clock>,
             )),
-            Some(Arc::new(crate::view_repo::PgViewRepo::new(account_repo)) as Arc<dyn ddj_game_handler::install_view::ViewRepo>),
-            i64::from(cfg.service.server_id),
-            PLAYER_ID_RANGE,
+            ddj_game_handler::handlers::ViewDeps {
+                repo: Some(Arc::new(crate::view_repo::PgViewRepo::new(account_repo))
+                    as Arc<dyn ddj_game_handler::install_view::ViewRepo>),
+                my_server_id: i64::from(cfg.service.server_id),
+                id_range: PLAYER_ID_RANGE,
+            },
         )?;
         tracing::info!(count = registered, "业务处理器已注册");
         let handlers = Arc::new(table);

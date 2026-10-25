@@ -117,6 +117,16 @@ impl ErasedHandler for LoginHandler {
 ///
 /// # Errors
 /// 目前不会失败；保留 `Result` 是为了后续需要读模板表时不改签名。
+/// 1008/1020 的依赖（发号范围与所在服）。
+pub struct ViewDeps {
+    /// 本服角色查询；`None` 表示不注册看他人。
+    pub repo: Option<Arc<dyn crate::install_view::ViewRepo>>,
+    /// 当前 game 服 id。
+    pub my_server_id: i64,
+    /// `getPlayerIDRange()`。
+    pub id_range: i64,
+}
+
 pub fn register(
     table: &mut HandlerTable,
     state: ServerState,
@@ -125,9 +135,7 @@ pub fn register(
     handshake: Option<Arc<dyn HandshakeStore>>,
     stores: Option<(Arc<dyn PlayerStateStore>, Arc<dyn Clock>)>,
     runtime: Option<(Arc<MemWorld>, Arc<dyn Clock>)>,
-    view: Option<Arc<dyn crate::install_view::ViewRepo>>,
-    my_server_id: i64,
-    id_range: i64,
+    view: ViewDeps,
 ) -> Result<usize> {
     let mut n = 0;
     let server_id = state.server_id;
@@ -169,8 +177,14 @@ pub fn register(
         n += crate::install_player::install(table, world.clone(), clock.clone());
         n += crate::install_sign::install(table, world.clone(), clock.clone());
         n += crate::install_state::install(table, world.clone(), clock.clone());
-        if let Some(v) = view {
-            n += crate::install_view::install(table, v, my_server_id, id_range, clock.clone());
+        if let Some(v) = view.repo {
+            n += crate::install_view::install(
+                table,
+                v,
+                view.my_server_id,
+                view.id_range,
+                clock.clone(),
+            );
         }
         n += crate::install_mail::install(table, world, clock);
     }
