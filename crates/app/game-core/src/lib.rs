@@ -19,6 +19,7 @@
 pub mod account;
 pub mod bootstrap;
 pub mod create_player_repo;
+pub mod csv_sign;
 pub mod csv_templates;
 pub mod gm_backend;
 pub mod lifecycle_modules;

@@ -11,7 +11,7 @@
 //! 当前 `ErasedHandler` 只能返回一份回包，所以这里只发 16004，
 //! 16001 的推送等出站通道（`SessionControl::push`）接上后补。已记入 AUDIT。
 
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, OnceLock};
 
 use ddj_core::Clock;
 use ddj_pb::gen::sign_message::{
@@ -30,11 +30,34 @@ const TZ_MS: i64 = 8 * 3600 * 1000;
 /// `ErrorResp_1` 自己的消息号（原版 `HandlerException` 出口用它组帧）。
 const ERROR_RESP_CMD: i32 = 1;
 
-/// `DailySignDB` 的 `randTimes`：每行配 5 个奖励、抽 3 个（实测 `M-每日签到表-DailySign.csv` 21 行）。
-const RAND_TIMES: i32 = 3;
+/// `DailySignDB.randTimes` 的默认值。
+///
+/// 实测 `DailySignDB.<clinit>` 是 `iconst_3; putstatic randTimes` —— **硬编码 3**，
+/// 不在 CSV 列里。所以每行配 5 个奖励、不放回抽 3 个，抽数由代码而非数据决定。
+pub const DEFAULT_RAND_TIMES: i32 = 3;
 
-/// `DailySignBoxDB` 的 `(id, days)`：实测 4 行 `1,3` / `2,7` / `3,14` / `4,21`。
-const BOX_DAYS: [(i32, i32); 4] = [(1, 3), (2, 7), (3, 14), (4, 21)];
+/// 真实签到/宝箱表的只读视图（由 `game-core` 启动时注入）。
+///
+/// 原版对应 `DailySignDBCache.get(day).rand()` 与 `DailySignBoxDBCache.get(id)`。
+pub trait SignTemplates: Send + Sync {
+    /// `DailySignDB.reward`（`资源id=数量` 已解析）。
+    fn rewards_of_day(&self, day: i32) -> Vec<(i32, i64)>;
+    /// `DailySignBoxDB.days`。
+    fn box_days(&self, box_id: i32) -> Option<i32>;
+    /// `DailySignBoxDB.boxReward`。
+    fn box_rewards(&self, box_id: i32) -> Vec<(i32, i64)>;
+}
+
+static SIGN_TEMPLATES: OnceLock<Arc<dyn SignTemplates>> = OnceLock::new();
+
+/// 注入真实签到表（只第一次生效）。
+pub fn install_sign_templates(t: Arc<dyn SignTemplates>) {
+    let _ = SIGN_TEMPLATES.set(t);
+}
+
+fn sign_templates() -> Option<&'static Arc<dyn SignTemplates>> {
+    SIGN_TEMPLATES.get()
+}
 
 /// 把 3 条签到消息挂进表。
 pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Clock>) -> usize {
@@ -63,9 +86,12 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
             };
             w.with(p, |b| b.sign = next.clone());
 
-            // `DailySignDBCache.get(signedDay).rand()`：过渡期没有奖励表 → 抽到空列表。
+            // `DailySignDBCache.get(signedDay).rand()`：当天那行的 5 个奖励里不放回抽 3 个。
+            let pool = sign_templates().map_or_else(Vec::new, |t| {
+                t.rewards_of_day(next.signed_day)
+            });
             let guard = r.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
-            let rewards = sign::rand_pick(&[], RAND_TIMES, &*guard);
+            let rewards = sign::rand_pick(&pool, DEFAULT_RAND_TIMES, &*guard);
             drop(guard);
             Ok(Some(
                 sign::build_sign_resp(&next, &rewards)
@@ -84,13 +110,13 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
             let p = ctx.require_player()?;
             let now = c.now_millis();
             let id = req.id;
-            let days = BOX_DAYS
-                .iter()
-                .find(|(bid, _)| *bid == id)
-                .map_or(0, |(_, d)| *d);
+            let days = sign_templates()
+                .and_then(|t| t.box_days(id))
+                .unwrap_or(0);
             let cur = w.peek(p, |b| b.sign.clone());
             let state = sign::refresh(&cur, now, TZ_MS).state;
-            match sign::claim_box(&state, id, days, &[]) {
+            let box_rewards = sign_templates().map_or_else(Vec::new, |t| t.box_rewards(id));
+            match sign::claim_box(&state, id, days, &box_rewards) {
                 ClaimBoxOutcome::Reject(code) => {
                     Ok(Some(Reply::with_cmd(
                         ERROR_RESP_CMD,
