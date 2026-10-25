@@ -1,0 +1,3 @@
+# 大文件不入库：bundle 从 APK 解出后用 DDJ_CLIENT_ASSETS 指向
+vendor/assets/
+node_modules/

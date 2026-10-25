@@ -1,0 +1,14 @@
+{
+  "name": "ddj-jsclient",
+  "version": "0.1.0",
+  "private": true,
+  "description": "《我是大东家》无头客户端：帧格式复用客户端原类，消息体按客户端 proto 文本编码",
+  "main": "run.js",
+  "scripts": {
+    "probe": "node probe.js",
+    "login": "node run.js login"
+  },
+  "dependencies": {
+    "protobufjs": "^7.4.0"
+  }
+}
