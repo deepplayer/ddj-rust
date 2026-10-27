@@ -1,6 +1,6 @@
 # 移植进度（切换上下文先读这里）
 
-> 最后更新：2026-10-28 01:10
+> 最后更新：2026-10-28 01:30
 > 基准：`../data_d/game_7010544/sources/`（反编译）。规则见 [`../AGENTS.md`](../AGENTS.md)。
 > 逐分支台账见 [`AUDIT.md`](AUDIT.md)；里程碑见 [`PLAN.md`](PLAN.md)。
 
@@ -8,19 +8,19 @@
 
 ## 一、一句话现状
 
-骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 71 条（4.2%）**，
+骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 75 条（4.5%）**，
 其中真正落库的只有 4 条，其余是进程内 `MemWorld`（重启即丢）。
 
 ```
 cargo check  --workspace --all-targets                      0 error / 0 warning
 cargo clippy --workspace --exclude ddj-pb --lib --bins -D warnings   通过
-cargo test   --workspace                                    613 passed / 0 failed
+cargo test   --workspace                                    635 passed / 0 failed
 cargo xt check-arch                                         4 条规则通过
 ```
 
 代码量：27 crate / 约 180 个 `.rs` / 约 25 000 行。
 
-## 二、已接线消息（71 / 1681）
+## 二、已接线消息（75 / 1681）
 
 | 模块 | cmdId | 数据源 | 备注 |
 |---|---|---|---|
@@ -56,6 +56,8 @@ cargo xt check-arch                                         4 条规则通过
 | 二级密码 | 17351-17355 | `MemWorld` | ⚠ **17352 唯一失败也走 Resp** |
 | 防骗手册 | 17151 / 17152 / 17153 | `MemWorld` + 真实 CSV | ⚠ 17152 越界**不发包**；17151 三种失败码在 Resp 里 |
 | 计数器恢复 | 8001 / 8002 | `MemWorld` + 真实 CSV | ⚠ 8002 查不到**不发包**；`time=-1` 表示停表 |
+| 客户端特约 | 1109 | 无状态 | 原版是空壳：恒回 `{ret=0, msgId}`，`data` 永不设置 |
+| 保存桌面 | 17301 / 17302 / 17303 | `MemWorld` + 真实 CSV | ⚠ 渠道配置实测为空 → `eligible` 恒 false，17302/17303 恒回 4731（原版状态）|
 
 ## 三、未接线（占位，`ret=501`）
 
@@ -193,9 +195,9 @@ Actions 三个 job：`check`（check-arch + clippy + test，阻塞）、
 
 | 项 | 值 |
 |---|---|
-| commit | `4b51414`（feat(counter): 接计数器恢复 8001/8002） |
-| Actions run | `40518227315`，check + release 共 4m40s |
-| sha256 | `6598a9d116c99601c8970f99282ac07c763cb4a1356fffc38aec0c223db8bcbe` |
+| commit | `fd23e8f`（feat(shortcut): 接保存桌面 17301-17303 + channelId/cid 数据链）|
+| Actions run | `40547832552`，check 2m19s / release 2m4s |
+| sha256 | `c7d53cbcbbec728794b2189d2661a5f4c1b4e8c274a1cfe0f93411a0c6173632` |
 | 验证 | `./bin/ddj --version` → `ddj 0.1.0`；`./bin/ddj list` 列出 7 个服务 |
 
 > 同一份源码在 Actions 上产出同一字节（验证过两次：`2766e83` 与 `702ac6f`
@@ -312,6 +314,43 @@ WebSocket 监听已启动 addr=0.0.0.0:10544
 | 8002 | `templateId=2` | `ret=0`，单条 `templateId=2 num=3 cdTime=-1` |
 | 8002 | `templateId=999999` | **无回包**（原版没有 else） |
 
+### 保存桌面专项（3 条，2026-10-28）
+
+创角时带 `channelId=2` / `cid="testcid"`（`CreatePlayerReq_6` 字段 11 / 12），
+登录后读回，实测结果：
+
+| cmd | 请求 | 帧号 | 回包 |
+|---|---|---|---|
+| 17301 | 空 | 17301 | `ret=0` + `shortcutData{channelId=2, cid="testcid", state=0, eligible=false}` |
+| 17302 | 空 | **1** | `ErrorResp_1{msgId=17302, code=4731}`（渠道不符） |
+| 17303 | 空 | **1** | `ErrorResp_1{msgId=17303, code=4731}`（渠道不符，**不是 4732**） |
+| 1109 | `msgId="1", data='{"a":1}'` | 1109 | `{ret=0, msgId="1"}`，**`data` 未设置** |
+
+`channelId=2` / `cid="testcid"` 能原样回显，说明
+创角落库 → 登录读回 → `MemWorld` 回填这条链是通的。
+
+`eligible` 恒 false 的原因：`bf_config.configId=59`（保存桌面的渠道白名单）实测是**空串**
+（`data/sql/platform.sql:562`），所以 `shortcutConfigMap` 为空。
+这是原版线上数据的真实状态，不是移植 bug。等运营配了渠道才有意义。
+
+### 本轮打通的数据链：`channelId` / `cid`
+
+这两列之前完全没落库，导致所有按渠道判定的消息都没法实现。现在全线打通：
+
+```text
+CreatePlayerReq_6.channelId(11) / .cid(12)
+  → NewPlayerRow → player 表（0006 迁移）
+  → PlayerRow → Account → LoginOutcome::Accepted
+  → MemWorld.PlayerBox.channel_id / .cid
+  → 17301/17302/17303 的 is_eligible
+```
+
+**已端到端验证**（2026-10-28）：创角写 `channelId=2` / `cid="testcid"`，
+登录后 17301 回包里这两个值原样出现。
+
+`LoginHandler` 之前拿不到 `MemWorld`，本轮加 `with_world`。
+**后续 17101-17103（渠道好评）、17081（渠道卡池）、15002（游历）都靠这条链。**
+
 > 探针坑 1：proto2 的 `repeated int32` 默认 **不打包**（`packed="false"`），
 > 每个元素独立带 tag。按 packed 解析会读到空列表（`AntiCheatInfo` 踩过）。
 > 探针坑 2：protobuf 的 `int64` 负数（如 `cdTime=-1`）是 10 字节 varint，
@@ -362,12 +401,15 @@ rm -rf target/debug/incremental && CARGO_INCREMENTAL=0 cargo test -p ddj-game-ha
 node e2e/smoke/handlers_smoke.mjs ws://127.0.0.1:10544/
 node e2e/smoke/anticheat_smoke.mjs          # 防骗手册 7 条断言
 node e2e/smoke/counter_smoke.mjs            # 计数器恢复 6 条断言
+node e2e/smoke/shortcut_smoke.mjs           # 保存桌面 + 1109，4 条断言
 node e2e/smoke/view_smoke.mjs
 ```
 
 ## 八、最近提交
 
 ```
+fd23e8f feat(shortcut): 接保存桌面 17301-17303 + 打通 channelId/cid 数据链
+95881e5 feat(special): 接 1109 客户端特约消息（原版是空壳，照抄）
 4b51414 feat(counter): 接计数器恢复 8001/8002 + 按反编译逐方法重写 counter.rs
 5f3236f feat(anticheat): 接真实配置 AntiCheatReward + 全链路冒烟
 1149ed7 feat(anticheat): 接防骗手册 17151 领奖 / 17152 已读 / 17153 查询

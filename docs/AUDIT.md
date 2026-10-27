@@ -604,6 +604,115 @@ if (this.num < maxLimit) {
 
 ---
 
+## A17 `shortcut.rs` + `install_shortcut.rs`（17301 / 17302 / 17303）
+
+对应 `SysActivityMessageHandler.java:231-254`、`ShortcutModel.java`（126 行）、
+`PlatformServerModule.isEligibleShortcut`（`:712-715`）+ `parseConfig59`（`:1315-1336`）。
+
+### ⚠ 17301 恒成功，17302/17303 走 `ErrorResp_1`
+
+| cmd | 方法签名 | 失败出口 | 帧号 |
+|---|---|---|---|
+| 17301 | `public void queryShortcutModel(...)` **无 `throws`** | 无失败分支 | 17301 |
+| 17302 | `throws HandlerException` | `ErrorResp_1` | **1** |
+| 17303 | `throws HandlerException` | `ErrorResp_1` | **1** |
+
+17301 的方法体里 `shortcutModel.queryShortcutData()` 内部自己发包，
+没有任何 `throw`，所以它只有成功分支。
+
+### ⚠ 渠道判定优先于状态判定
+
+17302 与 17303 都是**先判渠道**：
+
+```java
+boolean eligible = PlatformServerModule.isEligibleShortcut(channelId, cid);
+if (!eligible) throw new HandlerException(SHORTCUT_CID_ERROR);   // 4731
+// 之后才判 state
+```
+
+所以渠道不匹配时永远先看到 **4731**，看不到 30 / 4732 / 4722。
+两条单测分别锁：
+`install_rejects_ineligible_first`、`reward_branch_order_cid_before_not_install`。
+
+### ⚠ 17303 的「已领过」用的是 VIVO 的码
+
+```java
+if (this.state != TaskRewardState.NOT_RECEIVE.getState()) {
+    throw new HandlerException(LanguageUtils.VIVO_WELFARE_SIGN_ERROR);   // 4722
+}
+```
+
+「保存桌面已领过」回的是 `VIVO_WELFARE_SIGN_ERROR(4722, "VIVO特权 - 领取奖励失败")`。
+复制粘贴 bug，照抄。`RetCode::VivoWelfareSignError` 的文档注释里已标注。
+
+### ⚠ `bf_config.configId=59` 实测为空串
+
+`data/sql/platform.sql:562`：
+```sql
+INSERT INTO `bf_config` VALUES ('72', '59', '', '保存桌面：开启渠道控制=cid(多个cid用;分隔)', ...);
+```
+
+`parseConfig59("")` 里 `if (!str.isEmpty())` 直接跳过 →
+`shortcutConfigMap` 为空 → `isEligibleShortcut` **恒 false** →
+17302/17303 在真实数据下**恒回 4731**。
+
+这不是移植 bug，是原版线上数据的真实状态。等运营配了渠道才有意义。
+
+### 状态机
+
+| `TaskRewardState` | 值 | 含义 |
+|---|---|---|
+| `NO_REWARD` | 0 | 未保存到桌面 |
+| `NOT_RECEIVE` | 1 | 已保存，待领 |
+| `RECEIVED` | 2 | 已领取 |
+
+### 分支明细
+
+| cmd | 分支 | 原版位置 | Rust | 用例 | 状态 |
+|---|---|---|---|---|---|
+| 17301 | `toMsgShortcutData` 四字段 | `:110-124` | `to_msg` | `to_msg_carries_four_fields` | ✅ |
+| 17301 | 空配置 → `eligible=false` | 同上 | 同 | `to_msg_eligible_false_when_not_configured` | ✅ |
+| 17302 | 渠道不符 → 4731 | `:76-79` | `install_verdict` | `install_rejects_ineligible_first` | ✅ |
+| 17302 | `state != 0` → 30 | `:80-82` | 同 | `install_rejects_when_already_installed` / `..received` | ✅ |
+| 17302 | 通过 → `state=1` | `:83-84` | 同 | `install_accepts_from_no_reward` | ✅ |
+| 17303 | 渠道不符 → 4731 | `:100-103` | `reward_verdict` | `reward_rejects_ineligible_first` | ✅ |
+| 17303 | `state == 0` → 4732 | `:104-106` | 同 | `reward_rejects_when_not_installed` | ✅ |
+| 17303 | `state != 1` → 4722 | `:107-109` | 同 | `reward_rejects_when_already_received` | ✅ |
+| 17303 | 通过 → `state=2` + 发奖 | `:110-116` | 同 | `reward_accepts_from_not_receive` | ✅ |
+| 配置 | `parseConfig59` 解析 | `:1315-1336` | `ShortcutConfig::parse` | `parse_multi_channel` / `parse_skips_malformed_segments` | ✅ |
+
+### 本轮打通的数据链
+
+`channelId` / `cid` 之前完全没落库，17301-17303 无法判定。现在：
+
+```text
+CreatePlayerReq_6.channelId (字段 11) ─┐
+CreatePlayerReq_6.cid      (字段 12) ─┤
+                                      ↓
+              NewPlayerRow.channel_id / .cid
+                                      ↓
+              player 表（0006_player_channel.sql）
+                                      ↓
+              PlayerRow → Account → LoginOutcome::Accepted
+                                      ↓
+              MemWorld.PlayerBox.channel_id / .cid
+                                      ↓
+              17301 / 17302 / 17303 的 is_eligible
+```
+
+`LoginHandler` 之前拿不到 `MemWorld`（只有 `ServerState` / `AccountLookup` / `HandshakeStore`），
+本轮加 `with_world`。**后续所有按渠道判定的消息都靠这条链**，包括：
+17101-17103（渠道好评）、17081（渠道卡池）、15002（游历）、
+以及 `SystemOpenUtils.isOpen` 里按渠道开的功能。
+
+### 已知分叉
+
+| 场景 | 原版 | 本工程 | 影响 |
+|---|---|---|---|
+| 渠道白名单来源 | `bf_config` 表（DB），`PlatformServerModule` 启动时读 | 暂不读库，显式注入空表 | 与实测数据（空串）行为一致；等 PC 配置接进 PG 后补 |
+
+---
+
 ## A7 `login.rs` + `loginvar.rs` + `handshake.rs`（待填）
 
 > 现状：登录 4 / 创角 6 / 握手 16-18 已接线，走真实 PG。`login.rs` 630 行。
