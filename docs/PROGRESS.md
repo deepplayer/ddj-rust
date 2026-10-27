@@ -1,6 +1,6 @@
 # 移植进度（切换上下文先读这里）
 
-> 最后更新：2026-10-27 18:50
+> 最后更新：2026-10-27 19:15
 > 基准：`../data_d/game_7010544/sources/`（反编译）。规则见 [`../AGENTS.md`](../AGENTS.md)。
 > 逐分支台账见 [`AUDIT.md`](AUDIT.md)；里程碑见 [`PLAN.md`](PLAN.md)。
 
@@ -8,19 +8,19 @@
 
 ## 一、一句话现状
 
-骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 47 条（2.8%）**，
+骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 49 条（2.9%）**，
 其中真正落库的只有 4 条，其余是进程内 `MemWorld`（重启即丢）。
 
 ```
 cargo check  --workspace --all-targets                      0 error / 0 warning
 cargo clippy --workspace --exclude ddj-pb --lib --bins -D warnings   通过
-cargo test   --workspace                                    417 passed / 0 failed
+cargo test   --workspace                                    432 passed / 0 failed
 cargo xt check-arch                                         4 条规则通过
 ```
 
 代码量：27 crate / 约 180 个 `.rs` / 约 25 000 行。
 
-## 二、已接线消息（47 / 1681）
+## 二、已接线消息（49 / 1681）
 
 | 模块 | cmdId | 数据源 | 备注 |
 |---|---|---|---|
@@ -44,6 +44,8 @@ cargo xt check-arch                                         4 条规则通过
 | 绑定奖励 | 1115 | `MemWorld` | 24h 新号加成 |
 | VVIP 奖励 | 1012 | `MemWorld` | ⚠ 跨年领不到（原版 bug 照抄） |
 | 广告奖励 | 1104 | `MemWorld` | `PLAYER_ERROR_20(120)` 上限 |
+| 心跳 | 3 | 无 | 免登录；回 `serverTime` |
+| 取随机名 | 5 | 真实 CSV | 免登录；**306000 名字池**已端到端验证 |
 
 ## 三、未接线（占位，`ret=501`）
 
@@ -93,7 +95,7 @@ cargo xt check-arch                                         4 条规则通过
 | 绑定奖励 | `ConfigDBCache.TwBindReward` / `HighReward` | ⬜ 未接（`BindRewardTemplates` 注入点已留） |
 | 平台配置 | `bf_word_config` / `bf_wechat_official_account` / `switchPayment` | ⬜ 未接（`PlatformSnapshot` 注入点已留） |
 | 等级表 | `S-身份表-Status.csv` | ⬜ 未接 |
-| 名字表 | `W_玩家名字_PlayerName.csv`（306000 名） | ⬜ 未接 |
+| 名字表 | `W_玩家名字_PlayerName.csv` | ✅ 真实 CSV，306000 名 × 3 语言 |
 
 ## 五、未决问题（需要决策）
 
@@ -176,10 +178,10 @@ Actions 三个 job：`check`（check-arch + clippy + test，阻塞）、
 
 | 项 | 值 |
 |---|---|
-| commit | `d7fbafa`（fix(test): 分叉计数器断言改为「有增长」，修并行竞态） |
-| Actions run | `40490747597`，check 2m16s / release 2m6s |
-| sha256 | `c288957d28e145614becf2aef290b546097f1a7a8596358a3fe9c876dc4804ee` |
-| 大小 | 16 148 744 字节 |
+| commit | `0a2705e`（feat(engine): 接 3 心跳 / 5 取随机名） |
+| Actions run | `40492605956`，check 2m39s / release 1m42s |
+| sha256 | `b94edaa27de5a5c1cda75e1ff024ee207ed2e476a756ca1e50456f54db0ac38f` |
+| 大小 | 16 181 384 字节 |
 | 验证 | `./bin/ddj --version` → `ddj 0.1.0`；`./bin/ddj list` 列出 7 个服务 |
 
 > 同一份源码在 Actions 上产出同一字节（验证过两次：`2766e83` 与 `702ac6f`
@@ -209,6 +211,63 @@ grep 'ddj::divergence' /tmp/ddj-$(id -u)/game.log | tail
 | P2 | `signed_day` / `rand_times` / `pool_len` / `drawn` | 拿 `signed_day` 去 `M-每日签到表-DailySign.csv` 看该行奖励条数 |
 | P3 | 两个操作数 `a` / `b` | 判断是表数据异常还是客户端伪造超大数量 |
 
+## 六点七、端到端验证记录（2026-10-27）
+
+首次跑通「真实二进制 + 真实 DB + 真实 CSV」的完整链路。
+
+### 环境
+
+```bash
+docker start ddj-pg ddj-redis     # postgres:16-alpine → 127.0.0.1:55432
+                                  # redis:7.2 → 127.0.0.1:6379
+DDJ_RUN_DIR=/tmp/ddj-run ./bin/ddj run game
+```
+
+启动日志关键行：
+
+```
+配置表已扫描  tables=445 rows=78215 warnings=0 errors=0
+道具模板已装载 item_rows=2674 gift_rows=1066
+签到模板已装载 day_rows=21 box_rows=4
+琥珀模板已装载 sign_in=7 charges=23 has_exclusive=true
+名字池已装载   zh_cn=306000 en=306000 vi_vn=306000
+服务就绪      handlers=49 templates=0
+WebSocket 监听已启动 addr=0.0.0.0:10544
+```
+
+### 实测结果
+
+| 消息 | 请求 | 回包 |
+|---|---|---|
+| cmd 5 取随机名 | `lan="zh_CN"` | `ret=0`，10 个真实中文名 |
+| cmd 3 心跳 | 空 body | `ret=0` |
+
+cmd 5 实收：
+
+```json
+["郭嘉德","权浩言","巫马玉宇","利冰凡","鲜于乐章",
+ "梅玉轩","钟离英喆","盛宜民","吕宜民","封宏放"]
+```
+
+全部来自 306000 池子（250 姓氏 × 1224 名字），与 `e2e/jsclient/DIFF.md`
+记录的「实测 zh_CN 可用名 306000 个」吻合。
+
+### 分叉计数器
+
+```
+$ ./bin/ddj status game
+game  771651  15s  0  49  0  运行中
+
+偏离原版护栏：全部未触发（正常）
+```
+
+### 注意
+
+- `templates=0` 是 `TemplateStore` 的计数（只扫描未装载），
+  各模块的 CSV 是独立装载的，看上面那几行日志为准。
+- game 服**必须**有 PG + Redis 才能起来；缺任一个会卡在 PreInit 阶段
+  （不报错、不退出，表现为「只有一条『服务启动中』日志然后静默」）。
+
 ## 七、常用命令
 
 ```bash
@@ -232,6 +291,7 @@ node e2e/smoke/view_smoke.mjs
 ## 八、最近提交
 
 ```
+0a2705e feat(engine): 接 3 心跳 / 5 取随机名（含 306000 名字池）
 d7fbafa fix(test): 分叉计数器断言改为「有增长」，修并行竞态
 2d43c57 feat(vip): 接 1012 VVIP 微信奖励 / 1104 广告奖励
 e9ce6ae feat(divergence): 三处偏离原版护栏加可定位记录
