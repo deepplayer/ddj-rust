@@ -172,6 +172,63 @@
 **第 6/7 步的口径错位**：查配置用高等级那方，校验数值用低等级那方。
 这是原版写法（`petDown` 与 `petUp` 在交换后语义反了），照抄并单测锁住。
 
+## A11 `counter.rs` 计数器恢复 + `pet.rs` 互动（7002 / 7030）
+
+### `CounterRecovery.refresh`（`CounterRecovery.java:107-124`）
+
+| 分支 | 原版行为 | Rust | 用例 | 状态 |
+|---|---|---|---|---|
+| 1 | `num >= maxLimit` → 直接 return，不动 `time` | `refresh` 首检 | `at_max_limit_does_nothing` | ✅ |
+| 2 | `_num = (now - time) / cdTime`；`_num <= 0` → 不恢复 | 同 | `partial_cycle_does_not_recover` | ✅ |
+| 3 | `num += _num * everyNum`，封顶 `maxLimit` | 同 | `recovery_clamps_at_max_limit` | ✅ |
+| 4 | **`time` 只在加完仍未满时推进** | 同 | `full_after_recovery_keeps_old_time_this_is_original_bug` | ✅ ⚠ 原版缺陷 |
+| 5 | 对照：走 `removeNum` 会重置 `time` | `remove_num` | `remove_then_refresh_does_not_double_count` | ✅ |
+
+**第 4 条是原版缺陷**：加满时不推进 `time`，若 `num` 被外部改小（不走 `removeNum`），
+下次 `refresh` 会重复结算整段区间 → 瞬间补满。照抄并单测锁住。
+
+### 互动经验公式（`PetSet.interactInner`，两处完全一样）
+
+```text
+interact = (long)( a0 + (a1 * intimacy) / (a2 + (a3 * intimacy) / (intimacy + a4)) )
+```
+
+⚠ 是 **double 运算后向零截断**，不是整数除法。
+单测 `interact_exp_matches_java_formula` 用 `intimacy=9` 验证：
+`10 + 900/1.9 = 483.68 → 483`。
+
+奇迹加成：`interact *= (long)(param2 / 100.0)`，`multiple = param2`。
+
+### 7002 `interact`
+
+| 分支 | 原版位置 | 原版行为 | Rust | 用例 | 状态 |
+|---|---|---|---|---|---|
+| 1 | `:295` | `allPet.isEmpty()` → 901 | `interact_verdict` | `interact_no_pet_is_901` | ✅ |
+| 2 | `:298` | `!checkNum(pid,2,1)` → 905 | 同 | `interact_no_energy_is_905` | ✅ |
+| 3 | `:307-315` | `while (还有精力)` 随机分配；`all==0` 只做 1 次 | `times` 计算 | `interact_single_when_all_is_zero` / `interact_all_drains_energy` | ✅ |
+| 4 | `:316` | `removeNum(pid,2,counterValue)` | `counter::remove_num` | — | ✅ |
+| 5 | `:330-335` | 推 `7001(toMsgPetData(4))` | `push_pet_i64_field(...,4,...)` | 端到端 | ✅ |
+
+### 7030 `interactTimes`
+
+| 分支 | 原版位置 | 原版行为 | Rust | 用例 | 状态 |
+|---|---|---|---|---|---|
+| 1 | `:194` | `allPet.isEmpty()` → 901 | `interact_times_verdict` | `times_no_pet_is_901` | ✅ |
+| 2 | `:198` | `times > itemDB.getUseLimit()` → BUSY | 同 | `times_over_use_limit_is_busy` | ✅ |
+| 3 | `:202` | `item == null \|\| num < times` → BUSY | 同 | `times_insufficient_item_is_busy` | ✅ |
+| 4 | `:214` | `for (i < times * counterRecovery.getMaxLimit())` | `loops = times × max_limit` | `times_loops_is_times_times_max_limit` | ✅ ⚠ 易误读 |
+| 5 | `:237-245` | 推 `7001(toMsgPetData(4))` | 同 | — | ✅ |
+
+**第 4 条最易误读**：循环次数是 `times × 计数器上限`，不是 `times`。
+一次「十连」在 `maxLimit=100` 时实际互动 1000 次。
+
+### 端到端实测
+
+```text
+7002 all=1  → ErrorResp_1{msgId=7002, code=901}   新账号无宠物
+7030 num=10 → ErrorResp_1{msgId=7030, code=901}   同上
+```
+
 ## A7 `login.rs` + `loginvar.rs` + `handshake.rs`（待填）
 
 > 现状：登录 4 / 创角 6 / 握手 16-18 已接线，走真实 PG。`login.rs` 630 行。
