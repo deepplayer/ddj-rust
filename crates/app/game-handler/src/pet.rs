@@ -862,3 +862,383 @@ pub fn replace_pet_rate_verdict(
         lv2_after: ctx.lv1,
     }
 }
+
+// ─────────────────────── 宠物互动（7002 / 7030） ───────────────────────
+//
+// 对应 Java：
+// - `PetMessageHandler.interact`（行 33-50，7002）
+// - `PetMessageHandler.interactTimes`（行 52-70，7030）
+// - `PetSet.interact`（行 294-340）
+// - `PetSet.interactTimes`（行 193-245）
+// - `PetSet.interactInner`（行 246-265 / 267-290）
+//
+// ## 互动经验公式（`interactInner`，两处一模一样）
+// ```java
+// interact = (long)( a0 + (a1 * intimacy) / (a2 + (a3 * intimacy) / (intimacy + a4)) )
+// ```
+// `a0..a4` 是 `ConfigDBCache.PetInteractExpValue` 的 5 个元素。
+// 注意是 **double 运算后截断成 long**，不是整数除法。
+//
+// 若有 `PetMiracleDB`（奇迹加成）命中 `ID_PET_INTACT`：
+// `interact = interact * param2 / 100`，并把 `param2` 作为 `multiple` 下发。
+//
+// ## 7002 `interact(all)` 的循环
+// ```java
+// while (checkNum(pid, 2, counterValue + 1)) {   // 还有精力就继续
+//     counterValue++;
+//     随机挑一只宠物，计数 +1
+//     if (all == 0) break;                        // 单次互动只做一次
+// }
+// removeNum(pid, 2, counterValue, false);
+// ```
+// 所以 `all != 0` 时**一次请求会耗尽全部精力**，逐个随机分配。
+//
+// ## 7030 `interactTimes(times)` 的差异
+// ```java
+// times > itemDB.getUseLimit()                → BUSY(2)
+// item == null || item.getNum() < times       → BUSY(2)
+// times > 0 && !checkResources(17, times)     → PET_ERROR_TEN_TIMES_COST(942)
+// removeResources(17, times)                  → 942
+// for (i < times * counterRecovery.getMaxLimit()) { 随机分配 }
+// ```
+// ⚠ 循环次数是 `times × 该计数器上限`，不是 `times` —— 一次「十连」会互动
+// `times × maxLimit` 次。这是原版写法，容易被误读成 times 次。
+
+/// 互动经验公式的参数（`ConfigDBCache.PetInteractExpValue` 的 5 个元素）。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct InteractExpParams {
+    /// `a0`：基础值。
+    pub a0: i64,
+    /// `a1`：亲密度系数。
+    pub a1: i64,
+    /// `a2`：分母常数。
+    pub a2: i64,
+    /// `a3`：分母内亲密度系数。
+    pub a3: i64,
+    /// `a4`：分母内亲密度偏移。
+    pub a4: i64,
+}
+
+/// `interactInner` 的单次经验计算。
+///
+/// ```text
+/// interact = (long)( a0 + (a1 * intimacy) / (a2 + (a3 * intimacy) / (intimacy + a4)) )
+/// ```
+///
+/// 分母可能为 0（`a2 = a3 = 0` 时）→ 原版是 double 除法得 `Infinity`/`NaN`，
+/// 转 long 后是 `Long.MAX_VALUE`/`0`。这里显式处理：分母为 0 时返回 `a0`。
+#[must_use]
+pub fn interact_exp(p: &InteractExpParams, intimacy: i64) -> i64 {
+    let denom_inner = (intimacy as f64) + (p.a4 as f64);
+    let denom = if denom_inner == 0.0 {
+        return p.a0;
+    } else {
+        (p.a2 as f64) + ((p.a3 as f64) * (intimacy as f64)) / denom_inner
+    };
+    if denom == 0.0 {
+        return p.a0;
+    }
+    let v = (p.a0 as f64) + ((p.a1 as f64) * (intimacy as f64)) / denom;
+    // Java `(long) double` 向零截断
+    v as i64
+}
+
+/// 奇迹加成（`PetMiracleDB` 命中 `ID_PET_INTACT` 时的两个字段）。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct MiracleBonus {
+    /// `param2`：百分比（100 表示不加成）。
+    pub param2: i32,
+}
+
+/// 对单次经验应用奇迹加成。
+///
+/// ```java
+/// interact *= (long)((param2 * 1.0) / 100.0);
+/// multiple = param2;
+/// ```
+#[must_use]
+pub fn apply_miracle(base: i64, bonus: Option<MiracleBonus>) -> (i64, i32) {
+    match bonus {
+        None => (base, 0),
+        Some(b) => {
+            let scaled = ((base as f64) * ((b.param2 as f64) / 100.0)) as i64;
+            (scaled, b.param2)
+        }
+    }
+}
+
+/// 7002 的判定结论。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum InteractOutcome {
+    /// 抛 `HandlerException` → `ErrorResp_1`。
+    Reject(RetCode),
+    /// 通过：要按 `times` 消耗精力，并给 `pet_id` 加经验。
+    Accept {
+        /// 本次互动次数（`all == 0` 时是 1，否则是剩余精力数）。
+        times: i64,
+        /// 目标宠物（随机挑选结果，可能重复）。
+        targets: Vec<i32>,
+    },
+}
+
+impl InteractOutcome {
+    /// 协议上的 `ret`。
+    #[must_use]
+    pub const fn resolve_ret(&self) -> Option<RetCode> {
+        match self {
+            Self::Reject(code) => Some(*code),
+            Self::Accept { .. } => None,
+        }
+    }
+}
+
+/// `PetSet.interact`（7002）的判定部分（不含随机挑选）。
+///
+/// - `pet_count == 0` → `PET_ERROR_NOT_EXIST_PET(901)`
+/// - `available == 0` → `PET_ERROR_TEMPLATE_2_LIMIT(905)`
+/// - `all == 0` → 只互动 1 次；否则互动 `available` 次
+#[must_use]
+pub fn interact_verdict(pet_count: usize, available: i64, all: i32) -> InteractOutcome {
+    if pet_count == 0 {
+        return InteractOutcome::Reject(RetCode::PetErrorNotExistPet);
+    }
+    if available <= 0 {
+        return InteractOutcome::Reject(RetCode::PetErrorTemplate2Limit);
+    }
+    // `all == 0` 时循环体第一次就 break，所以只做 1 次
+    let times = if all == 0 { 1 } else { available };
+    InteractOutcome::Accept {
+        times,
+        targets: Vec::new(),
+    }
+}
+
+/// 7030 的判定结论。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum InteractTimesOutcome {
+    /// 抛 `HandlerException` → `ErrorResp_1`。
+    Reject(RetCode),
+    /// 通过：消耗 `cost` 个道具 17，互动 `times × max_limit` 次。
+    Accept {
+        /// 请求里的 `times`。
+        times: i32,
+        /// 要消耗的道具数量（= `times`）。
+        cost: i64,
+        /// 实际互动次数（= `times × max_limit`）。
+        loops: i64,
+    },
+}
+
+impl InteractTimesOutcome {
+    /// 协议上的 `ret`。
+    #[must_use]
+    pub const fn resolve_ret(&self) -> Option<RetCode> {
+        match self {
+            Self::Reject(code) => Some(*code),
+            Self::Accept { .. } => None,
+        }
+    }
+}
+
+/// `PetSet.interactTimes`（7030）的判定部分。
+///
+/// - `pet_count == 0` → 901
+/// - `times > use_limit` → BUSY(2)
+/// - `item_num < times` → BUSY(2)
+/// - `times <= 0` → 原版没有单独判，但循环 `times * maxLimit` 会变 0；
+///   上层 `PetMessageHandler` 已先判 `num <= 0` → BUSY(2)
+#[must_use]
+pub fn interact_times_verdict(
+    pet_count: usize,
+    times: i32,
+    use_limit: i32,
+    item_num: i64,
+    max_limit: i64,
+) -> InteractTimesOutcome {
+    if pet_count == 0 {
+        return InteractTimesOutcome::Reject(RetCode::PetErrorNotExistPet);
+    }
+    if times > use_limit {
+        return InteractTimesOutcome::Reject(RetCode::ServerBusy);
+    }
+    if item_num < i64::from(times) {
+        return InteractTimesOutcome::Reject(RetCode::ServerBusy);
+    }
+    InteractTimesOutcome::Accept {
+        times,
+        cost: i64::from(times),
+        // ⚠ 循环次数是 times × maxLimit
+        loops: i64::from(times).saturating_mul(max_limit),
+    }
+}
+
+#[cfg(test)]
+mod interact_tests {
+    use super::*;
+
+    fn params() -> InteractExpParams {
+        // a0=10, a1=100, a2=1, a3=1, a4=1
+        InteractExpParams {
+            a0: 10,
+            a1: 100,
+            a2: 1,
+            a3: 1,
+            a4: 1,
+        }
+    }
+
+    #[test]
+    fn interact_exp_matches_java_formula() {
+        // intimacy=9：
+        //   分母内 = 9 + 1 = 10
+        //   分母   = 1 + (1*9)/10 = 1 + 0.9 = 1.9
+        //   值     = 10 + (100*9)/1.9 = 10 + 473.68 = 483.68 → 截断 483
+        assert_eq!(interact_exp(&params(), 9), 483);
+    }
+
+    #[test]
+    fn interact_exp_zero_intimacy() {
+        // intimacy=0：分母内=1，分母=1+0=1，值=10+0=10
+        assert_eq!(interact_exp(&params(), 0), 10);
+    }
+
+    #[test]
+    fn interact_exp_truncates_toward_zero() {
+        // 验证是「截断」不是「四舍五入」：构造一个 .9 的结果
+        let p = InteractExpParams {
+            a0: 0,
+            a1: 19,
+            a2: 10,
+            a3: 0,
+            a4: 1,
+        };
+        // 分母 = 10 + 0 = 10；值 = (19*1)/10 = 1.9 → 1
+        assert_eq!(interact_exp(&p, 1), 1);
+    }
+
+    #[test]
+    fn interact_exp_all_zero_params_returns_a0() {
+        let p = InteractExpParams::default();
+        // 分母内 = intimacy + 0；若 intimacy=0 则分母内=0 → 返回 a0=0
+        assert_eq!(interact_exp(&p, 0), 0);
+    }
+
+    #[test]
+    fn miracle_scales_and_reports_multiple() {
+        let (v, m) = apply_miracle(100, Some(MiracleBonus { param2: 200 }));
+        assert_eq!(v, 200, "200% 翻倍");
+        assert_eq!(m, 200);
+    }
+
+    #[test]
+    fn miracle_absent_keeps_base() {
+        assert_eq!(apply_miracle(100, None), (100, 0));
+    }
+
+    #[test]
+    fn miracle_truncates() {
+        // 100 * 150/100 = 150；改成 33 → 100*0.33 = 33
+        let (v, _) = apply_miracle(100, Some(MiracleBonus { param2: 33 }));
+        assert_eq!(v, 33);
+    }
+
+    // ── 7002 interact ──
+
+    #[test]
+    fn interact_no_pet_is_901() {
+        assert_eq!(
+            interact_verdict(0, 5, 0),
+            InteractOutcome::Reject(RetCode::PetErrorNotExistPet)
+        );
+    }
+
+    #[test]
+    fn interact_no_energy_is_905() {
+        assert_eq!(
+            interact_verdict(3, 0, 0),
+            InteractOutcome::Reject(RetCode::PetErrorTemplate2Limit)
+        );
+    }
+
+    #[test]
+    fn interact_single_when_all_is_zero() {
+        // all == 0 → 只互动 1 次，即使有 10 点精力
+        match interact_verdict(3, 10, 0) {
+            InteractOutcome::Accept { times, .. } => assert_eq!(times, 1),
+            other => panic!("应通过，得到 {other:?}"),
+        }
+    }
+
+    #[test]
+    fn interact_all_drains_energy() {
+        // all != 0 → 互动 available 次
+        match interact_verdict(3, 10, 1) {
+            InteractOutcome::Accept { times, .. } => assert_eq!(times, 10),
+            other => panic!("应通过，得到 {other:?}"),
+        }
+    }
+
+    #[test]
+    fn interact_pet_check_precedes_energy_check() {
+        // 原版先判 allPet.isEmpty()，再判精力
+        assert_eq!(
+            interact_verdict(0, 0, 0),
+            InteractOutcome::Reject(RetCode::PetErrorNotExistPet)
+        );
+    }
+
+    // ── 7030 interactTimes ──
+
+    #[test]
+    fn times_no_pet_is_901() {
+        assert_eq!(
+            interact_times_verdict(0, 1, 10, 100, 5),
+            InteractTimesOutcome::Reject(RetCode::PetErrorNotExistPet)
+        );
+    }
+
+    #[test]
+    fn times_over_use_limit_is_busy() {
+        assert_eq!(
+            interact_times_verdict(3, 11, 10, 100, 5),
+            InteractTimesOutcome::Reject(RetCode::ServerBusy)
+        );
+    }
+
+    #[test]
+    fn times_insufficient_item_is_busy() {
+        assert_eq!(
+            interact_times_verdict(3, 5, 10, 4, 5),
+            InteractTimesOutcome::Reject(RetCode::ServerBusy)
+        );
+    }
+
+    #[test]
+    fn times_loops_is_times_times_max_limit() {
+        // ⚠ 关键：循环次数 = times × maxLimit，不是 times
+        match interact_times_verdict(3, 10, 10, 100, 5) {
+            InteractTimesOutcome::Accept { times, cost, loops } => {
+                assert_eq!(times, 10);
+                assert_eq!(cost, 10, "消耗的是 times 个道具");
+                assert_eq!(loops, 50, "互动 10 × 5 = 50 次");
+            }
+            other => panic!("应通过，得到 {other:?}"),
+        }
+    }
+
+    #[test]
+    fn times_exactly_at_use_limit_passes() {
+        assert!(matches!(
+            interact_times_verdict(3, 10, 10, 10, 5),
+            InteractTimesOutcome::Accept { .. }
+        ));
+    }
+
+    #[test]
+    fn times_exact_item_count_passes() {
+        assert!(matches!(
+            interact_times_verdict(3, 5, 10, 5, 5),
+            InteractTimesOutcome::Accept { .. }
+        ));
+    }
+}

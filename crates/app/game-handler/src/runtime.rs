@@ -55,6 +55,8 @@ pub struct PetExtra {
     pub intimacy: i64,
     /// `skinId → 皮肤等级`（`Pet.skins` 里每个 `PetSkin.lv`）。
     pub skin_lv: HashMap<i32, i32>,
+    /// `Pet.interact`：互动累计值（`addInteract` 的落点）。
+    pub interact: i64,
 }
 
 /// 单个玩家的全部内存态。
@@ -122,6 +124,8 @@ pub struct PlayerBox {
     pub pet_extra: HashMap<i32, PetExtra>,
     /// 门客评级等级：`pet_id → Pet.rataLv`（默认 1）。
     pub pet_rate: HashMap<i32, i32>,
+    /// 计数器状态：`templateId → CounterState`（原版 `counter_recovery` 表）。
+    pub counters: HashMap<i32, crate::counter::CounterState>,
 }
 
 impl MemWorld {

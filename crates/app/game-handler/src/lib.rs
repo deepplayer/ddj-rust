@@ -44,6 +44,7 @@ pub mod chat;
 pub mod friend;
 pub mod gm;
 pub mod guild;
+pub mod counter;
 pub mod declare;
 pub mod divergence;
 pub mod engine;

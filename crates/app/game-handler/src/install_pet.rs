@@ -22,19 +22,22 @@
 
 use std::sync::{Arc, OnceLock};
 
-use ddj_core::Clock;
+use ddj_core::{Clock, RngSource};
 use ddj_pb::gen::pet_message::{
-    MsgActivatePetSkinReq7023, MsgActivatePetSkinResp7023, MsgPetRateLvReplaceReq7029,
+    MsgActivatePetSkinReq7023, MsgActivatePetSkinResp7023, MsgInteractResult,
+    MsgInteractTimesReq7030, MsgInteractTimesResp7030, MsgPetRateLvReplaceReq7029,
     MsgPetRateLvReplaceResp7029, MsgSetPetRateLvReq7026, MsgSetPetRateLvResp7026,
     MsgSetPetSkinReq7025, MsgSetPetSkinResp7025, MsgUpgradePetSkinReq7024,
-    MsgUpgradePetSkinResp7024, PetUpdateResp7001,
+    MsgUpgradePetSkinResp7024, PetInteractReq7002, PetInteractResp7002, PetUpdateResp7001,
 };
 use ddj_registry::{HandlerTable, Reply};
 use prost::Message;
 
+use crate::counter::{self, CounterTemplate};
 use crate::pet::{
-    self, PetRateCtx, PetRateOutcome, PetRateReplaceCtx, PetRateReplaceOutcome, PetRateTemplate,
-    PetSkinTemplate, SkinEffect, SkinOutcome,
+    self, InteractExpParams, InteractOutcome, InteractTimesOutcome, MiracleBonus, PetRateCtx,
+    PetRateOutcome, PetRateReplaceCtx, PetRateReplaceOutcome, PetRateTemplate, PetSkinTemplate,
+    SkinEffect, SkinOutcome,
 };
 use crate::runtime::{decode_err, FnHandler, MemWorld};
 
@@ -46,6 +49,28 @@ const PET_UPDATE_RESP: i32 = 7001;
 
 /// `MsgPetData.skinId` 的字段号（原版 `toMsgPetData(10)` 里的 10）。
 const SKIN_FIELD_ID: i32 = 10;
+
+/// 互动相关模板（`PetInteractExpValue` / 道具 17 的 useLimit / 计数器模板）。
+#[derive(Debug, Clone, Copy, Default)]
+pub struct InteractTemplates {
+    /// `ConfigDBCache.PetInteractExpValue` 的 5 个元素。
+    pub exp: InteractExpParams,
+    /// 道具 17 的 `useLimit`（`ItemDBCache.getItemTemplate(17).getUseLimit()`）。
+    pub item_use_limit: i32,
+    /// `CounterRecoveryDBCache.getCounterRecoveryDB(2)`。
+    pub counter: CounterTemplate,
+}
+
+static INTERACT_TEMPLATES: OnceLock<InteractTemplates> = OnceLock::new();
+
+/// 注入互动模板（只第一次生效）。
+pub fn install_interact_templates(t: InteractTemplates) {
+    let _ = INTERACT_TEMPLATES.set(t);
+}
+
+fn interact_tpl() -> InteractTemplates {
+    INTERACT_TEMPLATES.get().copied().unwrap_or_default()
+}
 
 /// 珍兽评级模板表（`PetRateDBCache`）。
 pub trait PetRateTemplates: Send + Sync {
@@ -96,7 +121,7 @@ fn reject_reply(cmd: i32, code: ddj_pb::RetCode) -> Reply {
 }
 
 /// 注册 3 条消息，返回注册条数。
-pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, _clock: Arc<dyn Clock>) -> usize {
+pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Clock>) -> usize {
     let mut n = 0;
 
     // 7023 激活皮肤
@@ -336,7 +361,214 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, _clock: Arc<dyn C
         n += 1;
     }
 
+    // 7002 宠物互动（单次 / 全部）
+    {
+        let (w, c) = (world.clone(), clock.clone());
+        table.insert(Box::new(FnHandler::new(7002, move |ctx, body| {
+            let req = PetInteractReq7002::decode(body).map_err(decode_err)?;
+            let p = ctx.require_player()?;
+            let all = req.all.unwrap_or(0);
+            let now = c.now_millis();
+            let tpl = interact_tpl();
+
+            let (pet_ids, counter) = w.peek(p, |b| {
+                let ids: Vec<i32> = b.pet_skins.keys().copied().collect();
+                let st = b
+                    .counters
+                    .get(&counter::PET_INTERACT_TEMPLATE_ID)
+                    .copied()
+                    .unwrap_or_default();
+                (ids, st)
+            });
+            // 先 refresh 再判精力
+            let refreshed = counter::refresh(counter, &tpl.counter, COUNTER_MAX_LIMIT, now);
+            let out = pet::interact_verdict(pet_ids.len(), refreshed.state.num, all);
+            match out {
+                InteractOutcome::Reject(code) => Ok(Some(reject_reply(7002, code))),
+                InteractOutcome::Accept { times, .. } => {
+                    // 随机挑 times 次（可能重复），统计每只宠物的次数
+                    let rng = fast_rng().lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+                    let mut picked: Vec<i32> = Vec::new();
+                    for _ in 0..times {
+                        let i = rng.gen_index(pet_ids.len());
+                        picked.push(pet_ids[i]);
+                    }
+                    drop(rng);
+                    // 扣精力
+                    let removed = counter::remove_num(refreshed.state, times, now);
+                    // 按宠物聚合经验
+                    let mut results: Vec<MsgInteractResult> = Vec::new();
+                    w.with(p, |b| {
+                        b.counters
+                            .insert(counter::PET_INTERACT_TEMPLATE_ID, removed.state);
+                        for id in &picked {
+                            let intimacy = b.pet_extra.get(id).map_or(0, |x| x.intimacy);
+                            let base = pet::interact_exp(&tpl.exp, intimacy);
+                            let (exp, multiple) = pet::apply_miracle(base, None::<MiracleBonus>);
+                            let e = b.pet_extra.entry(*id).or_default();
+                            e.interact += exp;
+                            match results.iter_mut().find(|r| r.pet_id == Some(*id)) {
+                                Some(slot) => {
+                                    slot.exp = Some(slot.exp.unwrap_or(0) + exp);
+                                    slot.multiple = Some(slot.multiple.unwrap_or(0) + multiple);
+                                }
+                                None => results.push(MsgInteractResult {
+                                    pet_id: Some(*id),
+                                    exp: Some(exp),
+                                    multiple: Some(multiple),
+                                }),
+                            }
+                        }
+                    });
+                    // 原版推 `PetUpdateResp_7001{toMsgPetData(4)}`（interact 字段）
+                    for r in &results {
+                        if let Some(id) = r.pet_id {
+                            let v = w.peek(p, |b| b.pet_extra.get(&id).map_or(0, |x| x.interact));
+                            push_pet_i64_field(ctx, id, INTERACT_FIELD_ID, v);
+                        }
+                    }
+                    Ok(Some(
+                        PetInteractResp7002 {
+                            ret: 0,
+                            msg_interact_result: results,
+                        }
+                        .encode_to_vec()
+                        .into(),
+                    ))
+                }
+            }
+        })));
+        n += 1;
+    }
+
+    // 7030 批量互动
+    {
+        let (w, c) = (world.clone(), clock.clone());
+        table.insert(Box::new(FnHandler::new(7030, move |ctx, body| {
+            let req = MsgInteractTimesReq7030::decode(body).map_err(decode_err)?;
+            let p = ctx.require_player()?;
+            let times = req.num.unwrap_or(0);
+            let now = c.now_millis();
+            let tpl = interact_tpl();
+
+            // 原版 handler 先判 `num <= 0` → BUSY
+            if times <= 0 {
+                return Ok(Some(reject_reply(7030, ddj_pb::cmd::RetCode::ServerBusy)));
+            }
+            let (pet_ids, item_num, counter) = w.peek(p, |b| {
+                (
+                    b.pet_skins.keys().copied().collect::<Vec<i32>>(),
+                    b.bag.get(&INTERACT_ITEM_ID).copied().unwrap_or(0),
+                    b.counters
+                        .get(&counter::PET_INTERACT_TEMPLATE_ID)
+                        .copied()
+                        .unwrap_or_default(),
+                )
+            });
+            let refreshed = counter::refresh(counter, &tpl.counter, COUNTER_MAX_LIMIT, now);
+            let out = pet::interact_times_verdict(
+                pet_ids.len(),
+                times,
+                tpl.item_use_limit,
+                item_num,
+                COUNTER_MAX_LIMIT,
+            );
+            match out {
+                InteractTimesOutcome::Reject(code) => Ok(Some(reject_reply(7030, code))),
+                InteractTimesOutcome::Accept { cost, loops, .. } => {
+                    let rng = fast_rng().lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+                    let mut picked: Vec<i32> = Vec::new();
+                    for _ in 0..loops {
+                        let i = rng.gen_index(pet_ids.len());
+                        picked.push(pet_ids[i]);
+                    }
+                    drop(rng);
+                    let mut results: Vec<MsgInteractResult> = Vec::new();
+                    w.with(p, |b| {
+                        // 扣道具 17
+                        if let Some(v) = b.bag.get_mut(&INTERACT_ITEM_ID) {
+                            *v = (*v - cost).max(0);
+                        }
+                        for id in &picked {
+                            let intimacy = b.pet_extra.get(id).map_or(0, |x| x.intimacy);
+                            let base = pet::interact_exp(&tpl.exp, intimacy);
+                            let (exp, multiple) = pet::apply_miracle(base, None::<MiracleBonus>);
+                            let e = b.pet_extra.entry(*id).or_default();
+                            e.interact += exp;
+                            match results.iter_mut().find(|r| r.pet_id == Some(*id)) {
+                                Some(slot) => {
+                                    slot.exp = Some(slot.exp.unwrap_or(0) + exp);
+                                    slot.multiple = Some(slot.multiple.unwrap_or(0) + multiple);
+                                }
+                                None => results.push(MsgInteractResult {
+                                    pet_id: Some(*id),
+                                    exp: Some(exp),
+                                    multiple: Some(multiple),
+                                }),
+                            }
+                        }
+                        b.counters.insert(counter::PET_INTERACT_TEMPLATE_ID, refreshed.state);
+                    });
+                    for r in &results {
+                        if let Some(id) = r.pet_id {
+                            let v = w.peek(p, |b| b.pet_extra.get(&id).map_or(0, |x| x.interact));
+                            push_pet_i64_field(ctx, id, INTERACT_FIELD_ID, v);
+                        }
+                    }
+                    Ok(Some(
+                        MsgInteractTimesResp7030 {
+                            ret: 0,
+                            msg_interact_result: results,
+                        }
+                        .encode_to_vec()
+                        .into(),
+                    ))
+                }
+            }
+        })));
+        n += 1;
+    }
+
     n
+}
+
+/// 互动消耗的道具 id（原版硬编码 `17`）。
+const INTERACT_ITEM_ID: i32 = 17;
+
+/// `MsgPetData.interaction` 的字段号（原版 `toMsgPetData(4)` 里的 4）。
+const INTERACT_FIELD_ID: i32 = 4;
+
+/// 计数器上限（原版由 VIP 模板 `getCounterMax(templateId)` 决定）。
+///
+/// 过渡期用常量；接上 `VipDBCache` 后按玩家 VIP 等级取值。
+const COUNTER_MAX_LIMIT: i64 = 100;
+
+/// 互动随机挑选用的 rng（进程级，避免每次 handler 重建）。
+///
+/// `DeterministicRng::new` 不是 const，所以用 `OnceLock` 惰性建。
+static FAST_RNG: OnceLock<std::sync::Mutex<ddj_core::DeterministicRng>> = OnceLock::new();
+
+fn fast_rng() -> &'static std::sync::Mutex<ddj_core::DeterministicRng> {
+    FAST_RNG.get_or_init(|| std::sync::Mutex::new(ddj_core::DeterministicRng::new(0x5EED_7002)))
+}
+
+/// 推一条含 `i64` 字段的 `PetUpdateResp_7001`。
+fn push_pet_i64_field(ctx: &ddj_registry::HandlerCtx, pet_id: i32, field_id: i32, value: i64) {
+    let Some(sess) = ctx.session.as_ref() else {
+        return;
+    };
+    let mut data = ddj_pb::gen::pet_message::MsgPetData {
+        update_fields_list: vec![field_id],
+        pet_id: Some(pet_id),
+        ..Default::default()
+    };
+    if field_id == INTERACT_FIELD_ID {
+        data.interaction = Some(value);
+    }
+    let msg = PetUpdateResp7001 {
+        msg_pet_data: vec![data],
+    };
+    sess.push(PET_UPDATE_RESP, msg.encode_to_vec().into());
 }
 
 /// `MsgPetData.rateLv` 的字段号（原版 `toMsgPetData(11)` 里的 11）。
