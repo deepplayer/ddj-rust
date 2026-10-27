@@ -269,6 +269,58 @@ interact = (long)( a0 + (a1 * intimacy) / (a2 + (a3 * intimacy) / (intimacy + a4
 7006 petId=100 skillId=1001 → ErrorResp_1{msgId=7006, code=901}
 ```
 
+## A13 `pet.rs` 技能升级 7005
+
+对应 `PetSet.skillLevel`（`PetSet.java:419-497`）。**两条分支扣的东西不同**，这是核心。
+
+### 公共前置
+
+| 分支 | 原版位置 | 原版行为 | Rust | 用例 | 状态 |
+|---|---|---|---|---|---|
+| 1 | `:420-423` | `pet == null` → 901 | `pet_skill_level_verdict` | `level_missing_pet_is_901` | ✅ |
+| 2 | `:424-427` | `PetSkillDB == null \|\| petId != petId` → 29 | 同 | `level_missing_skill_template_is_param_error` / `level_skill_not_belonging_is_param_error` | ✅ |
+
+### 分支 A：皮肤技能（`isPetSkinSkill` 为真）
+
+| 分支 | 原版位置 | 原版行为 | Rust | 用例 | 状态 |
+|---|---|---|---|---|---|
+| 3 | `:431-433` | `skinSkillLv` 不含 → 909 | 同 | `skin_skill_not_present_is_909` | ✅ |
+| 4 | `:434-436` | `!isOpenPetSkinSkill` → 909 | 同 | `skin_skill_not_open_is_909` | ✅ |
+| 5 | `:437-443` | `nextUpgradeDB(lv+1) == null` → 912 | 同 | `skin_skill_max_lv_is_912` | ✅ |
+| 6 | `:444-446` | `goodId == 0` → 909 | 同 | `skin_skill_good_id_zero_is_909` | ✅ |
+| 7 | `:447-450` | 扣 `getSkinCost()[offset]` 失败 → **`ResourcesNo(6)`** | `can_pay_good` | `skin_skill_insufficient_good_is_resources_no` | ✅ ⚠ 不是 911 |
+| 8 | `:438` | `offset = skillNum - 1` | `skill_num - 1` | `skin_skill_uses_skill_num_minus_one_as_offset` | ✅ |
+| 9 | `:451` | `setSkinSkillLv(skillId, lv+1)` | `PetSkillLevelEffect::Skin` | — | ✅ |
+
+### 分支 B：普通技能
+
+| 分支 | 原版位置 | 原版行为 | Rust | 用例 | 状态 |
+|---|---|---|---|---|---|
+| 3 | `:454-458` | `indexOf` / `lv == 0` → 909 | 同 | `normal_skill_locked_is_909` / `normal_skill_no_offset_is_909` | ✅ |
+| 4 | `:459-463` | `nextUpgradeDB(lv+1) == null` → 912 | 同 | `normal_skill_max_lv_is_912` | ✅ |
+| 5 | `:464-467` | `getAllPet().size() < petNum` → 940 | 同 | `normal_skill_insufficient_pet_count_is_940` | ✅ |
+| 6 | `:468-471` | `unlockSkillType > 0 && !isFitUnlockCondition` → 946 | 同 | `normal_skill_unlock_condition_is_946` | ✅ |
+| 7 | `:472-476` | `interaction < cost` → **910** | 同 | `normal_skill_insufficient_interaction_is_910` | ✅ |
+| 8 | `:477-479` | `interaction -= cost`；`setSkillLv(lv+1)` | `PetSkillLevelEffect::Normal` | `normal_skill_costs_interaction_not_item` | ✅ |
+
+### ⚠ 两条分支的资源类型不同
+
+| 分支 | 扣什么 | 错误码 |
+|---|---|---|
+| 皮肤技能 | `goodId` **道具** | `ResourcesNo(6)` |
+| 普通技能 | `Pet.interaction` **互动经验**（7002/7030 攒的） | `910` |
+
+两条各有一个反向单测，确保不会交叉检查：
+- `skin_branch_ignores_interaction` —— 互动值为 0 时皮肤分支仍通过
+- `normal_branch_ignores_good_id` —— 道具不够时普通分支仍通过
+
+### 端到端实测
+
+```text
+7005 petId=100 skillId=1001 → ErrorResp_1{msgId=7005, code=901}
+7023 对照                    → ErrorResp_1{msgId=7023, code=2}   模板未注入
+```
+
 ## A7 `login.rs` + `loginvar.rs` + `handshake.rs`（待填）
 
 > 现状：登录 4 / 创角 6 / 握手 16-18 已接线，走真实 PG。`login.rs` 630 行。
