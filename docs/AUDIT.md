@@ -834,6 +834,184 @@ return builder.setRet(0).build();
 
 ---
 
+## A19 `drop.rs` + `pray.rs` + `install_pray.rs`（掉落底座 + 17071 / 17072）
+
+对应 `DropUtils.java`（160 行）、`WeightRandomModelUtils.java`、
+`DropOneDB` / `DropTwoDB` / `DropSignDB`、`PrayMessageHandler.java`（150 行）、
+`PrayModel.java`、`PrayModule.java`、`PrayDBCache`。
+
+### 掉落三层结构
+
+```text
+DropOneDB（一级）   extractNum 次抽取，每次从 idTwo 里挑一个二级
+  ↓ 可被 givenDropId 命中（按累计次数强制指定）
+DropTwoDB（二级）   formulaId 判公式 → 命中则用该二级的 randItem()
+  ↓ 没命中公式 → 按 probability 权重抽
+DropSignDB（下标）  addType / resetType 控制「抽了多少次」的累加与重置
+```
+
+### ⚠ 权重和不足时有**哑元空抽**
+
+```java
+new WeightRandomModelUtils(itemWithWeights, 1000000).random()
+```
+
+第二个参数是 `minWeightTheSum`。实测 `D-掉落2-DropTwo.csv` 762 行里：
+- **745 行**权重和正好 `1000000` → 无哑元
+- **17 行**不足 → 补一个 `weight = 缺额`、`t = null` 的哑元
+
+| id 段 | 权重和 | 空抽概率 |
+|---|---|---|
+| `10101`~`11001` 等 12 行 | 500000 | **50%** |
+| 1 行 | 600000 | 40% |
+| 1 行 | 450000 | 55% |
+| 1 行 | 400000 | 60% |
+| 1 行 | 350000 | 65% |
+| 1 行 | 250000 | 75% |
+
+这是保底前的稀有掉落配置，不是 bug。单测
+`weight_sum_distribution_matches_measurement` 直接断言 **745 / 17**。
+
+⚠ 补齐时哑元的 `weight` 用的是**补齐后的总和**（`this.weightTheSum`），
+不是差值 —— `WeightRandomModelUtils.java:56`。
+
+### ⚠ `formulaRand` 的区间与比较
+
+```java
+boolean ret = UtilsTools.random(0, FeastSeatInfo.CANNOT_ATTACT_TIME_OFFSET) < value;
+```
+
+- `random(0, 1000000)` 是**闭区间** → 1000001 个值
+- 比较是 `<` **严格小于**
+
+### ⚠ 两个公式的 VIP 项是整数除法
+
+```java
+float value2 = 1.0f - (player.getVipLv() / formulaValue.get(2));   // int / int
+```
+
+`getVipLv()` 与 `formulaValue.get(2)` 都是 `int`，除完是**整数**再转 `float`。
+VIP 低于除数时 `1.0f - 0 = 1.0f`（不打折）；高于除数才会 < 1；
+`>= 2*除数` 时 `v2 < 0` → 返回 0（永不命中）。
+单测 `formula1_computes_with_integer_vip_division` 锁这三个档位。
+
+### ⚠ `randOnce` 的累加是「无条件」的
+
+```java
+if (!givenDropId.isEmpty()) {
+    two = getGivenDropId(one, modelOne);   // 内部用 times + 1 比对
+    modelOne.addTimes(one.getId(), 1);     // ⚠ 不管有没有命中都 +1
+}
+```
+
+且累加发生在 `getGivenDropId` **之后**（后者用的是 `times + 1`）。
+
+### ⚠ `DropSignDB.onRand` 的四种组合
+
+```java
+if ( randOK && addType == 1) counter.addTimes(id, 1);   // 成功累加（保底计数）
+if (!randOK && addType == 0) counter.addTimes(id, 1);   // 失败累加（连败计数）
+if ( randOK && resetType == 1) counter.resetTimes(id);  // 成功重置
+```
+
+### 祈愿的三个保底层
+
+```text
+前 10 次（special = firstReward <= 0 && times < 10）
+  → 30% 提前出核心（isHitForTenThousand(3000)）
+否则
+  → 幸运值满（luckNum >= 150）必出核心
+否则
+  → 走掉落表 DropUtils.rand(dropId)
+```
+
+`isHitForTenThousand(3000)`：`randomIndex(10000) < 3000` —— **恰好 30%**。
+
+### ⚠ 单抽免费只看日期，十连没有免费
+
+```java
+boolean free = prayModel.getFreeTime() < LogicUtils.getTodayZeroTimeStamp();
+if (free) prayModel.setFreeTime(getTodayZeroTimeStamp());
+else if (!removeResources(oneCostJson)) throw PRAY_ERROR_COST;   // 3902
+```
+
+`freeTime` 记的是「上次免费用掉的那天的零点」，初始 `0` → 第一次必然免费。
+十连（`prayTenTimes`）**无条件扣费**。
+
+### ⚠ `addLuckNum` 先判后加
+
+```java
+if (this.luckNum >= maxLuckNum) { this.luckNum = addNum; this.cycle++; }
+else                             { this.luckNum += addNum; }
+```
+
+到上限后**下一次**才回落并 `cycle+1`，会短暂留下 `luckNum >= max` 的状态。
+而 `doPray` 的判定 `luckNum >= prayDB.getLuckNum()` 正靠这个状态命中保底 ——
+逻辑自洽。单测 `add_luck_num_wraps_at_max_on_next_call` 锁这条。
+
+### ⚠ 17071 一次请求发两个包（顺序：先推后回）
+
+```java
+MessageUtil.sendToPlayerId(MsgPrayDataResp_17074{...}, player.getId());
+return PrayResp_17071{ret=0, rewards};
+```
+
+**本轮顺带修了一个框架 bug**：`ws` / `tcp` 的会话循环里推送走 `mpsc`、
+回包走 socket 直写，两条通道独立，`select!` 返回回包后径直写回包 →
+客户端看到「先回包、后推送」。修法是在写回包前先 `try_recv` 清空已入队的推送。
+commit `cd05ab3`。
+
+### 公告栏只保留 5 条
+
+`PrayModule.handleEvent`：`while (noticeList.size() > 5) noticeList.remove(0)`。
+
+### 分支明细
+
+| 模块 | 函数 | 原版位置 | 用例 | 状态 |
+|---|---|---|---|---|
+| drop | `pick_weight` | `WeightRandomModelUtils:55-70` | `pick_first_item_when_roll_small` / `pick_second_item_at_boundary` / `pick_last_item_at_total` / `insufficient_weight_yields_empty` / `exact_weight_sum_has_no_dummy` / `zero_weight_is_reported` | ✅ |
+| drop | `given_drop_id` | `DropUtils:83-93` | `given_drop_matches_nth_pull` / `given_drop_empty_never_matches` | ✅ |
+| drop | `formula_value` | `DropUtils:131-163` | `formula1_zero_when_times_not_reached` / `formula1_computes_with_integer_vip_division` / `formula2_needs_two_signs` / `formula2_zero_when_second_sign_not_reached` | ✅ |
+| drop | `formula_hit` | `DropUtils:95-102` | `formula_hit_is_strict_less_than` | ✅ |
+| drop | `sign_action` | `DropUtils:165-176` | `add_type_1_accumulates_on_success` / `add_type_0_accumulates_on_failure` / `reset_type_1_resets_on_success_only` | ✅ |
+| drop | `merge` | `ResourcesJson.mergeResourcesJson` | `merge_sums_same_id` / `merge_empty` | ✅ |
+| pray | `is_free` | `PrayMessageHandler:70-74` | `first_pull_is_free` / `same_day_second_pull_costs` / `next_day_is_free_again` | ✅ |
+| pray | `PrayTimes` | `:58` | `times_one_is_single` / `any_other_times_is_ten` | ✅ |
+| pray | `draw_verdict` | `:100-112` | `special_and_hit_gives_core` / `special_miss_falls_through_to_luck_check` / `luck_full_gives_core` / `luck_over_max_also_gives_core` / `not_special_not_full_uses_drop_table` / `special_takes_priority_over_luck` | ✅ |
+| pray | `add_luck_num` | `PrayModel:70-80` | `add_luck_num_accumulates_below_max` / `add_luck_num_wraps_at_max_on_next_call` / `add_luck_num_does_not_wrap_at_max_minus_one` | ✅ |
+| pray | `by_open_day` | `PrayDBCache` | `by_open_day_below_first_returns_none` / `by_open_day_matches` / `by_open_day_picks_latest_matching` / `by_open_day_empty_list` | ✅ |
+| pray | `push_notice` | `PrayModule:17-32` | `notice_keeps_last_five` | ✅ |
+| csv | 三表 + 祈愿表加载 | — | `loads_real_tables` / `loads_real_pray_table` / `weight_sum_distribution_matches_measurement` | ✅ |
+
+### 端到端实测（2026-10-28）
+
+启动日志：
+
+```text
+掉落表已装载  drop_one=407 drop_two=762 drop_sign=73
+祈愿表已装载  pray_rows=1
+服务就绪      handlers=80
+```
+
+```text
+17072 → 公告栏为空
+17071 单抽（首次免费）→ 先推 17074{prayData{freeTime=1793116800000, luckNum=1, cycle=0}}
+                       再回 PrayResp_17071{ret=0}
+17071 十连（无免费，新号无 263）→ 帧号 1, ErrorResp_1{code=3902}
+17071 二次单抽（同一天不免费）  → 帧号 1, ErrorResp_1{code=3902}
+```
+
+`freeTime=1793116800000` = 2026-10-28 00:00:00 +08:00（今天东八区零点），
+`luckNum=1`（每次 +1），与 `Pray.csv` 的 `everyLuckNum=1` 一致。
+
+### 已知分叉
+
+| 场景 | 原版 | 本工程 | 影响 |
+|---|---|---|---|
+| `PrayDBCache.getByServerOpenDay` 表空 | `list.get(0)` → `IndexOutOfBoundsException` | 返回 `None` → 回 3901 | 只在畸形配置下分叉（实测表有 1 行） |
+
+---
+
 ## A7 `login.rs` + `loginvar.rs` + `handshake.rs`（待填）
 
 > 现状：登录 4 / 创角 6 / 握手 16-18 已接线，走真实 PG。`login.rs` 630 行。

@@ -1,6 +1,6 @@
 # 移植进度（切换上下文先读这里）
 
-> 最后更新：2026-10-28 01:40
+> 最后更新：2026-10-28 02:25
 > 基准：`../data_d/game_7010544/sources/`（反编译）。规则见 [`../AGENTS.md`](../AGENTS.md)。
 > 逐分支台账见 [`AUDIT.md`](AUDIT.md)；里程碑见 [`PLAN.md`](PLAN.md)。
 
@@ -8,19 +8,19 @@
 
 ## 一、一句话现状
 
-骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 78 条（4.6%）**，
+骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 80 条（4.8%）**，
 其中真正落库的只有 4 条，其余是进程内 `MemWorld`（重启即丢）。
 
 ```
 cargo check  --workspace --all-targets                      0 error / 0 warning
 cargo clippy --workspace --exclude ddj-pb --lib --bins -D warnings   通过
-cargo test   --workspace                                    654 passed / 0 failed
+cargo test   --workspace                                    703 passed / 0 failed
 cargo xt check-arch                                         4 条规则通过
 ```
 
 代码量：27 crate / 约 180 个 `.rs` / 约 25 000 行。
 
-## 二、已接线消息（78 / 1681）
+## 二、已接线消息（80 / 1681）
 
 | 模块 | cmdId | 数据源 | 备注 |
 |---|---|---|---|
@@ -59,6 +59,7 @@ cargo xt check-arch                                         4 条规则通过
 | 客户端特约 | 1109 | 无状态 | 原版是空壳：恒回 `{ret=0, msgId}`，`data` 永不设置 |
 | 保存桌面 | 17301 / 17302 / 17303 | `MemWorld` + 真实 CSV | ⚠ 渠道配置实测为空 → `eligible` 恒 false，17302/17303 恒回 4731（原版状态）|
 | 渠道好评 | 17101 / 17102 / 17103 | `MemWorld` + 真实 CSV | ⚠ **三条都不走 `ErrorResp_1`**；17102 渠道不符回 `ret=0` |
+| 焚香祈愿 | 17071 / 17072 | `MemWorld` + 真实 CSV | ⚠ 单抽首日免费、十连不免费；**先推 17074 再回 17071** |
 
 ## 三、未接线（占位，`ret=501`）
 
@@ -196,9 +197,9 @@ Actions 三个 job：`check`（check-arch + clippy + test，阻塞）、
 
 | 项 | 值 |
 |---|---|
-| commit | `7ecd12c`（feat(favourable): 接渠道好评 17101/17102/17103）|
-| Actions run | `40550245679`，共 4m37s |
-| sha256 | `243c6e60010ca285873948895dad26a6b7cffdf4f08448f93c6037f619ebc228` |
+| commit | `cd05ab3`（fix(net): 推送帧与回包的写出顺序改为「推送在前」）|
+| Actions run | `40558075752`，共 3m49s |
+| sha256 | `e2258ebc00a45f8836d06c2e5c0b610a0ab4ea89a1e3e28829f47df791cca669` |
 | 验证 | `./bin/ddj --version` → `ddj 0.1.0`；`./bin/ddj list` 列出 7 个服务 |
 
 > 同一份源码在 Actions 上产出同一字节（验证过两次：`2766e83` 与 `702ac6f`
@@ -349,6 +350,34 @@ WebSocket 监听已启动 addr=0.0.0.0:10544
 
 17102 在渠道不符时回 `ret=0` 而不是错误码，客户端会当成"没发生过"。
 
+### 焚香祈愿专项（2 条，2026-10-28）
+
+启动日志新增：
+
+```text
+掉落表已装载  drop_one=407 drop_two=762 drop_sign=73
+祈愿表已装载  pray_rows=1
+服务就绪      handlers=80
+```
+
+| cmd | 请求 | 帧序 | 回包 |
+|---|---|---|---|
+| 17072 | 空 | — | 公告栏空 |
+| 17071 | `times=1`（首次免费） | **17074 → 17071** | 先推 `PrayData{freeTime=1793116800000, luckNum=1, cycle=0}`，再回 `ret=0` |
+| 17071 | `times=10` | — | 帧号 1，`ErrorResp_1{code=3902}`（十连无免费，新号无 263）|
+| 17071 | `times=1`（同一天第二次） | — | 帧号 1，`ErrorResp_1{code=3902}` |
+
+### ⚠ 顺带修了框架 bug：推送与回包的写出顺序
+
+原实现里推送帧走 `mpsc`、回包走 socket 直写，两条通道独立，
+`select!` 拿到回包后径直写 → 客户端看到「先回包、后推送」，与原版相反。
+
+实测帧序（修前）：`[4, 6, 4, 17071, 17074]`
+实测帧序（修后）：`[4, 6, 4, 17074, 17071]` ✅
+
+修法：写回包前先 `try_recv` 清空**已入队**的推送帧。
+影响所有「handler 里既推又回」的消息（17071、16004 等）。commit `cd05ab3`。
+
 ### 本轮打通的数据链：`channelId` / `cid`
 
 这两列之前完全没落库，导致所有按渠道判定的消息都没法实现。现在全线打通：
@@ -419,12 +448,15 @@ node e2e/smoke/anticheat_smoke.mjs          # 防骗手册 7 条断言
 node e2e/smoke/counter_smoke.mjs            # 计数器恢复 6 条断言
 node e2e/smoke/shortcut_smoke.mjs           # 保存桌面 + 1109，4 条断言
 node e2e/smoke/favourable_smoke.mjs         # 渠道好评 3 条断言
+node e2e/smoke/pray_smoke.mjs               # 焚香祈愿 4 条断言
 node e2e/smoke/view_smoke.mjs
 ```
 
 ## 八、最近提交
 
 ```
+cd05ab3 fix(net): 推送帧与回包的写出顺序改为「推送在前」
+e07f733 feat(drop,pray): 接掉落底座 + 焚香祈愿 17071/17072
 7ecd12c feat(favourable): 接渠道好评 17101/17102/17103
 94f3f65 docs: 补 17301-17303/1109 端到端实测 + 保存桌面冒烟脚本
 fd23e8f feat(shortcut): 接保存桌面 17301-17303 + 打通 channelId/cid 数据链
