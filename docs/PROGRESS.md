@@ -1,6 +1,6 @@
 # 移植进度（切换上下文先读这里）
 
-> 最后更新：2026-10-27 20:25
+> 最后更新：2026-10-27 20:40
 > 基准：`../data_d/game_7010544/sources/`（反编译）。规则见 [`../AGENTS.md`](../AGENTS.md)。
 > 逐分支台账见 [`AUDIT.md`](AUDIT.md)；里程碑见 [`PLAN.md`](PLAN.md)。
 
@@ -8,19 +8,19 @@
 
 ## 一、一句话现状
 
-骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 58 条（3.5%）**，
+骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 60 条（3.6%）**，
 其中真正落库的只有 4 条，其余是进程内 `MemWorld`（重启即丢）。
 
 ```
 cargo check  --workspace --all-targets                      0 error / 0 warning
 cargo clippy --workspace --exclude ddj-pb --lib --bins -D warnings   通过
-cargo test   --workspace                                    507 passed / 0 failed
+cargo test   --workspace                                    525 passed / 0 failed
 cargo xt check-arch                                         4 条规则通过
 ```
 
 代码量：27 crate / 约 180 个 `.rs` / 约 25 000 行。
 
-## 二、已接线消息（58 / 1681）
+## 二、已接线消息（60 / 1681）
 
 | 模块 | cmdId | 数据源 | 备注 |
 |---|---|---|---|
@@ -51,6 +51,7 @@ cargo xt check-arch                                         4 条规则通过
 | 门客皮肤 | 7023 / 7024 / 7025 | `MemWorld` | 三条分支序各不相同，已端到端验证错误码 |
 | 珍兽评级 | 7026 / 7029 | `MemWorld` | ⚠ **两条错误出口不同**，已端到端验证 |
 | 宠物互动 | 7002 / 7030 | `MemWorld` + `counter` | 新增计数器恢复模块；7030 循环次数是 `times × 上限` |
+| 升星/升阶 | 7003 / 7006 | `MemWorld` | 7003 用**当前**星级门槛；7006 判**宠物总数** |
 
 ## 三、未接线（占位，`ret=501`）
 
@@ -183,10 +184,10 @@ Actions 三个 job：`check`（check-arch + clippy + test，阻塞）、
 
 | 项 | 值 |
 |---|---|
-| commit | `4fb7070`（feat(pet): 接宠物互动 7002 / 7030） |
-| Actions run | `40502477293`，check 2m11s / release 1m24s |
-| sha256 | `db54b1bf9925d2b3c276a144b881c3ee135dc1a2fe869429bbc0c61b2884c453` |
-| 大小 | 16 300 920 字节 |
+| commit | `10def38`（feat(pet): 接升星 7003 / 技能升阶 7006） |
+| Actions run | `40504677931`，check 2m17s / release 2m15s |
+| sha256 | `656c526e72c616ef57d58eeb01649c05a9e5e9fb1c72ce191b05a6c452758aae` |
+| 大小 | 16 329 424 字节 |
 | 验证 | `./bin/ddj --version` → `ddj 0.1.0`；`./bin/ddj list` 列出 7 个服务 |
 
 > 同一份源码在 Actions 上产出同一字节（验证过两次：`2766e83` 与 `702ac6f`
@@ -254,6 +255,8 @@ WebSocket 监听已启动 addr=0.0.0.0:10544
 | cmd 7029 评级互换 | `petId1=100, petId2=101` | `MsgPetRateLvReplaceResp_7029{ret=3601}`（帧号 **7029**） |
 | cmd 7002 宠物互动 | `all=1` | `ErrorResp_1{msgId=7002, code=901}`（未获得宠物） |
 | cmd 7030 批量互动 | `num=10` | `ErrorResp_1{msgId=7030, code=901}`（未获得宠物） |
+| cmd 7003 升星 | `petId=100` | `ErrorResp_1{msgId=7003, code=901}` |
+| cmd 7006 技能升阶 | `petId=100, skillId=1001` | `ErrorResp_1{msgId=7006, code=901}` |
 
 cmd 5 实收：
 
@@ -304,6 +307,7 @@ node e2e/smoke/view_smoke.mjs
 ## 八、最近提交
 
 ```
+10def38 feat(pet): 接升星 7003 / 技能升阶 7006
 4fb7070 feat(pet): 接宠物互动 7002 / 7030，新增计数器恢复模块
 c9b14ae feat(pet): 接珍兽评级 7026 升级 / 7029 互换
 ad22e5d feat(pet): 接门客皮肤 7023 激活 / 7024 升级 / 7025 更换

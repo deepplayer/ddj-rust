@@ -229,6 +229,46 @@ interact = (long)( a0 + (a1 * intimacy) / (a2 + (a3 * intimacy) / (intimacy + a4
 7030 num=10 → ErrorResp_1{msgId=7030, code=901}   同上
 ```
 
+## A12 `pet.rs` 升星 7003 / 技能升阶 7006
+
+两条都**抛 `HandlerException`** → 失败走 `ErrorResp_1`。
+
+### 7003 `PetSet.star`（`:342-371`）
+
+| 分支 | 原版位置 | 原版行为 | Rust | 用例 | 状态 |
+|---|---|---|---|---|---|
+| 1 | `:344` | `pet == null` → 901 | `pet_star_verdict` | `star_missing_pet_is_901` | ✅ |
+| 2 | `:350-353` | `getPetStarDB(star + 1) == null` → 906 已满星 | 同 | `star_max_is_906` | ✅ |
+| 3 | `:354-356` | `intimacy < starDB.needIntimacy` → 907 | 同 | `star_insufficient_intimacy_is_907` | ✅ |
+| 4 | `:357-359` | `growth < starDB.needGrowth` → 908 | 同 | `star_insufficient_growth_is_908` | ✅ |
+| 5 | `:360-363` | `starUp()` + `notifyTalentRefresh()` | `PetStarOutcome::Accept` | `star_accept_increments` | ✅ |
+
+⚠ **第 2 步查 `star + 1`，第 3/4 步用 `star`** —— 用当前星级的门槛升到下一星级。
+单测 `star_uses_current_tier_threshold_not_next` 给下一级设极高门槛，仍应通过。
+
+### 7006 `PetSet.skillClass`（`:373-417`）
+
+| 分支 | 原版位置 | 原版行为 | Rust | 用例 | 状态 |
+|---|---|---|---|---|---|
+| 1 | `:374-377` | `pet == null` → 901 | `pet_skill_class_verdict` | `class_missing_pet_is_901` | ✅ |
+| 2 | `:378-381` | `skillId.indexOf < 0` → `PARAM_ERROR(29)` | 同 | `class_skill_not_belonging_is_param_error` | ✅ |
+| 3 | `:384-387` | `skillLv == 0` → 909 未解锁 | 同 | `class_skill_locked_is_909` | ✅ |
+| 4 | `:388-391` | `PetSkillDB == null \|\| stepAdd == 0` → 909 | 同 | `class_step_add_zero_is_909` | ✅ |
+| 5 | `:393-397` | `getSkillClassUpgradeDB(cls + 1) == null` → 913 已满阶 | 同 | `class_max_is_913` | ✅ |
+| 6 | `:398-401` | `getAllPet().size() < upgradeDB.getPetNum()` → 940 | 同 | `class_insufficient_pet_count_is_940` | ✅ |
+| 7 | `:402-405` | 扣 `getCost(skillOffset)` 失败 → 911 | `can_pay` | `class_insufficient_resources_is_911` | ✅ |
+| 8 | `:406-411` | `setSkillClass` + `updateSkinSkillLv` + 推 `7001(7,6)` | `push_pet_skill_class` | `class_accept_carries_offset_and_cost` | ✅ |
+
+⚠ **第 6 步的「宠物数量」是玩家拥有的宠物总数**（`getAllPet().size()`），
+不是该技能对应的宠物数量。这是原版写法。
+
+### 端到端实测
+
+```text
+7003 petId=100              → ErrorResp_1{msgId=7003, code=901}
+7006 petId=100 skillId=1001 → ErrorResp_1{msgId=7006, code=901}
+```
+
 ## A7 `login.rs` + `loginvar.rs` + `handshake.rs`（待填）
 
 > 现状：登录 4 / 创角 6 / 握手 16-18 已接线，走真实 PG。`login.rs` 630 行。
