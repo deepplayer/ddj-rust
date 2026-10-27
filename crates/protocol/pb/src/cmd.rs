@@ -266,6 +266,10 @@ pub enum RetCode {
     SecondPswVerifyNumLimit = 9504,
     /// 二级密码 - 密码错误（`SECOND_PSW_PSW_ERROR`）。
     SecondPswPswError = 9505,
+    /// 防骗手册 - 未阅读完成无法领取奖励（`ANTICHEAT_READ`）。
+    AnticheatRead = 6451,
+    /// 冲榜活动 - 奖励已领取不能重复领（`ACTIVITY_RANK_LIST_ERROR_REPEATED`）。
+    ActivityRankListErrorRepeated = 1501,
 }
 
 impl RetCode {
@@ -384,6 +388,8 @@ impl RetCode {
             9503 => Self::SecondPswNoVerify,
             9504 => Self::SecondPswVerifyNumLimit,
             9505 => Self::SecondPswPswError,
+            6451 => Self::AnticheatRead,
+            1501 => Self::ActivityRankListErrorRepeated,
             _ => return None,
         })
     }
@@ -497,6 +503,8 @@ impl RetCode {
             Self::SecondPswNoVerify => "二级密码- 还未验证二级密码",
             Self::SecondPswVerifyNumLimit => "二级密码- （密码验证）次数不足",
             Self::SecondPswPswError => "二级密码- （密码验证）密码错误",
+            Self::AnticheatRead => "防骗手册-未阅读完成无法领取奖励",
+            Self::ActivityRankListErrorRepeated => "冲榜活动- 奖励已经领取，不能重复领取",
         }
     }
 }
@@ -529,7 +537,7 @@ mod tests {
             405, 406, 407, 914, 915, 938, 939, 940,
             3600, 3601, 3602, 3603, 3604, 3606, 901, 905, 942,
             906, 907, 908, 909, 911, 912, 913, 910, 946,
-            9501, 9502, 9503, 9504, 9505,
+            9501, 9502, 9503, 9504, 9505, 6451, 1501,
         ] {
             let c = RetCode::from_i32(v).unwrap_or_else(|| panic!("缺 {v}"));
             assert_eq!(c.as_i32(), v);
