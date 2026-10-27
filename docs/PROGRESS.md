@@ -1,6 +1,6 @@
 # 移植进度（切换上下文先读这里）
 
-> 最后更新：2026-10-25 21:35
+> 最后更新：2026-10-27 17:55
 > 基准：`../data_d/game_7010544/sources/`（反编译）。规则见 [`../AGENTS.md`](../AGENTS.md)。
 > 逐分支台账见 [`AUDIT.md`](AUDIT.md)；里程碑见 [`PLAN.md`](PLAN.md)。
 
@@ -8,19 +8,19 @@
 
 ## 一、一句话现状
 
-骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息只做了 38 条（2.3%）**，
+骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 45 条（2.7%）**，
 其中真正落库的只有 4 条，其余是进程内 `MemWorld`（重启即丢）。
 
 ```
 cargo check  --workspace --all-targets                      0 error / 0 warning
 cargo clippy --workspace --exclude ddj-pb --lib --bins -D warnings   通过
-cargo test   --workspace                                    357 passed / 0 failed
+cargo test   --workspace                                    386 passed / 0 failed
 cargo xt check-arch                                         4 条规则通过
 ```
 
-代码量：27 crate / 174 个 `.rs` / 23 487 行。
+代码量：27 crate / 约 180 个 `.rs` / 约 25 000 行。
 
-## 二、已接线消息（38 / 1681）
+## 二、已接线消息（45 / 1681）
 
 | 模块 | cmdId | 数据源 | 备注 |
 |---|---|---|---|
@@ -38,11 +38,27 @@ cargo xt check-arch                                         4 条规则通过
 | 签到 | 16002 / 16003 / 16004 | `MemWorld` + 真实 CSV | 16001 推送未发（缺 push） |
 | 琥珀 | 17091 / 17092 / 17093 / 17094 / 17095 / 17097 | `MemWorld` + 真实 CSV | 17096 推送未发 |
 | 存档 | 1100 | `MemWorld` | 零校验零回包 |
+| 宣言 | 1018 / 1019 | `MemWorld` | 1019 本服双发包（原版 bug） |
+| 平台信息 | 1022 / 1107 / 1110 | `PlatformSnapshot` | 只读，静态注入 |
+| 连接标记 | 1004 | `MemWorld.bor` | 不回包 |
+| 绑定奖励 | 1115 | `MemWorld` | 24h 新号加成 |
 
 ## 三、未接线（占位，`ret=501`）
 
 `account` `activity` `battle` `chat` `friend` `gm` `guild` `player` `rank` `shop` `task`
 —— 11 个模块，各 27 行占位。
+
+`PlayerMessageHandler`（27 条）当前进度 **12/27**，剩余 15 条：
+
+| cmdId | 方法 | 缺什么 |
+|---|---|---|
+| 1012 | `sendVVIP_RewardReq_1012` | `VipServerModule` / `checkVVIP_Reward` / `checkVVIP_Aug_Reward` |
+| 1104 | `gainAdReward` | `PlayerAdvertising` 模块 |
+| 1105 | — | 已由 11005 覆盖（不同消息） |
+| 1151 | `PhoneBindStateSyncRemoteReq` | 平台侧绑定状态 |
+
+> 其余 12 条中，`1100/1103/1111/1112` 走 `PlayerStateStore`，
+> `1008/1020` 走 PG，`1002/1003/1009/1010/1015/1024/1016/1101/1102` 走 `MemWorld`。
 
 活动族最大：`data_d/.../module/activity/` 下 **1512 个 Java 文件**，一行未动。
 
@@ -66,7 +82,10 @@ cargo xt check-arch                                         4 条规则通过
 | `GiftDB.useCost` | `D-道具使用效果-Gift.csv`（列名是 `useCost`） | ✅ 真实 CSV |
 | 签到奖励 / 宝箱 | `M-每日签到表` / `M-每日签到宝箱表` | ✅ 真实 CSV |
 | 琥珀 31 行 | `H-琥珀福利-AmberWelfare.csv` | ✅ 真实 CSV |
-| 邮件模板 | `MailTemplateDB` | ⬜ 未接 |
+| 邮件模板 | `MailTemplateDB` | ⬜ 未接（1115 用 `mail_template_id != 0` 近似） |
+| 宣言长度限制 | `ConfigDB.MammonDeclaration*Limit` | ⚠ 常量 1 / 60（`declare.rs`） |
+| 绑定奖励 | `ConfigDBCache.TwBindReward` / `HighReward` | ⬜ 未接（`BindRewardTemplates` 注入点已留） |
+| 平台配置 | `bf_word_config` / `bf_wechat_official_account` / `switchPayment` | ⬜ 未接（`PlatformSnapshot` 注入点已留） |
 | 等级表 | `S-身份表-Status.csv` | ⬜ 未接 |
 | 名字表 | `W_玩家名字_PlayerName.csv`（306000 名） | ⬜ 未接 |
 
@@ -99,7 +118,9 @@ cargo xt check-arch                                         4 条规则通过
 ## 六、下一步建议顺序
 
 1. **裁决 §5.1 的三处偏离** —— 影响后续所有数值逻辑的写法基准。
-2. **补完 `PlayerMessageHandler` 剩余消息**（27 条中已做 6 条）—— 单一文件、逻辑集中、收益快。
+2. **补完 `PlayerMessageHandler` 剩余 15 条** —— 单一文件、逻辑集中、收益快。
+   其中 1012（VIP 奖励）依赖 `VipServerModule`，1104（广告奖励）依赖
+   `PlayerAdvertising`，这两块要先建模块才能接。
 3. **`FamilyMessageHandler`(33) / `TalentMessageHandler`(30) / `PetMessageHandler`** —— 完成 M3 的一角。
 4. **活动族试点 1 个**（如 `FeastMessageHandler` 49 条）—— 验证活动族的通用装配模式，再铺开。
 
@@ -142,14 +163,14 @@ Actions 三个 job：`check`（check-arch + clippy + test，阻塞）、
 
 | 项 | 值 |
 |---|---|
-| commit | `702ac6f`（docs: 构建流程改为 GitHub Actions） |
-| Actions run | `40480638459`，check 2m52s / release 2m7s |
-| sha256 | `8e50a0969ac705e17fd0a28acd0ca43f83b6b7f57d8d89649bc08369386996f0` |
-| 大小 | 16 045 288 字节 |
+| commit | `eb4bfb4`（feat(bind): 接 1004 连接标记 / 1115 绑定奖励） |
+| Actions run | `40483259733`，check 2m40s / release 2m12s |
+| sha256 | `6ec37da1a459ce92cc9bfdeafa7d3e23f11b2ca328e429288f87acad1a97f9cc` |
+| 大小 | 16 099 160 字节 |
 | 验证 | `./bin/ddj --version` → `ddj 0.1.0`；`./bin/ddj list` 列出 7 个服务 |
 
-> 该 commit 只改文档，产物 sha256 与上一版（`2766e83`）完全一致 ——
-> 构建可复现，同一份源码在 Actions 上产出同一字节。
+> 同一份源码在 Actions 上产出同一字节（验证过两次：`2766e83` 与 `702ac6f`
+> 只差文档，sha256 完全一致）。
 
 ## 七、常用命令
 
@@ -174,6 +195,11 @@ node e2e/smoke/view_smoke.mjs
 ## 八、最近提交
 
 ```
+eb4bfb4 feat(bind): 接 1004 连接标记 / 1115 绑定奖励
+a2e5a13 feat(platform): 接 1022 客服文案 / 1107 公众号信息 / 1110 切换支付
+264a562 feat(declare): 接 1018 设置宣言 / 1019 查他人宣言
+d0d25b0 docs(progress): 记录 run 40480638459 与构建可复现性
+702ac6f docs: 构建流程改为 GitHub Actions（废弃 web-shell 远端编译）
 47c33d7 fix(item,amber): 修 HEAD 编译 + 6 处与原版反编译不一致的行为
 bc29929 feat(log): 1016 福利领奖 + 1101/1102 纯日志三条（成功后不回包）
 130e9e0 test(e2e): 1008/1020 看他人专项（真角色 ret=0 / 不存在 ret=2）
