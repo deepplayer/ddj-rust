@@ -142,11 +142,14 @@ Actions 三个 job：`check`（check-arch + clippy + test，阻塞）、
 
 | 项 | 值 |
 |---|---|
-| commit | `2766e83`（chore: 公开仓库前清理编译产物与本机路径） |
-| Actions run | `40471472217`，check 2m35s / release 2m44s |
+| commit | `702ac6f`（docs: 构建流程改为 GitHub Actions） |
+| Actions run | `40480638459`，check 2m52s / release 2m7s |
 | sha256 | `8e50a0969ac705e17fd0a28acd0ca43f83b6b7f57d8d89649bc08369386996f0` |
 | 大小 | 16 045 288 字节 |
 | 验证 | `./bin/ddj --version` → `ddj 0.1.0`；`./bin/ddj list` 列出 7 个服务 |
+
+> 该 commit 只改文档，产物 sha256 与上一版（`2766e83`）完全一致 ——
+> 构建可复现，同一份源码在 Actions 上产出同一字节。
 
 ## 七、常用命令
 
