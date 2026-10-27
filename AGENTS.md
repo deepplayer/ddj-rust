@@ -80,63 +80,73 @@
 ```
 
 - `type`：`feat`（接线新消息）/ `fix`（修正偏离）/ `test` / `docs` / `refactor` / `chore`
-- 门禁在**远端**跑（见 §5）：commit → push → 远端 `scripts/ci.sh`（clippy + test + release）→
-  取回二进制本机验证。本机不跑 clippy/test 全量。
+- 门禁在 **GitHub Actions** 里跑（见 §5）：commit → push github → 等 `check` + `release` 绿
+  → `gh run download` 取回二进制 → 本机验证。本机不跑 clippy/test 全量。
 
 ## 5. 构建与验证
 
 **本地一律不编译。** 流程固定为：
 
 ```
-改代码 → commit → push gitee → web-shell 远端拉取 → 远端 check/clippy/test + release
-      → 把二进制传回本机 bin/ddj → 本机执行验证
+改代码 → commit → push github → GitHub Actions 编译
+      → gh run download 取回二进制 → 本机 bin/ddj 验证
 ```
 
-### 远端构建的硬性要求
+### 仓库与远程
 
-web-shell **每次请求可能落到不同容器，但 `/workspace` 是共享卷**。
-不同节点的 `target/` 会互相污染，实测出现过 `Exec format error`
-（`target/debug/deps/ddj-*` 变成 `data`，target 涨到 66G）。
+| remote | 地址 | 用途 |
+|---|---|---|
+| `github` | `https://github.com/deepplayer/ddj-rust.git` | **主**：Actions 在此编译 |
+| `gitee` | `git@gitee.com:deepplayer/ddj-rust.git` | 历史镜像，可不再推送 |
 
-所以：
-
-1. **一次请求内跑完整条链路**，不要把 build 拆到多次 `exec` ——
-   下一次请求可能已在另一个节点，前台进程也会被回收。
-2. **不要在远端后台跑构建**：`nohup` / `setsid` 都躲不过节点回收，
-   实测两次后台构建都在中途消失。
-3. 产物必须**校验 sha256** 再取回，取回后本机再跑一次 `./bin/ddj --version` 确认。
-4. `bin/` 不入库（`.gitignore` 已排除），每次构建重新取回。
+### 完整命令
 
 ```bash
-# 远端（一条命令）
-python3 scripts/ws.py exec --max-wait 900 "
-  cd /workspace/ddj-rust &&
-  RUSTFLAGS='-C link-arg=-fuse-ld=lld' CARGO_INCREMENTAL=0 cargo build --release -p ddj-cli 2>&1 | tail -6;
-  sha256sum target/release/ddj; stat -c '%s' target/release/ddj"
+# 1. 提交并推送（触发 Actions）
+git add -A && git commit -m "..." && git push github main
 
-# 取回
-python3 scripts/ws.py read /workspace/ddj-rust/target/release/ddj /tmp/ddj-new
-sha256sum /tmp/ddj-new && cp /tmp/ddj-new bin/ddj && chmod +x bin/ddj
-./bin/ddj --version
+# 2. 等 Actions 跑完（release job 约 3 分钟）
+gh run list --limit 3
+gh run watch              # 或反复 gh run view <id>
+
+# 3. 取回产物（artifact 名带 commit sha）
+gh run download <run-id> -D /tmp/gh-art
+cp /tmp/gh-art/ddj-<full-sha>/ddj bin/ddj && chmod +x bin/ddj
+
+# 4. 本机验证
+sha256sum bin/ddj && ./bin/ddj --version && ./bin/ddj list
 ```
 
-本地只允许跑 `cargo check`（省时间）与 `cargo test -p <crate>`（纯函数单测），
-**不允许** `cargo build --release`。
+### 门禁在 Actions 里
 
-### 提交前的门禁（远端跑，本机不跑）
+`.github/workflows/ci.yml` 有三个 job：
 
-`scripts/ci.sh` 会做：`git reset gitee/main` → clippy → test → release。
-提交后由远端执行，本机只看结果：
+| job | 内容 | 是否阻塞 |
+|---|---|---|
+| `check` | `cargo xt check-arch` → clippy `--lib --bins -D warnings` → `cargo test --workspace` | **是** |
+| `fmt` | `cargo fmt --all -- --check` | 否（`continue-on-error`，移植期未统一格式化） |
+| `release` | `cargo build --release -p ddj-cli` + 上传 artifact（保留 14 天） | 是（`needs: check`） |
 
-```bash
-# 远端一条命令跑完三关（约 3-5 分钟，32 核）
-python3 scripts/ws.py exec --max-wait 900 "cd /workspace/ddj-rust && SKIP_FMT=1 bash scripts/ci.sh 2>&1 | tail -30"
-```
+所以 **push 之后看 `check` 与 `release` 两个 job 是否绿**，`fmt` 红是已知状态。
 
-本机最多跑：
+### 历史教训（web-shell 方案已废弃）
+
+早期用 web-shell 在远端 `/workspace/ddj-rust` 编译，遇到两个问题，这里记录以免重犯：
+
+1. **web-shell 每次请求可能落到不同容器，但 `/workspace` 是共享卷** ——
+   不同节点的 `target/` 缓存互相污染，实测 `Exec format error`、
+   `target/debug/deps/ddj-*` 变成 `data`、target 涨到 66G。
+2. **远端后台构建活不下来** —— `nohup` / `setsid` 都躲不过节点回收，
+   两次构建都在中途消失。
+
+现在改用 GitHub Actions：环境干净、每次全新 runner、产物有 artifact 存档，不再有这些问题。
+
+### 本机允许做的事
+
 - `cargo check --workspace`（省时间，只验语法/类型）
 - `cargo xt check-arch`（纯静态，秒级）
-- `cargo test -p ddj-game-handler`（单个 crate 的纯函数单测，秒级）
+- `cargo test -p <crate>`（单 crate 纯函数单测，秒级）
+- **不允许** `cargo build --release`（内存不足且没必要）
 
 ## 6. 代码组织
 

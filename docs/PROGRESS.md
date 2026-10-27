@@ -103,45 +103,62 @@ cargo xt check-arch                                         4 条规则通过
 3. **`FamilyMessageHandler`(33) / `TalentMessageHandler`(30) / `PetMessageHandler`** —— 完成 M3 的一角。
 4. **活动族试点 1 个**（如 `FeastMessageHandler` 49 条）—— 验证活动族的通用装配模式，再铺开。
 
-## 六点五、构建与产物（2026-10-25 实测）
+## 六点五、构建与产物（2026-10-27 更新）
 
-**规则：本地不编译 release，一律远端构建后取回。**
+**规则：本地不编译，一律 GitHub Actions 编译后取回。**
 
-远端 web-shell 的一个坑：**每次请求可能落到不同容器，但 `/workspace` 是共享卷**。
-不同节点的 `target/` 缓存会互相污染，实测出现过 `Exec format error`
-（`target/debug/deps/ddj-*` 变成 `data`，target 涨到 66G）。
-
-因此正确的做法是**单任务内跑完整条链路**，不要拆成多次请求：
-
-```bash
-# 远端，一条命令做完 check/clippy/test/release
-python3 scripts/ws.py exec --max-wait 900 "
-  cd /workspace/ddj-rust &&
-  RUSTFLAGS='-C link-arg=-fuse-ld=lld' CARGO_INCREMENTAL=0 cargo build --release -p ddj-cli 2>&1 | tail -6;
-  sha256sum target/release/ddj; stat -c '%s' target/release/ddj"
+```
+改代码 → commit → push github → Actions 编译
+      → gh run download 取回 → 本机 bin/ddj 验证
 ```
 
-脚本 `scripts/remote_release.sh` 是给「同一节点上重跑」用的（含 flock、节点切换检测、
-`build_result.json`），在节点频繁切换时它会反复清 target 反而更慢 ——
-跨节点场景优先用上面的一次性命令。
+仓库：`https://github.com/deepplayer/ddj-rust.git`（`github` remote 是主；
+`gitee` 仅历史镜像，不再推送）。
 
-最近一次成功构建：
+```bash
+git push github main
+gh run list --limit 3                     # 等 check + release 绿
+gh run download <run-id> -D /tmp/gh-art
+cp /tmp/gh-art/ddj-<full-sha>/ddj bin/ddj && chmod +x bin/ddj
+sha256sum bin/ddj && ./bin/ddj --version
+```
+
+Actions 三个 job：`check`（check-arch + clippy + test，阻塞）、
+`fmt`（仅报告，移植期未统一格式化，红是已知状态）、
+`release`（`needs: check`，上传 artifact，保留 14 天）。
+
+### 已废弃：web-shell 远端构建
+
+早期用 web-shell 在 `/workspace/ddj-rust` 编译，两个坑：
+
+1. **每次请求可能落到不同容器，但 `/workspace` 是共享卷** ——
+   跨节点 `target/` 缓存互相污染，实测 `Exec format error`、
+   `target/debug/deps/ddj-*` 变成 `data`、target 涨到 66G。
+2. **后台构建活不下来** —— `nohup` / `setsid` 都躲不过节点回收，两次中途消失。
+
+`scripts/remote_release.sh` 保留作参考，不再是主流程。
+
+### 最近一次成功构建
 
 | 项 | 值 |
 |---|---|
-| commit | `5c5b162` |
-| sha256 | `a07f8763ae57d7894a0c98c04350f254953b42daebfadd2db40eb48911a3e7c3` |
-| 大小 | 15 238 936 字节 |
-| 编译耗时 | 2m 51s（release，32 核） |
-| 验证 | `./bin/ddj --version` → `ddj 0.1.0`；`./bin/ddj list` 列出 7 个服务；`./bin/ddj run game` 读到配置后因本机无 PG 而退出（预期） |
+| commit | `2766e83`（chore: 公开仓库前清理编译产物与本机路径） |
+| Actions run | `40471472217`，check 2m35s / release 2m44s |
+| sha256 | `8e50a0969ac705e17fd0a28acd0ca43f83b6b7f57d8d89649bc08369386996f0` |
+| 大小 | 16 045 288 字节 |
+| 验证 | `./bin/ddj --version` → `ddj 0.1.0`；`./bin/ddj list` 列出 7 个服务 |
 
 ## 七、常用命令
 
 ```bash
-# 本地（内存有限，别跑 release）
+# 本机只做静态校验（不编译 release）
 DDJ_PB_STUB=1 cargo check --workspace
 cargo test -p ddj-game-handler
 cargo xt check-arch
+
+# 构建与取回
+git push github main && gh run list --limit 3
+gh run download <run-id> -D /tmp/gh-art
 
 # 磁盘紧时
 rm -rf target/debug/incremental && CARGO_INCREMENTAL=0 cargo test -p ddj-game-handler
