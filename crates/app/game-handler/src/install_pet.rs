@@ -28,7 +28,8 @@ use ddj_pb::gen::pet_message::{
     MsgInteractTimesReq7030, MsgInteractTimesResp7030, MsgPetRateLvReplaceReq7029,
     MsgPetRateLvReplaceResp7029, MsgSetPetRateLvReq7026, MsgSetPetRateLvResp7026,
     MsgSetPetSkinReq7025, MsgSetPetSkinResp7025, MsgUpgradePetSkinReq7024,
-    MsgUpgradePetSkinResp7024, PetInteractReq7002, PetInteractResp7002, PetUpdateResp7001,
+    MsgUpgradePetSkinResp7024, PetInteractReq7002, PetInteractResp7002, PetStarReq7003,
+    PetStarResp7003, PetUpgradeSkillClassReq7006, PetUpgradeSkillClassResp7006, PetUpdateResp7001,
 };
 use ddj_registry::{HandlerTable, Reply};
 use prost::Message;
@@ -36,8 +37,9 @@ use prost::Message;
 use crate::counter::{self, CounterTemplate};
 use crate::pet::{
     self, InteractExpParams, InteractOutcome, InteractTimesOutcome, MiracleBonus, PetRateCtx,
-    PetRateOutcome, PetRateReplaceCtx, PetRateReplaceOutcome, PetRateTemplate, PetSkinTemplate,
-    SkinEffect, SkinOutcome,
+    PetRateOutcome, PetRateReplaceCtx, PetRateReplaceOutcome, PetRateTemplate, PetSkillClassCtx,
+    PetSkillClassOutcome, PetSkillClassTemplate, PetSkinTemplate, PetStarCtx, PetStarOutcome,
+    PetStarTemplate, SkinEffect, SkinOutcome,
 };
 use crate::runtime::{decode_err, FnHandler, MemWorld};
 
@@ -49,6 +51,27 @@ const PET_UPDATE_RESP: i32 = 7001;
 
 /// `MsgPetData.skinId` 的字段号（原版 `toMsgPetData(10)` 里的 10）。
 const SKIN_FIELD_ID: i32 = 10;
+
+/// 升星与技能升阶模板。
+pub trait PetGrowthTemplates: Send + Sync {
+    /// `PetStarDBCache.getPetStarDB(star)`。
+    fn star(&self, star: i32) -> Option<PetStarTemplate>;
+    /// `PetSkillClassUpgradeDBCache.get(cls)`。
+    fn skill_class(&self, cls: i32) -> Option<PetSkillClassTemplate>;
+    /// `PetSkillDBCache.get(skillId)` → `(petId, stepAdd)`。
+    fn skill(&self, skill_id: i32) -> Option<(i32, i32)>;
+}
+
+static GROWTH_TEMPLATES: OnceLock<Arc<dyn PetGrowthTemplates>> = OnceLock::new();
+
+/// 注入升星/技能模板（只第一次生效）。
+pub fn install_growth_templates(t: Arc<dyn PetGrowthTemplates>) {
+    let _ = GROWTH_TEMPLATES.set(t);
+}
+
+fn growth_tpl() -> Option<&'static Arc<dyn PetGrowthTemplates>> {
+    GROWTH_TEMPLATES.get()
+}
 
 /// 互动相关模板（`PetInteractExpValue` / 道具 17 的 useLimit / 计数器模板）。
 #[derive(Debug, Clone, Copy, Default)]
@@ -529,7 +552,123 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
         n += 1;
     }
 
+    // 7003 升星
+    {
+        let w = world.clone();
+        table.insert(Box::new(FnHandler::new(7003, move |ctx, body| {
+            let req = PetStarReq7003::decode(body).map_err(decode_err)?;
+            let p = ctx.require_player()?;
+            let pet_id = req.pet_id.unwrap_or(0);
+            let (exists, star, intimacy, growth) = w.peek(p, |b| {
+                (
+                    b.pet_skins.contains_key(&pet_id),
+                    b.pet_star.get(&pet_id).copied().unwrap_or(0),
+                    b.pet_extra.get(&pet_id).map_or(0, |x| x.intimacy),
+                    b.pet_extra.get(&pet_id).map_or(0, |x| x.growth),
+                )
+            });
+            let sctx = PetStarCtx {
+                pet_exists: exists,
+                current_star: star,
+                intimacy,
+                growth,
+            };
+            let (cur, next) = match growth_tpl() {
+                Some(t) => (t.star(star), t.star(star + 1)),
+                None => (None, None),
+            };
+            match pet::pet_star_verdict(&sctx, cur.as_ref(), next.as_ref()) {
+                PetStarOutcome::Reject(code) => Ok(Some(reject_reply(7003, code))),
+                PetStarOutcome::Accept { new_star } => {
+                    w.with(p, |b| {
+                        b.pet_star.insert(pet_id, new_star);
+                    });
+                    Ok(Some(PetStarResp7003 { ret: 0 }.encode_to_vec().into()))
+                }
+            }
+        })));
+        n += 1;
+    }
+
+    // 7006 技能升阶
+    {
+        let w = world.clone();
+        table.insert(Box::new(FnHandler::new(7006, move |ctx, body| {
+            let req = PetUpgradeSkillClassReq7006::decode(body).map_err(decode_err)?;
+            let p = ctx.require_player()?;
+            let pet_id = req.pet_id.unwrap_or(0);
+            let skill_id = req.skill_id.unwrap_or(0);
+            let (exists, pet_count, cur_class) = w.peek(p, |b| {
+                (
+                    b.pet_skins.contains_key(&pet_id),
+                    b.pet_skins.len(),
+                    b.pet_skill_class
+                        .get(&(pet_id, skill_id))
+                        .copied()
+                        .unwrap_or(0),
+                )
+            });
+            // `PetSkillDB.get(skillId)`：判断技能属于谁、能否升阶
+            let skill = growth_tpl().and_then(|t| t.skill(skill_id));
+            let belongs = skill.map(|(pid, _)| pid == pet_id);
+            let step_add = skill.map_or(0, |(_, s)| s);
+            let cctx = PetSkillClassCtx {
+                pet_exists: exists,
+                // 原版用 `indexOf` 得到下标；过渡期只要属于该宠物就算 offset 0
+                skill_offset: belongs.and_then(|ok| ok.then_some(0usize)),
+                // 过渡期没有逐技能等级，默认已解锁（1）
+                skill_lv: 1,
+                step_add,
+                current_class: cur_class,
+                pet_count,
+                // 过渡期不查资源系统
+                can_pay: true,
+            };
+            let (up, next) = match growth_tpl() {
+                Some(t) => (t.skill_class(cur_class), t.skill_class(cur_class + 1)),
+                None => (None, None),
+            };
+            match pet::pet_skill_class_verdict(&cctx, up.as_ref(), next.as_ref()) {
+                PetSkillClassOutcome::Reject(code) => Ok(Some(reject_reply(7006, code))),
+                PetSkillClassOutcome::Accept {
+                    new_class, offset, ..
+                } => {
+                    w.with(p, |b| {
+                        b.pet_skill_class.insert((pet_id, skill_id), new_class);
+                    });
+                    // 原版 `pet.sendToPlayer(7, 6)`：推 skillClass 字段（tag 7）
+                    push_pet_skill_class(ctx, pet_id, offset, new_class);
+                    Ok(Some(
+                        PetUpgradeSkillClassResp7006 { ret: 0 }.encode_to_vec().into(),
+                    ))
+                }
+            }
+        })));
+        n += 1;
+    }
+
     n
+}
+
+/// `MsgPetData.skillClass` 的字段号（tag 7）。
+const SKILL_CLASS_FIELD_ID: i32 = 7;
+
+/// 推一条含 `skillClass` 的 `PetUpdateResp_7001`。
+fn push_pet_skill_class(ctx: &ddj_registry::HandlerCtx, pet_id: i32, offset: usize, new_class: i32) {
+    let Some(sess) = ctx.session.as_ref() else {
+        return;
+    };
+    let mut skills = vec![0_i32; offset + 1];
+    skills[offset] = new_class;
+    let msg = PetUpdateResp7001 {
+        msg_pet_data: vec![ddj_pb::gen::pet_message::MsgPetData {
+            update_fields_list: vec![SKILL_CLASS_FIELD_ID],
+            pet_id: Some(pet_id),
+            skill_class: skills,
+            ..Default::default()
+        }],
+    };
+    sess.push(PET_UPDATE_RESP, msg.encode_to_vec().into());
 }
 
 /// 互动消耗的道具 id（原版硬编码 `17`）。

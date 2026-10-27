@@ -1242,3 +1242,475 @@ mod interact_tests {
         ));
     }
 }
+
+// ─────────────────────── 升星 7003 / 技能升阶 7006 ───────────────────────
+//
+// 对应 Java：
+// - `PetSet.star(int petId)`（`PetSet.java:342-371`）→ 7003
+// - `PetSet.skillClass(...)`（`PetSet.java:373-417`）→ 7006
+// - `PetSet.skillLevel(...)`（`PetSet.java:419-...`）→ 7005
+//
+// 这三条都**抛 `HandlerException`**，失败走 `ErrorResp_1`。
+//
+// ## 7003 升星（分支序）
+// ```text
+// 1. pet == null                                → PET_ERROR_NOT_EXIST_PET(901)
+// 2. PetStarDB.getPetStarDB(star + 1) == null   → PET_ERROR_MAX_START(906)
+// 3. intimacy < starDB.needIntimacy             → PET_ERROR_INTIMACY_LIMIT(907)
+// 4. growth   < starDB.needGrowth               → PET_ERROR_GROWTH_LIMIT(908)
+// 5. starUp() + notifyTalentRefresh()
+// ```
+// ⚠ 注意第 2 步查的是 **`star + 1`**（下一级）是否为空，
+// 但第 3/4 步用的是 **`star`**（当前级）的门槛 —— 即「用当前星级的门槛
+// 来升到下一星级」。这是原版写法，不是笔误，照抄。
+//
+// ## 7006 技能升阶（分支序）
+// ```text
+// 1. pet == null                                       → 901
+// 2. skillOffset = petDB.skillId.indexOf(skillId) < 0   → PARAM_ERROR(29)
+// 3. pet.getSkillLv(skillOffset) == 0                   → PET_ERROR_SKILL_LOCK(909)
+// 4. PetSkillDB == null || stepAdd == 0                 → 909
+// 5. cls = getSkillClass(skillOffset)
+//    PetSkillClassUpgradeDB.get(cls + 1) == null        → PET_ERROR_SKILL_MAX_CLASS(913)
+// 6. 宠物数量 < upgradeDB.getPetNum()                    → PET_ERROR_PET_NUM_LIMIT(940)
+// 7. 扣 upgradeDB.getCost(skillOffset) 失败              → PET_ERROR_SKILL_CLASS_LIMIT(911)
+// 8. setSkillClass(skillOffset, cls + 1) + updateSkinSkillLv + 推 7001(7,6)
+// ```
+// ⚠ 第 6 步的「宠物数量」是**玩家拥有的宠物总数**（`getAllPet().size()`），
+// 不是该技能对应的宠物数量。
+
+/// `PetStarDB` 的一行。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct PetStarTemplate {
+    /// `needIntimacy`：升星所需亲密度。
+    pub need_intimacy: i64,
+    /// `needGrowth`：升星所需成长。
+    pub need_growth: i64,
+}
+
+/// 7003 的判定输入。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PetStarCtx {
+    /// 门客是否存在。
+    pub pet_exists: bool,
+    /// 当前星级（`Pet.getStar()`）。
+    pub current_star: i32,
+    /// `getIntimacyWithSkinAdd()`。
+    pub intimacy: i64,
+    /// `getGrowthWithSkinAdd()`。
+    pub growth: i64,
+}
+
+/// 7003 的结论。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PetStarOutcome {
+    /// 抛 `HandlerException` → `ErrorResp_1`。
+    Reject(RetCode),
+    /// 通过：星级 +1。
+    Accept {
+        /// 升星后的星级。
+        new_star: i32,
+    },
+}
+
+impl PetStarOutcome {
+    /// 协议上的 `ret`。
+    #[must_use]
+    pub const fn resolve_ret(&self) -> Option<RetCode> {
+        match self {
+            Self::Reject(code) => Some(*code),
+            Self::Accept { .. } => None,
+        }
+    }
+}
+
+/// `PetSet.star`（7003）的纯逻辑。
+///
+/// - `cur_tpl`：`PetStarDB.getPetStarDB(current_star)`（当前星级门槛）
+/// - `next_tpl`：`PetStarDB.getPetStarDB(current_star + 1)`（下一级是否存在）
+#[must_use]
+pub fn pet_star_verdict(
+    ctx: &PetStarCtx,
+    cur_tpl: Option<&PetStarTemplate>,
+    next_tpl: Option<&PetStarTemplate>,
+) -> PetStarOutcome {
+    // 1. 门客不存在
+    if !ctx.pet_exists {
+        return PetStarOutcome::Reject(RetCode::PetErrorNotExistPet);
+    }
+    // 2. 下一星级配置不存在 → 已满星
+    if next_tpl.is_none() {
+        return PetStarOutcome::Reject(RetCode::PetErrorMaxStart);
+    }
+    // 3/4. 用**当前**星级的门槛校验
+    // 当前配置缺失时原版 NPE（`starDB.getNeedIntimacy()`）→ ret=2
+    let Some(cur) = cur_tpl else {
+        return PetStarOutcome::Reject(RetCode::ServerBusy);
+    };
+    if ctx.intimacy < cur.need_intimacy {
+        return PetStarOutcome::Reject(RetCode::PetErrorIntimacyLimit);
+    }
+    if ctx.growth < cur.need_growth {
+        return PetStarOutcome::Reject(RetCode::PetErrorGrowthLimit);
+    }
+    PetStarOutcome::Accept {
+        new_star: ctx.current_star + 1,
+    }
+}
+
+/// `PetSkillClassUpgradeDB` 的一行。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct PetSkillClassTemplate {
+    /// `petNum`：升到该阶所需的最少宠物数量。
+    pub pet_num: i32,
+    /// 该阶的消耗（`getCost(skillOffset)` 已解析成 `(资源 id, 数量)`）。
+    pub cost: Option<(i32, i64)>,
+}
+
+/// 7006 的判定输入。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PetSkillClassCtx {
+    /// 门客是否存在。
+    pub pet_exists: bool,
+    /// `petDB.skillId.indexOf(skillId)`，`None` 表示该技能不属于这只宠物。
+    pub skill_offset: Option<usize>,
+    /// `pet.getSkillLv(offset)`。
+    pub skill_lv: i32,
+    /// `PetSkillDB.stepAdd`（0 表示该技能不可升阶）。
+    pub step_add: i32,
+    /// 当前阶级（`pet.getSkillClass(offset)`）。
+    pub current_class: i32,
+    /// 玩家拥有的宠物总数（`getAllPet().size()`）。
+    pub pet_count: usize,
+    /// 资源是否足够支付该阶消耗。
+    pub can_pay: bool,
+}
+
+/// 7006 的结论。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PetSkillClassOutcome {
+    /// 抛 `HandlerException` → `ErrorResp_1`。
+    Reject(RetCode),
+    /// 通过：阶级 +1。
+    Accept {
+        /// 升阶后的阶级。
+        new_class: i32,
+        /// 技能在宠物技能列表里的下标（用于回写）。
+        offset: usize,
+        /// 要扣的资源。
+        cost: Option<(i32, i64)>,
+    },
+}
+
+impl PetSkillClassOutcome {
+    /// 协议上的 `ret`。
+    #[must_use]
+    pub const fn resolve_ret(&self) -> Option<RetCode> {
+        match self {
+            Self::Reject(code) => Some(*code),
+            Self::Accept { .. } => None,
+        }
+    }
+}
+
+/// `PetSet.skillClass`（7006）的纯逻辑。
+#[must_use]
+pub fn pet_skill_class_verdict(
+    ctx: &PetSkillClassCtx,
+    upgrade_tpl: Option<&PetSkillClassTemplate>,
+    next_tpl: Option<&PetSkillClassTemplate>,
+) -> PetSkillClassOutcome {
+    // 1. 门客不存在
+    if !ctx.pet_exists {
+        return PetSkillClassOutcome::Reject(RetCode::PetErrorNotExistPet);
+    }
+    // 2. 技能不属于这只宠物
+    let Some(offset) = ctx.skill_offset else {
+        return PetSkillClassOutcome::Reject(RetCode::ParamError);
+    };
+    // 3. 技能未解锁
+    if ctx.skill_lv == 0 {
+        return PetSkillClassOutcome::Reject(RetCode::PetErrorSkillLock);
+    }
+    // 4. 该技能不可升阶
+    if ctx.step_add == 0 {
+        return PetSkillClassOutcome::Reject(RetCode::PetErrorSkillLock);
+    }
+    // 5. 下一阶配置不存在 → 已满阶
+    if next_tpl.is_none() {
+        return PetSkillClassOutcome::Reject(RetCode::PetErrorSkillMaxClass);
+    }
+    // 当前阶配置缺失 → 原版 NPE → ret=2
+    let Some(up) = upgrade_tpl else {
+        return PetSkillClassOutcome::Reject(RetCode::ServerBusy);
+    };
+    // 6. 宠物总数不足
+    if ctx.pet_count < usize::try_from(up.pet_num).unwrap_or(0) {
+        return PetSkillClassOutcome::Reject(RetCode::PetErrorPetNumLimit);
+    }
+    // 7. 资源不足
+    if up.cost.is_some() && !ctx.can_pay {
+        return PetSkillClassOutcome::Reject(RetCode::PetErrorSkillClassLimit);
+    }
+    PetSkillClassOutcome::Accept {
+        new_class: ctx.current_class + 1,
+        offset,
+        cost: up.cost,
+    }
+}
+
+#[cfg(test)]
+mod star_tests {
+    use super::*;
+
+    fn star_tpl() -> PetStarTemplate {
+        PetStarTemplate {
+            need_intimacy: 500,
+            need_growth: 500,
+        }
+    }
+
+    fn star_ctx() -> PetStarCtx {
+        PetStarCtx {
+            pet_exists: true,
+            current_star: 1,
+            intimacy: 1000,
+            growth: 1000,
+        }
+    }
+
+    #[test]
+    fn star_missing_pet_is_901() {
+        let c = PetStarCtx {
+            pet_exists: false,
+            ..star_ctx()
+        };
+        assert_eq!(
+            pet_star_verdict(&c, Some(&star_tpl()), Some(&star_tpl())),
+            PetStarOutcome::Reject(RetCode::PetErrorNotExistPet)
+        );
+    }
+
+    #[test]
+    fn star_max_is_906() {
+        // 下一级配置不存在 → 已满星
+        assert_eq!(
+            pet_star_verdict(&star_ctx(), Some(&star_tpl()), None),
+            PetStarOutcome::Reject(RetCode::PetErrorMaxStart)
+        );
+    }
+
+    #[test]
+    fn star_insufficient_intimacy_is_907() {
+        let c = PetStarCtx {
+            intimacy: 499,
+            ..star_ctx()
+        };
+        assert_eq!(
+            pet_star_verdict(&c, Some(&star_tpl()), Some(&star_tpl())),
+            PetStarOutcome::Reject(RetCode::PetErrorIntimacyLimit)
+        );
+    }
+
+    #[test]
+    fn star_insufficient_growth_is_908() {
+        let c = PetStarCtx {
+            growth: 499,
+            ..star_ctx()
+        };
+        assert_eq!(
+            pet_star_verdict(&c, Some(&star_tpl()), Some(&star_tpl())),
+            PetStarOutcome::Reject(RetCode::PetErrorGrowthLimit)
+        );
+    }
+
+    #[test]
+    fn star_missing_current_template_is_busy() {
+        // 原版此处 NPE（starDB.getNeedIntimacy()）→ ret=2
+        assert_eq!(
+            pet_star_verdict(&star_ctx(), None, Some(&star_tpl())),
+            PetStarOutcome::Reject(RetCode::ServerBusy)
+        );
+    }
+
+    #[test]
+    fn star_accept_increments() {
+        assert_eq!(
+            pet_star_verdict(&star_ctx(), Some(&star_tpl()), Some(&star_tpl())),
+            PetStarOutcome::Accept { new_star: 2 }
+        );
+    }
+
+    #[test]
+    fn star_uses_current_tier_threshold_not_next() {
+        // 关键：门槛用的是**当前**星级（star_tpl），不是下一级。
+        // 给下一级一个极高门槛，仍应通过。
+        let next = PetStarTemplate {
+            need_intimacy: 999_999,
+            need_growth: 999_999,
+        };
+        assert!(matches!(
+            pet_star_verdict(&star_ctx(), Some(&star_tpl()), Some(&next)),
+            PetStarOutcome::Accept { .. }
+        ));
+    }
+
+    #[test]
+    fn star_boundary_values_pass() {
+        let c = PetStarCtx {
+            intimacy: 500,
+            growth: 500,
+            ..star_ctx()
+        };
+        assert!(matches!(
+            pet_star_verdict(&c, Some(&star_tpl()), Some(&star_tpl())),
+            PetStarOutcome::Accept { .. }
+        ));
+    }
+
+    // ── 7006 技能升阶 ──
+
+    fn cls_tpl() -> PetSkillClassTemplate {
+        PetSkillClassTemplate {
+            pet_num: 3,
+            cost: Some((1, 100)),
+        }
+    }
+
+    fn cls_ctx() -> PetSkillClassCtx {
+        PetSkillClassCtx {
+            pet_exists: true,
+            skill_offset: Some(0),
+            skill_lv: 1,
+            step_add: 1,
+            current_class: 1,
+            pet_count: 5,
+            can_pay: true,
+        }
+    }
+
+    #[test]
+    fn class_missing_pet_is_901() {
+        let c = PetSkillClassCtx {
+            pet_exists: false,
+            ..cls_ctx()
+        };
+        assert_eq!(
+            pet_skill_class_verdict(&c, Some(&cls_tpl()), Some(&cls_tpl())),
+            PetSkillClassOutcome::Reject(RetCode::PetErrorNotExistPet)
+        );
+    }
+
+    #[test]
+    fn class_skill_not_belonging_is_param_error() {
+        let c = PetSkillClassCtx {
+            skill_offset: None,
+            ..cls_ctx()
+        };
+        assert_eq!(
+            pet_skill_class_verdict(&c, Some(&cls_tpl()), Some(&cls_tpl())),
+            PetSkillClassOutcome::Reject(RetCode::ParamError)
+        );
+    }
+
+    #[test]
+    fn class_skill_locked_is_909() {
+        let c = PetSkillClassCtx {
+            skill_lv: 0,
+            ..cls_ctx()
+        };
+        assert_eq!(
+            pet_skill_class_verdict(&c, Some(&cls_tpl()), Some(&cls_tpl())),
+            PetSkillClassOutcome::Reject(RetCode::PetErrorSkillLock)
+        );
+    }
+
+    #[test]
+    fn class_step_add_zero_is_909() {
+        let c = PetSkillClassCtx {
+            step_add: 0,
+            ..cls_ctx()
+        };
+        assert_eq!(
+            pet_skill_class_verdict(&c, Some(&cls_tpl()), Some(&cls_tpl())),
+            PetSkillClassOutcome::Reject(RetCode::PetErrorSkillLock)
+        );
+    }
+
+    #[test]
+    fn class_max_is_913() {
+        assert_eq!(
+            pet_skill_class_verdict(&cls_ctx(), Some(&cls_tpl()), None),
+            PetSkillClassOutcome::Reject(RetCode::PetErrorSkillMaxClass)
+        );
+    }
+
+    #[test]
+    fn class_insufficient_pet_count_is_940() {
+        let c = PetSkillClassCtx {
+            pet_count: 2,
+            ..cls_ctx()
+        };
+        assert_eq!(
+            pet_skill_class_verdict(&c, Some(&cls_tpl()), Some(&cls_tpl())),
+            PetSkillClassOutcome::Reject(RetCode::PetErrorPetNumLimit)
+        );
+    }
+
+    #[test]
+    fn class_insufficient_resources_is_911() {
+        let c = PetSkillClassCtx {
+            can_pay: false,
+            ..cls_ctx()
+        };
+        assert_eq!(
+            pet_skill_class_verdict(&c, Some(&cls_tpl()), Some(&cls_tpl())),
+            PetSkillClassOutcome::Reject(RetCode::PetErrorSkillClassLimit)
+        );
+    }
+
+    #[test]
+    fn class_free_upgrade_ignores_can_pay() {
+        let t = PetSkillClassTemplate {
+            pet_num: 3,
+            cost: None,
+        };
+        let c = PetSkillClassCtx {
+            can_pay: false,
+            ..cls_ctx()
+        };
+        assert!(matches!(
+            pet_skill_class_verdict(&c, Some(&t), Some(&cls_tpl())),
+            PetSkillClassOutcome::Accept { .. }
+        ));
+    }
+
+    #[test]
+    fn class_accept_carries_offset_and_cost() {
+        match pet_skill_class_verdict(&cls_ctx(), Some(&cls_tpl()), Some(&cls_tpl())) {
+            PetSkillClassOutcome::Accept {
+                new_class,
+                offset,
+                cost,
+            } => {
+                assert_eq!(new_class, 2);
+                assert_eq!(offset, 0);
+                assert_eq!(cost, Some((1, 100)));
+            }
+            other => panic!("应通过，得到 {other:?}"),
+        }
+    }
+
+    #[test]
+    fn class_pet_count_boundary_passes() {
+        // 正好等于 pet_num 也应通过（原版是 `<`）
+        let c = PetSkillClassCtx {
+            pet_count: 3,
+            ..cls_ctx()
+        };
+        assert!(matches!(
+            pet_skill_class_verdict(&c, Some(&cls_tpl()), Some(&cls_tpl())),
+            PetSkillClassOutcome::Accept { .. }
+        ));
+    }
+}

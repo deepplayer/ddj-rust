@@ -238,6 +238,20 @@ pub enum RetCode {
     PetErrorTemplate2Limit = 905,
     /// 十连互动资源不足（`PET_ERROR_TEN_TIMES_COST`）。
     PetErrorTenTimesCost = 942,
+    /// 宠物 - 已经是最大星级（`PET_ERROR_MAX_START`）。
+    PetErrorMaxStart = 906,
+    /// 宠物 - 亲密度不足（`PET_ERROR_INTIMACY_LIMIT`）。
+    PetErrorIntimacyLimit = 907,
+    /// 宠物 - 成长值不足（`PET_ERROR_GROWTH_LIMIT`）。
+    PetErrorGrowthLimit = 908,
+    /// 宠物 - 技能未解锁（`PET_ERROR_SKILL_LOCK`）。
+    PetErrorSkillLock = 909,
+    /// 宠物 - 技能升阶所需资源不足（`PET_ERROR_SKILL_CLASS_LIMIT`）。
+    PetErrorSkillClassLimit = 911,
+    /// 宠物 - 技能已达最大等级（`PET_ERROR_SKILL_MAX_LV`）。
+    PetErrorSkillMaxLv = 912,
+    /// 宠物 - 技能已达最大阶级（`PET_ERROR_SKILL_MAX_CLASS`）。
+    PetErrorSkillMaxClass = 913,
 }
 
 impl RetCode {
@@ -342,6 +356,13 @@ impl RetCode {
             901 => Self::PetErrorNotExistPet,
             905 => Self::PetErrorTemplate2Limit,
             942 => Self::PetErrorTenTimesCost,
+            906 => Self::PetErrorMaxStart,
+            907 => Self::PetErrorIntimacyLimit,
+            908 => Self::PetErrorGrowthLimit,
+            909 => Self::PetErrorSkillLock,
+            911 => Self::PetErrorSkillClassLimit,
+            912 => Self::PetErrorSkillMaxLv,
+            913 => Self::PetErrorSkillMaxClass,
             _ => return None,
         })
     }
@@ -441,6 +462,13 @@ impl RetCode {
             Self::PetErrorNotExistPet => "宠物- 未获得宠物",
             Self::PetErrorTemplate2Limit => "宠物- 精力不足",
             Self::PetErrorTenTimesCost => "十连互动资源不足",
+            Self::PetErrorMaxStart => "宠物- 已经是最大星级",
+            Self::PetErrorIntimacyLimit => "宠物- 亲密度不足",
+            Self::PetErrorGrowthLimit => "宠物- 成长值不足",
+            Self::PetErrorSkillLock => "宠物- 技能未解锁",
+            Self::PetErrorSkillClassLimit => "宠物- 技能升阶所需资源不足",
+            Self::PetErrorSkillMaxLv => "宠物- 技能已经达到最大等级",
+            Self::PetErrorSkillMaxClass => "宠物- 技能已经达到最大阶级",
         }
     }
 }
@@ -472,6 +500,7 @@ mod tests {
             2303, 2304, 2305, 4601, 120,
             405, 406, 407, 914, 915, 938, 939, 940,
             3600, 3601, 3602, 3603, 3604, 3606, 901, 905, 942,
+            906, 907, 908, 909, 911, 912, 913,
         ] {
             let c = RetCode::from_i32(v).unwrap_or_else(|| panic!("缺 {v}"));
             assert_eq!(c.as_i32(), v);

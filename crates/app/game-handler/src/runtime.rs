@@ -126,6 +126,10 @@ pub struct PlayerBox {
     pub pet_rate: HashMap<i32, i32>,
     /// 计数器状态：`templateId → CounterState`（原版 `counter_recovery` 表）。
     pub counters: HashMap<i32, crate::counter::CounterState>,
+    /// 门客星级：`pet_id → Pet.star`（默认 0）。
+    pub pet_star: HashMap<i32, i32>,
+    /// 技能阶级：`(pet_id, skill_id) → Pet.skillClass[offset]`。
+    pub pet_skill_class: HashMap<(i32, i32), i32>,
 }
 
 impl MemWorld {
