@@ -92,6 +92,42 @@
 | 11-b | 同上 | `data` = `LoginReq_4{99,"1","2","3"}` 字节 | prost 编码 | `test_data_payload_roundtrips_as_login_req` | ✅ |
 | 11-c | 同上 | 连发两次 `HeartbeatConnectResp_3` | `sess.push` 两次 | 端到端验证 3 个包 | ✅ |
 
+## A9 `pet.rs`（7023 / 7024 / 7025）
+
+三条**分支序互不相同**，这是最容易写错的地方：
+
+| 分支 | 原版位置 | 原版行为 | Rust | 用例 | 状态 |
+|---|---|---|---|---|---|
+| 7023-1 | `PetSet.java:624` | `PetSkinDBCache.get(skinId)` 在 **try 之外**，模板缺失直接 NPE → ret=2 | `activate_skin_verdict` 首检模板 | `activate_missing_template_is_busy` | ✅ |
+| 7023-2 | `:628` | `pet == null` → `TALENT_ERROR_5(405)` | 同 | `activate_missing_pet_is_talent_error_5` | ✅ |
+| 7023-3 | `:631` | `petSkinDB.getPetId() != petId` → `TALENT_ERROR_6(406)` | 同 | `activate_skin_belongs_to_other_pet` | ✅ |
+| 7023-4 | `:634` | `existedSkin(skinId)` → `BUSY(2)` | 同 | `activate_already_owned_is_busy` | ✅ |
+| 7023-5 | `:637` | 扣 `activateCostJson` 失败 → `938` | `can_pay` 参数 | `activate_insufficient_resources` | ✅ |
+| 7023-6 | `:640-644` | `addSkin`+`setSkin`+`init`+`addGrowth(407)`+`addIntimacy(406)` | `SkinEffect::Activate` | `activate_accept_carries_cost_and_gains` | ✅ |
+| 7024-1 | `:679` | **先判 `pet == null`**（与 7023 相反）→ 405 | `upgrade_skin_verdict` 首检 pet | `upgrade_missing_pet_checked_before_template` | ✅ |
+| 7024-2 | `:682` | `getSkin(skinId) == null` → `TALENT_ERROR_7(407)` | 同 | `upgrade_not_owned_is_talent_error_7` | ✅ |
+| 7024-3 | `:687` | `upgradeCostJson == null` → `BUSY(2)` | 同 | `upgrade_no_cost_is_busy` | ✅ |
+| 7024-4 | `:690` | 扣费失败 → `939` | `can_pay` | `upgrade_insufficient_resources` | ✅ |
+| 7024-5 | `:693-696` | `addSkinLv`+`addGrowth(407)`+`addIntimacy(406)` | `SkinEffect::Upgrade` | `upgrade_accept_carries_cost` | ✅ |
+| 7025-1 | `:709` | `pet == null` → 405 | `set_skin_verdict` | `set_missing_pet_is_talent_error_5` | ✅ |
+| 7025-2 | `:713` | `skinId != 0 && !existedSkin` → 407（**0 是合法卸下**） | 同 | `set_zero_unmounts_without_ownership` | ✅ |
+| 7025-3 | `:717-719` | `setSkin` + 推 `PetUpdateResp_7001{toMsgPetData(10)}` | `SkinEffect::Set` + push | 端到端 | ✅ |
+
+### 回包差异（三条都是 `throws HandlerException`）
+
+| 情形 | 回包 | 帧号 |
+|---|---|---|
+| 成功 | `MsgActivatePetSkinResp_7023` / `..._7024` / `..._7025`，`ret=0` | 请求号 |
+| 失败 | **`ErrorResp_1{msgId, errorCode}`** | **1** |
+
+7025 成功时**额外**推 `PetUpdateResp_7001`，且 `MsgPetData.updateFieldsList=[10]`
+（只更新 `skinId` 字段）。实测确认：
+
+```text
+7023 → frame=1 ErrorResp_1 msgId=7023 errorCode=2    （模板未注入，原版 NPE）
+7025 → frame=1 ErrorResp_1 msgId=7025 errorCode=405  （门客不存在）
+```
+
 ## A7 `login.rs` + `loginvar.rs` + `handshake.rs`（待填）
 
 > 现状：登录 4 / 创角 6 / 握手 16-18 已接线，走真实 PG。`login.rs` 630 行。
