@@ -99,6 +99,12 @@ pub struct PlayerBox {
     pub bor: bool,
     /// `Player.createdateTime`（创角时间，毫秒）。
     pub create_time: i64,
+    /// `Player.vvipTakeRewardTime`（上次领 VVIP 补发奖励的时间，毫秒）。
+    pub vvip_take_reward_time: i64,
+    /// `PlayerAdvertising.adRewardTimes`：今日已看广告领奖次数。
+    pub ad_reward_times: i32,
+    /// `PlayerAdvertising.dayTime`：用来判断是否隔天（原版 `refresh()` 用）。
+    pub ad_reward_day: i64,
 }
 
 impl MemWorld {

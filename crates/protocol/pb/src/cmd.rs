@@ -202,6 +202,8 @@ pub enum RetCode {
     FortuneErrorNoJurisdiction = 2305,
     /// 鉴宝大会 - 已领取（`APPRAISAL_GAIN_ACHIEVEMENT`）。
     AppraisalGainAchievement = 4601,
+    /// 观看广告奖励领取次数达到上限（`PLAYER_ERROR_20`）。
+    PlayerError20 = 120,
 }
 
 impl RetCode {
@@ -288,6 +290,7 @@ impl RetCode {
             2304 => Self::DeclareErrorLongError,
             2305 => Self::FortuneErrorNoJurisdiction,
             4601 => Self::AppraisalGainAchievement,
+            120 => Self::PlayerError20,
             _ => return None,
         })
     }
@@ -369,6 +372,7 @@ impl RetCode {
             Self::DeclareErrorLongError => "宣言的长度不符",
             Self::FortuneErrorNoJurisdiction => "你当前没有权限修改宣言",
             Self::AppraisalGainAchievement => "鉴宝大会- 已领取",
+            Self::PlayerError20 => "观看广告奖励领取次数达到上限",
         }
     }
 }
@@ -397,7 +401,7 @@ mod tests {
             0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
             25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 99, 101, 102, 103, 104,
             105, 106, 107,
-            2303, 2304, 2305, 4601,
+            2303, 2304, 2305, 4601, 120,
         ] {
             let c = RetCode::from_i32(v).unwrap_or_else(|| panic!("缺 {v}"));
             assert_eq!(c.as_i32(), v);
