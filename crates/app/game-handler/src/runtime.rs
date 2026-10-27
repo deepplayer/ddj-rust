@@ -134,6 +134,8 @@ pub struct PlayerBox {
     pub pet_skill_lv: HashMap<(i32, i32), i32>,
     /// 皮肤技能等级：`skill_id → Pet.skinSkillLv`。
     pub pet_skin_skill_lv: HashMap<i32, i32>,
+    /// 二级密码状态（原版 `SecondPsw` 挂在 `SysActivitySet` 下）。
+    pub second_psw: crate::second_psw::SecondPswState,
 }
 
 impl MemWorld {

@@ -256,6 +256,16 @@ pub enum RetCode {
     PetErrorInteractionLimit = 910,
     /// 珍兽 - 升级条件不满足（`PET_ERROR_CONDITION_NOT_MET`）。
     PetErrorConditionNotMet = 946,
+    /// 二级密码 - 长度错误（`SECOND_PSW_LENGTH_ERROR`）。
+    SecondPswLengthError = 9501,
+    /// 二级密码 - 只能是数字（`SECOND_PSW_FORMAT_ERROR`）。
+    SecondPswFormatError = 9502,
+    /// 二级密码 - 还未验证（`SECOND_PSW_NO_VERIFY`）。
+    SecondPswNoVerify = 9503,
+    /// 二级密码 - 验证次数不足（`SECOND_PSW_VERIFY_NUM_LIMIT`）。
+    SecondPswVerifyNumLimit = 9504,
+    /// 二级密码 - 密码错误（`SECOND_PSW_PSW_ERROR`）。
+    SecondPswPswError = 9505,
 }
 
 impl RetCode {
@@ -369,6 +379,11 @@ impl RetCode {
             913 => Self::PetErrorSkillMaxClass,
             910 => Self::PetErrorInteractionLimit,
             946 => Self::PetErrorConditionNotMet,
+            9501 => Self::SecondPswLengthError,
+            9502 => Self::SecondPswFormatError,
+            9503 => Self::SecondPswNoVerify,
+            9504 => Self::SecondPswVerifyNumLimit,
+            9505 => Self::SecondPswPswError,
             _ => return None,
         })
     }
@@ -477,6 +492,11 @@ impl RetCode {
             Self::PetErrorSkillMaxClass => "宠物- 技能已经达到最大阶级",
             Self::PetErrorInteractionLimit => "宠物- 互动经验不足",
             Self::PetErrorConditionNotMet => "珍兽- 升级条件不满足",
+            Self::SecondPswLengthError => "二级密码- （设置密码）长度错误",
+            Self::SecondPswFormatError => "二级密码- （设置密码）密码只能是数字",
+            Self::SecondPswNoVerify => "二级密码- 还未验证二级密码",
+            Self::SecondPswVerifyNumLimit => "二级密码- （密码验证）次数不足",
+            Self::SecondPswPswError => "二级密码- （密码验证）密码错误",
         }
     }
 }
@@ -509,6 +529,7 @@ mod tests {
             405, 406, 407, 914, 915, 938, 939, 940,
             3600, 3601, 3602, 3603, 3604, 3606, 901, 905, 942,
             906, 907, 908, 909, 911, 912, 913, 910, 946,
+            9501, 9502, 9503, 9504, 9505,
         ] {
             let c = RetCode::from_i32(v).unwrap_or_else(|| panic!("缺 {v}"));
             assert_eq!(c.as_i32(), v);
