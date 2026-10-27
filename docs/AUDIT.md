@@ -128,6 +128,50 @@
 7025 → frame=1 ErrorResp_1 msgId=7025 errorCode=405  （门客不存在）
 ```
 
+## A10 `pet.rs` 珍兽评级（7026 / 7029）
+
+### ⚠ 两条的错误出口不同（最重要的一处差异）
+
+| cmd | 失败时的出口 | 帧号 |
+|---|---|---|
+| 7026 `setPetRate` | 抛 `HandlerException` → **`ErrorResp_1{msgId=7026, errorCode}`** | **1** |
+| 7029 `MsgPetRateLvReplaceReq_7029` | **返回 `MsgPetRateLvReplaceResp_7029{ret}`** | 7029 |
+
+实测确认（同一份 `3601`）：
+
+```text
+7026: frame=1    ErrorResp_1 msgId=7026 code=3601
+7029: frame=7029 Resp ret=3601
+```
+
+### 7026 分支序
+
+| 分支 | 原版位置 | 原版行为 | Rust | 用例 | 状态 |
+|---|---|---|---|---|---|
+| 1 | `:786` | `!isOpen(pid,23)` → 3600 | `set_pet_rate_verdict` | `rate_system_closed_is_3600` | ✅ |
+| 2/3 | `:789-796` | `pet==null` 或 `PetDB==null` → 3601 | 同 | `rate_missing_pet_is_3601` | ✅ |
+| 4 | `:797` | `rataLv >= maxLv` → 3602 | 同 | `rate_at_max_level_is_3602` | ✅ |
+| 5 | `:800-801` | `toRateLv = rataLv+1`；`toRateLvNum` 数同等级 | `current_lv+1` / `same_lv_count` | — | ✅ |
+| 6 | `:802-805` | 配置缺失 → 3603 | 同 | `rate_missing_config_is_3603` | ✅ |
+| 7 | `:806-808` | 亲密度**或**成长不足 → 3604 | 同 | `rate_insufficient_intimacy_is_3604` / `..._growth_...` | ✅ |
+| 8 | `:809-811` | `toRateLvNum >= limitNum` → 3606 | 同 | `rate_limit_reached_is_3606` | ✅ |
+| 9 | `:812-815` | `setRataLv` + 推 `7001(toMsgPetData(11))` | `push_pet_field(...,11,...)` | — | ✅ |
+
+### 7029 分支序（含一处原版错位）
+
+| 分支 | 原版位置 | 原版行为 | Rust | 用例 | 状态 |
+|---|---|---|---|---|---|
+| 1 | `:834` | `!isOpen(23)` → ret=3600 | `replace_pet_rate_verdict` | `replace_system_closed_is_3600_in_resp` | ✅ |
+| 2/3 | `:837-846` | 任一 pet 或 PetDB 缺失 → 3601 | 同 | `replace_missing_pet_is_3601` | ✅ |
+| 4 | `:847-850` | `if (petUp.rataLv > petDown.rataLv)` **交换** | `high_lv`/`low_lv` 归一 | `replace_reverse_order_same_result` | ✅ |
+| 5 | `:851-853` | `abs(down.rataLv - up.rataLv) != 1` → 3604 | 同 | `replace_level_gap_not_one_is_3604` | ✅ |
+| 6 | `:854-857` | `getPetRateByLv(**petDown**.rataLv)` → 查**高等级**配置 | `rate_tpl(high_lv)` | `replace_missing_config_is_3603` | ✅ |
+| 7 | `:858-860` | 但校验的是 **`petUp`**（低等级）的 intimacy/growth | 用 `high_*` 变量 | `replace_uses_high_level_side_for_condition_check` | ✅ ⚠ 原版错位照抄 |
+| 8 | `:861-877` | 交换 `rataLv`，各推一条 `7001` | 同 | `replace_swaps_levels` | ✅ |
+
+**第 6/7 步的口径错位**：查配置用高等级那方，校验数值用低等级那方。
+这是原版写法（`petDown` 与 `petUp` 在交换后语义反了），照抄并单测锁住。
+
 ## A7 `login.rs` + `loginvar.rs` + `handshake.rs`（待填）
 
 > 现状：登录 4 / 创角 6 / 握手 16-18 已接线，走真实 PG。`login.rs` 630 行。

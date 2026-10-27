@@ -1,6 +1,6 @@
 # 移植进度（切换上下文先读这里）
 
-> 最后更新：2026-10-27 19:50
+> 最后更新：2026-10-27 20:10
 > 基准：`../data_d/game_7010544/sources/`（反编译）。规则见 [`../AGENTS.md`](../AGENTS.md)。
 > 逐分支台账见 [`AUDIT.md`](AUDIT.md)；里程碑见 [`PLAN.md`](PLAN.md)。
 
@@ -8,19 +8,19 @@
 
 ## 一、一句话现状
 
-骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 54 条（3.2%）**，
+骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 56 条（3.3%）**，
 其中真正落库的只有 4 条，其余是进程内 `MemWorld`（重启即丢）。
 
 ```
 cargo check  --workspace --all-targets                      0 error / 0 warning
 cargo clippy --workspace --exclude ddj-pb --lib --bins -D warnings   通过
-cargo test   --workspace                                    457 passed / 0 failed
+cargo test   --workspace                                    473 passed / 0 failed
 cargo xt check-arch                                         4 条规则通过
 ```
 
 代码量：27 crate / 约 180 个 `.rs` / 约 25 000 行。
 
-## 二、已接线消息（54 / 1681）
+## 二、已接线消息（56 / 1681）
 
 | 模块 | cmdId | 数据源 | 备注 |
 |---|---|---|---|
@@ -49,6 +49,7 @@ cargo xt check-arch                                         4 条规则通过
 | 排队信息 | 7 | 无 | 免登录；空队列 → `nowIndex=1,maxIndex=1` |
 | 测试消息 | 11 | 无 | 免登录；**三个包**（11 + 3 + 3）已端到端验证 |
 | 门客皮肤 | 7023 / 7024 / 7025 | `MemWorld` | 三条分支序各不相同，已端到端验证错误码 |
+| 珍兽评级 | 7026 / 7029 | `MemWorld` | ⚠ **两条错误出口不同**，已端到端验证 |
 
 ## 三、未接线（占位，`ret=501`）
 
@@ -181,10 +182,10 @@ Actions 三个 job：`check`（check-arch + clippy + test，阻塞）、
 
 | 项 | 值 |
 |---|---|
-| commit | `ad22e5d`（feat(pet): 接门客皮肤 7023 / 7024 / 7025） |
-| Actions run | `40497955968`，check 1m50s / release 1m41s |
-| sha256 | `cd452bd8f6f74a37540a7f916d85adb0545a6bd509498529b3110ed2f27d9827` |
-| 大小 | 16 234 240 字节 |
+| commit | `c9b14ae`（feat(pet): 接珍兽评级 7026 / 7029） |
+| Actions run | `40500027717`，check 2m26s / release 1m33s |
+| sha256 | `a146d8c7979d8d5619391da544700342b5f4823a43f0fd6686b25cc4528efad2` |
+| 大小 | 16 261 352 字节 |
 | 验证 | `./bin/ddj --version` → `ddj 0.1.0`；`./bin/ddj list` 列出 7 个服务 |
 
 > 同一份源码在 Actions 上产出同一字节（验证过两次：`2766e83` 与 `702ac6f`
@@ -248,6 +249,8 @@ WebSocket 监听已启动 addr=0.0.0.0:10544
 | cmd 11 测试消息 | 空 body | **3 个包**：`cmd=11` + `cmd=3` ×2 |
 | cmd 7023 激活皮肤 | `petId=100, skinId=1` | `ErrorResp_1{msgId=7023, errorCode=2}`（模板未注入→原版 NPE） |
 | cmd 7025 卸下皮肤 | `petId=100, skinId=0` | `ErrorResp_1{msgId=7025, errorCode=405}`（门客不存在） |
+| cmd 7026 评级升级 | `petId=100` | `ErrorResp_1{msgId=7026, code=3601}`（帧号 **1**） |
+| cmd 7029 评级互换 | `petId1=100, petId2=101` | `MsgPetRateLvReplaceResp_7029{ret=3601}`（帧号 **7029**） |
 
 cmd 5 实收：
 
@@ -298,6 +301,7 @@ node e2e/smoke/view_smoke.mjs
 ## 八、最近提交
 
 ```
+c9b14ae feat(pet): 接珍兽评级 7026 升级 / 7029 互换
 ad22e5d feat(pet): 接门客皮肤 7023 激活 / 7024 升级 / 7025 更换
 019ea79 feat(engine): 接 7 排队信息 / 11 测试消息
 0a2705e feat(engine): 接 3 心跳 / 5 取随机名（含 306000 名字池）
