@@ -46,6 +46,7 @@
 | `ItemSet.itemEffectiveOneKeyUse` | 循环外只校验**单份** `useCost`，不是累计值 | 逻辑缺陷，但影响放行条件 |
 | `GiftDBUtils.checkForUsing(null, player)` | 首行 `giftDB.getUseLimit()` → NPE → ret=2 | 1608 条道具原版就是「不能用」 |
 | 1101/1102 的 catch | 回的是 `PlayerUseGiftKeyResp_1009`，不是自己的 Resp | 复制粘贴 bug |
+| `Player.checkVVIP_Reward` 跨年判断 | 用 `Calendar.get(2)`（**0-based 月份**）比较：12 月→1 月得 `abs(11-0)=11 != 1` → 回 BUSY，**首月奖励跨年永远领不到** | 玩家看到的就是「服务器繁忙」；同文件的 `checkVVIP_Aug_Reward` 用 `getBetweenMonth`（12*year+month）跨年却是对的 —— 原版两个函数口径不一致，两处都照抄 |
 
 ## 3. 唯一的例外：会让进程不可用的东西
 

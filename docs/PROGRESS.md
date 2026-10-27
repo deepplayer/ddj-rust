@@ -1,6 +1,6 @@
 # 移植进度（切换上下文先读这里）
 
-> 最后更新：2026-10-27 17:55
+> 最后更新：2026-10-27 18:50
 > 基准：`../data_d/game_7010544/sources/`（反编译）。规则见 [`../AGENTS.md`](../AGENTS.md)。
 > 逐分支台账见 [`AUDIT.md`](AUDIT.md)；里程碑见 [`PLAN.md`](PLAN.md)。
 
@@ -8,19 +8,19 @@
 
 ## 一、一句话现状
 
-骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 45 条（2.7%）**，
+骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 47 条（2.8%）**，
 其中真正落库的只有 4 条，其余是进程内 `MemWorld`（重启即丢）。
 
 ```
 cargo check  --workspace --all-targets                      0 error / 0 warning
 cargo clippy --workspace --exclude ddj-pb --lib --bins -D warnings   通过
-cargo test   --workspace                                    396 passed / 0 failed
+cargo test   --workspace                                    417 passed / 0 failed
 cargo xt check-arch                                         4 条规则通过
 ```
 
 代码量：27 crate / 约 180 个 `.rs` / 约 25 000 行。
 
-## 二、已接线消息（45 / 1681）
+## 二、已接线消息（47 / 1681）
 
 | 模块 | cmdId | 数据源 | 备注 |
 |---|---|---|---|
@@ -42,23 +42,29 @@ cargo xt check-arch                                         4 条规则通过
 | 平台信息 | 1022 / 1107 / 1110 | `PlatformSnapshot` | 只读，静态注入 |
 | 连接标记 | 1004 | `MemWorld.bor` | 不回包 |
 | 绑定奖励 | 1115 | `MemWorld` | 24h 新号加成 |
+| VVIP 奖励 | 1012 | `MemWorld` | ⚠ 跨年领不到（原版 bug 照抄） |
+| 广告奖励 | 1104 | `MemWorld` | `PLAYER_ERROR_20(120)` 上限 |
 
 ## 三、未接线（占位，`ret=501`）
 
 `account` `activity` `battle` `chat` `friend` `gm` `guild` `player` `rank` `shop` `task`
 —— 11 个模块，各 27 行占位。
 
-`PlayerMessageHandler`（27 条）当前进度 **12/27**，剩余 15 条：
+`PlayerMessageHandler`（27 条）当前进度 **14/27**，剩余 13 条：
+
+已接：1002 / 1003 / 1004 / 1008 / 1009 / 1010 / 1012 / 1015 / 1016 / 1018 / 1019 /
+1020 / 1022 / 1024 / 1100 / 1101 / 1102 / 1104 / 1107 / 1110 / 1115
+
+未接（依赖外部模块或平台侧）：
 
 | cmdId | 方法 | 缺什么 |
 |---|---|---|
-| 1012 | `sendVVIP_RewardReq_1012` | `VipServerModule` / `checkVVIP_Reward` / `checkVVIP_Aug_Reward` |
-| 1104 | `gainAdReward` | `PlayerAdvertising` 模块 |
-| 1105 | — | 已由 11005 覆盖（不同消息） |
-| 1151 | `PhoneBindStateSyncRemoteReq` | 平台侧绑定状态 |
+| 1112 等 | — | 已由 `PlayerStateStore` 覆盖（1100/1103/1111/1112） |
+| 1151 | `PhoneBindStateSyncRemoteReq` | 平台侧手机绑定状态 |
+| 其余 | `EngineMessageHandler` 的 16/17/18 已在 `handshake.rs` | — |
 
-> 其余 12 条中，`1100/1103/1111/1112` 走 `PlayerStateStore`，
-> `1008/1020` 走 PG，`1002/1003/1009/1010/1015/1024/1016/1101/1102` 走 `MemWorld`。
+> `1100/1103/1111/1112` 走 `PlayerStateStore`，`1008/1020` 走 PG，
+> 其余走 `MemWorld`。
 
 活动族最大：`data_d/.../module/activity/` 下 **1512 个 Java 文件**，一行未动。
 
@@ -170,10 +176,10 @@ Actions 三个 job：`check`（check-arch + clippy + test，阻塞）、
 
 | 项 | 值 |
 |---|---|
-| commit | `eb4bfb4`（feat(bind): 接 1004 连接标记 / 1115 绑定奖励） |
-| Actions run | `40483259733`，check 2m40s / release 2m12s |
-| sha256 | `6ec37da1a459ce92cc9bfdeafa7d3e23f11b2ca328e429288f87acad1a97f9cc` |
-| 大小 | 16 099 160 字节 |
+| commit | `d7fbafa`（fix(test): 分叉计数器断言改为「有增长」，修并行竞态） |
+| Actions run | `40490747597`，check 2m16s / release 2m6s |
+| sha256 | `c288957d28e145614becf2aef290b546097f1a7a8596358a3fe9c876dc4804ee` |
+| 大小 | 16 148 744 字节 |
 | 验证 | `./bin/ddj --version` → `ddj 0.1.0`；`./bin/ddj list` 列出 7 个服务 |
 
 > 同一份源码在 Actions 上产出同一字节（验证过两次：`2766e83` 与 `702ac6f`
@@ -226,6 +232,9 @@ node e2e/smoke/view_smoke.mjs
 ## 八、最近提交
 
 ```
+d7fbafa fix(test): 分叉计数器断言改为「有增长」，修并行竞态
+2d43c57 feat(vip): 接 1012 VVIP 微信奖励 / 1104 广告奖励
+e9ce6ae feat(divergence): 三处偏离原版护栏加可定位记录
 eb4bfb4 feat(bind): 接 1004 连接标记 / 1115 绑定奖励
 a2e5a13 feat(platform): 接 1022 客服文案 / 1107 公众号信息 / 1110 切换支付
 264a562 feat(declare): 接 1018 设置宣言 / 1019 查他人宣言
