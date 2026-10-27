@@ -389,6 +389,221 @@ try {
 17355 → ret=0 更新后状态
 ```
 
+## A15 `anticheat.rs` + `install_anticheat.rs`（17151 / 17152 / 17153）
+
+对应 `SysActivityMessageHandler.java:119-162` + `AntiCheatModel.java`（75 行）
++ `bf/template/config/AntiCheatRewardJson.java`。
+
+### ⚠ 三条都不走 `ErrorResp_1`
+
+`antiCheatReward` / `antiCheatRead` / `antiCheat` 的签名**没有 `throws HandlerException`**，
+业务失败全在 Resp 里：
+
+| cmd | 失败出口 | 帧号 |
+|---|---|---|
+| 17151 | `AntiCheatRewardResp_17151{ret=code}` | **17151** |
+| 17152 | 成功 `AntiCheatReadResp_17152{ret=0}`；失败**不发包** | 17152 |
+| 17153 | 恒成功 `AntiCheatResp_17153{info}` | 17153 |
+
+### ⚠ 两处「不发包」
+
+```java
+// 17152：越界直接 return（客户端超时）
+if (!ConfigDBCache.AntiCheatReward.canReward(req.getIndex())) return;
+
+// 17151：外层 catch 只记日志，同样不发包
+try { ... } catch (Exception e) { LoggerService.getLogicLog().error(...); }
+```
+
+### 17151 的分支序（不能调换）
+
+```text
+!canReward(index)              → ret = 29   (COMMON_SERVER_PARAM_ERROR)
+!read.contains(index)          → ret = 6451 (ANTICHEAT_READ)
+!addReward(index)（已领过）    → ret = 1501 (ACTIVITY_RANK_LIST_ERROR_REPEATED)
+否则                            → 发奖 + ret = 0
+```
+
+「越界」优先于「未阅读」，「未阅读」优先于「已领」—— 三条单测各锁一条：
+`reward_branch_order_range_before_read` / `reward_branch_order_read_before_duplicate` /
+`reward_already_got_is_1501`。
+
+### 配置来源（`B-变量表-Config.csv:416`，id=568）
+
+```text
+568,AntiCheatReward,
+  1=25;231=1;211=1;201=1|1=25;231=1;211=2;201=2|1=25;231=1;45=1;202=1|1=25;231=1;46=1;202=1
+```
+
+`AntiCheatRewardJson.parse`：`param.split("\\|")` → 每段 `ResourcesJson.toResourcesJsons`
+（按 `;` 再按 `=`）。实测 **4 组**，所以 `index 0..3` 合法、`4` 越界。
+
+### 分支明细
+
+| cmd | 分支 | 原版位置 | Rust | 用例 | 状态 |
+|---|---|---|---|---|---|
+| 17151 | `canReward` 假（含负数） | `:123` | `can_reward` | `can_reward_checks_index_range` | ✅ |
+| 17151 | 越界 → 29 | `:123-124` | `reward_verdict` | `reward_out_of_range_is_param_error` | ✅ |
+| 17151 | 未阅读 → 6451 | `:129-130` | 同 | `reward_not_read_is_6451` | ✅ |
+| 17151 | 已领 → 1501 | `:131` | 同 | `reward_already_got_is_1501` | ✅ |
+| 17151 | 通过 → 发奖 | `:133-136` | 同 | `reward_accept_carries_group` | ✅ |
+| 17152 | 越界 → **静默** | `:144-146` | `read_verdict` | `read_out_of_range_is_silent` | ✅ |
+| 17152 | 范围内 → `ret=0` | `:149-151` | 同 | `read_in_range_accepts` | ✅ |
+| 17153 | `toMsg()` 两列表 | `:154-161` | `to_info` | `to_info_mirrors_both_lists` | ✅ |
+
+### 端到端实测（2026-10-27）
+
+```text
+17151 index=4 越界     → 帧号 17151，ret=29
+17151 index=0 未阅读   → 帧号 17151，ret=6451
+17152 index=4 越界     → **无回包**（客户端超时）
+17152 index=0          → 帧号 17152，ret=0
+17151 index=0 已阅读   → 帧号 17151，ret=0
+17151 index=0 再领     → 帧号 17151，ret=1501
+17153                  → info{reward=[0], read=[0]}
+```
+
+> 探针坑：`AntiCheatInfo` 的 `repeated int32` 是 `packed = "false"`（proto2 默认不打包），
+> **每个元素独立带 tag**。按 packed 解析会读到空列表。
+
+### 配置畸形时的分叉
+
+`ConfigDBCache.init` 的 `catch (Exception e2)` 只记日志，`AntiCheatReward` 保持 `null`；
+之后 `canReward(...)` 直接 NPE → 17151/17152 都不发包。
+Rust 没有 `null`，退化为「空配置」：17151 → `ret=29`、17152 → 静默。
+**只在畸形配置下分叉**，正常数据完全一致。
+
+---
+
+## A16 `counter.rs` + `install_counter.rs`（8001 / 8002）
+
+对应 `CounterRecoveryMessageHandler.java:17-39`、`CounterRecoverySet.java`、
+`CounterRecovery.java`、`CounterRecoveryDB.java`、`VipDB.getCounterMax`。
+
+### ⚠ 8002 的两层 containsKey 都没有 else
+
+```java
+if (this.allCounterRecovery.containsKey(templateId)) {
+    Map<Long, CounterRecovery> m = this.allCounterRecovery.get(templateId);
+    if (m.containsKey(param1)) { ... send ... }
+    // ← 没有 else：param1 不存在 → 静默
+}
+// ← 没有 else：templateId 不存在 → 静默
+```
+
+客户端会超时。已实测确认。
+
+### ⚠ 8001/8002 的 catch 也走 Resp
+
+两条 handler 都是 `try { ... } catch (Exception e) { send(Resp{ret=BUSY=2}) }`，
+所以帧号恒为 8001/8002。
+
+### ⚠ `counterGetReq` 的 `param1` 恒为 0
+
+```java
+public void counterGetReq(Player player, long... args) {
+    if (args.length == 1) templateId = (int) args[0];
+    else if (args.length == 2) { templateId = (int) args[0]; param1 = args[1]; }
+```
+
+handler 只传 `req.getTemplateId()` → `args.length == 1` → `param1 = 0`。
+**所以子嗣（`templateId=5`）的记录用 8002 查不到。**
+
+### ⚠ `isLimit()` 的语义与列名相反
+
+`CounterRecoveryDB.isLimit()` 返回 `this.isLimit == 0`。
+CSV 列注释写「是否允许超出上限」，但列值 `0` 才是**受限**（到上限停表）。
+实测 92 行里 `isLimit=0` 占多数，`30/32/201/202/203/204` 等是 `1`（不受限）。
+
+### ⚠ `time == -1` 表示停表（这是上一轮的理解错误，已修正）
+
+上一轮 `counter.rs` 的注释写「加满时 `time` 保持不变」。**实际不是**：
+`_addNumWithoutLock` 在加满时把 `time` 置为 `-1`：
+
+```java
+if (counterRecoveryDB.isLimit()) {
+    if (this.num >= maxLimit) {
+        this.time = -1L;
+        if (!cdRecovery) this.expectMaxNumTime = 0L;
+    }
+}
+```
+
+后果完全不同：
+- 「保持不变」→ 下次 refresh 会重复结算同一段区间（瞬间补满）
+- 「-1」→ 下次 refresh 首行 `time == -1` 直接 return（不恢复）
+
+现在的实现与单测都按 `-1`：`reaching_max_sets_time_to_minus_one` /
+`remove_from_full_starts_timer`（满 → 扣一点 → 从扣减时刻重新计时）。
+
+### ⚠ 新建的计数器是**满的**
+
+`CounterRecoverySet.dbInit`：
+`new CounterRecovery(playerId, templateId, 0L, counterMax, -1L)`，
+构造签名 `(playerId, templateId, param1, num, time)` ——
+第 4 个参数是 `num`。所以新玩家所有计数器**直接满**、`time = -1`。
+已实测：`8001` 返回 91 条，每条 `num == VipDB.getCounterMax(0, id)`。
+
+### ⚠ `calcExpectMaxNumTime` 早于 `_num > 0` 判断
+
+```java
+if (this.num < maxLimit) {
+    calcExpectMaxNumTime(maxLimit);        // ← 先写字段
+    long _num = intervalTime / cdTime;
+    if (_num > 0) { ... }
+}
+```
+
+所以哪怕一个 CD 都没走完，`expectMaxNumTime` 也已经落库。
+单测 `expect_max_num_time_is_written_when_not_full` 锁这条。
+
+### ⚠ `type=4` 的 2 行永远不恢复
+
+`CounterRecoverySet.refresh` 的 `switch` 只有 `case 1/2/3`，
+`type=4` 落 `default` 什么都不做。实测 CSV 里 `type=4` 有 **2 行**
+（`type=1` 77 行 / `type=2` 13 行 / `type=4` 2 行）。照抄，不补 case 4。
+
+### 分支明细
+
+| 函数 | 原版位置 | 用例 | 状态 |
+|---|---|---|---|
+| `cd_recovery` | `:100-149` | `stopped_counter_never_recovers` / `future_time_is_skipped` / `recovers_one_per_cd_and_advances_time` / `partial_cycle_does_not_recover` / `reaching_max_sets_time_to_minus_one` / `at_max_returns_immediately` / `unlimited_counter_caps_at_i64_max_not_max_limit` / `zero_cd_time_is_noop` | ✅ |
+| `auto_recovery` | `:167-183` | `auto_recovery_fills_to_max` / `auto_recovery_at_max_is_noop` | ✅ |
+| `get_cd_time` | `:151-165` | `cd_time_of_stopped_is_minus_one` / `cd_time_of_full_is_minus_one` / `cd_time_normal_is_time_plus_cd` | ✅ |
+| `set_max_num` | `:185-207` | `set_max_num_fills_and_stops_when_limited` / `set_max_num_uses_timestamp_when_unlimited` | ✅ |
+| `remove_num` | `:283-327` | `remove_from_full_starts_timer` / `remove_while_running_keeps_time` / `remove_insufficient_fails` / `remove_without_check_clamps_zero` / `remove_negative_is_rejected` / `remove_zero_succeeds_without_touching_state` | ✅ |
+| `to_counter_data` | `:390-404` | `msg_cd_time_for_template_5_is_always_minus_one` / `msg_cd_time_for_type_1_is_deadline` / `msg_cd_time_for_type_2_is_raw_time` | ✅ |
+| `refresh_set` | `CounterRecoverySet:170-195` | `refresh_set_type1_runs_cd_recovery` / `refresh_set_type2_only_on_new_day` / `refresh_set_type3_only_on_new_week` / `refresh_set_unknown_template_is_skipped` | ✅ |
+| `is_same_day` / `is_same_week` | `UtilsTools:271-287` | `same_day_across_midnight_in_utc` / `same_week_rejects_beyond_eight_days` / `same_week_within_a_week` / `week_number_advances_after_seven_days` | ✅ |
+| `init_missing` | `CounterRecoverySet.dbInit` | `init_skips_child_template` / `init_creates_full_and_stopped` / `init_skips_existing` | ✅ |
+
+### 端到端实测（2026-10-27）
+
+启动日志：
+
+```text
+计数器模板已装载  counter_rows=92 vip_levels=18
+服务就绪          handlers=71
+```
+
+```text
+8001 → 91 条（92 模板 - 跳过 5 号子嗣）
+       2 号 num=3（VIP0 上限）cdTime=-1（满值停表）
+       不含 5 号
+       4 号 num=5（VIP0 上限）
+8002 templateId=2      → ret=0，单条 templateId=2 num=3 cdTime=-1
+8002 templateId=999999 → **无回包**（原版没有 else）
+```
+
+### 已知分叉
+
+| 场景 | 原版 | 本工程 | 影响 |
+|---|---|---|---|
+| `cdTime <= 0` 且 `type=1` | 除零 `ArithmeticException` → catch → `ret=2` | 当作「不恢复」 | 只在畸形模板下分叉（实测 `type=1` 的 77 行 `cd` 全部 > 0） |
+| `is_same_week` 的年初边界 | `java.util.Calendar` 的 `WEEK_OF_YEAR` | 自实现「第一个完整周一起算第 1 周」 | `type=3` 实测 **0 行**，无数据可验证 |
+
+---
+
 ## A7 `login.rs` + `loginvar.rs` + `handshake.rs`（待填）
 
 > 现状：登录 4 / 创角 6 / 握手 16-18 已接线，走真实 PG。`login.rs` 630 行。

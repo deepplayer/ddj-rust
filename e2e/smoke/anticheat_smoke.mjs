@@ -41,11 +41,19 @@ const parse = (b) => {
   }
   return out;
 };
-// repeated int32 用 packed（wire 2）编码，prost 默认打包。
-const repeatedInts = (b) => {
-  if (!b) return [];
+// ⚠ proto2 的 repeated int32 默认 **不打包**（`packed = "false"`），
+// 每个元素都是独立的 `tag(field,0) + varint`。prost 生成的代码也是这样。
+const repeatedInts = (body, field) => {
+  if (!body) return [];
   const out = []; let i = 0;
-  while (i < b.length) { const [v, j] = rdVarint(b, i); out.push(v); i = j; }
+  while (i < body.length) {
+    const [k, j] = rdVarint(body, i); i = j;
+    const f = k >>> 3, w = k & 7;
+    if (w === 0) { const [v, j2] = rdVarint(body, i); i = j2; if (f === field) out.push(v); }
+    else if (w === 2) { const [n, j2] = rdVarint(body, i); i = j2; i += n; }
+    else if (w === 5) { i += 4; }
+    else throw new Error('wire ' + w);
+  }
   return out;
 };
 
@@ -178,9 +186,9 @@ const main = async () => {
     if (g.cmd !== 17153) bad(`17153 帧号=${g.cmd}`);
     else if (!g.head[1]) bad('17153 无 info');
     else {
-      const info = parse(g.head[1]);
-      const rw = repeatedInts(info[1]);
-      const rd = repeatedInts(info[2]);
+      const info = g.head[1];
+      const rw = repeatedInts(info, 1);
+      const rd = repeatedInts(info, 2);
       if (rw.length !== 1 || rw[0] !== 0) bad(`17153 reward=${JSON.stringify(rw)}（应为 [0]）`);
       else if (rd.length !== 1 || rd[0] !== 0) bad(`17153 read=${JSON.stringify(rd)}（应为 [0]）`);
       else ok('17153 → info{reward=[0], read=[0]}');

@@ -30,26 +30,46 @@ const parse = (b) => {
   while (i < b.length) {
     const [k, j] = rdVarint(b, i); i = j;
     const f = k >>> 3, w = k & 7;
-    if (w === 0) { const [v, j2] = rdVarint(b, i); i = j2; out[f] = v; }
+    // 用 BigInt 处理：int64 的 -1 是 10 字节 varint，32 位位移会溢出
+    if (w === 0) { const [v, j2] = readI64(b, i); i = j2; out[f] = v; }
     else if (w === 2) { const [n, j2] = rdVarint(b, i); i = j2; out[f] = b.subarray(i, i + n); i += n; }
     else if (w === 5) { out[f] = b.readUInt32LE(i); i += 4; }
     else throw new Error('wire ' + w);
   }
   return out;
 };
-// repeated MsgCounterData：每段是嵌套消息
-const messages = (buf) => {
-  if (!buf) return [];
+// 逐段提取某个 repeated 嵌套消息字段（parse() 对重复 tag 会互相覆盖，不能复用）。
+const messages = (body, field) => {
+  if (!body) return [];
   const out = []; let i = 0;
-  while (i < buf.length) {
-    const [k, j] = rdVarint(buf, i); i = j;
-    const w = k & 7;
-    if (w !== 2) throw new Error('repeated 字段应为嵌套消息');
-    const [n, j2] = rdVarint(buf, i); i = j2;
-    out.push(parse(buf.subarray(i, i + n)));
-    i += n;
+  while (i < body.length) {
+    const [k, j] = rdVarint(body, i); i = j;
+    const f = k >>> 3, w = k & 7;
+    if (w === 0) { const [, j2] = rdVarint(body, i); i = j2; }
+    else if (w === 2) {
+      const [n, j2] = rdVarint(body, i); i = j2;
+      if (f === field) out.push(parse(body.subarray(i, i + n)));
+      i += n;
+    }
+    else if (w === 5) { i += 4; }
+    else if (w === 1) { i += 8; }
+    else throw new Error('wire ' + w);
   }
   return out;
+};
+
+// int64 负数在 protobuf 里是 10 字节 varint（two's complement），
+// JS 位移到 64 位会溢出，这里用 BigInt 读后再转回 Number。
+const readI64 = (b, i) => {
+  let shift = 0n, val = 0n;
+  for (;;) {
+    const c = b[i++];
+    val |= BigInt(c & 0x7f) << shift;
+    if (!(c & 0x80)) break;
+    shift += 7n;
+  }
+  if (val >= (1n << 63n)) val -= 1n << 64n;
+  return [Number(val), i];
 };
 
 const SIGN_KEY = [48, 53, 58, 38, 40, 41, 94, 38, 42, 97, 98, 100, 100, 122, 77, 81];
@@ -148,7 +168,7 @@ const main = async () => {
     if (g.cmd !== 8001) bad(`8001 帧号=${g.cmd}`);
     else if (g.head[1] !== 0) bad(`8001 ret=${g.head[1]}`);
     else {
-      rows = messages(g.head[2]);
+      rows = messages(g.body, 2);
       if (rows.length === 91) ok(`8001 → 91 条（92 模板 - 跳过 5 号）`);
       else bad(`8001 返回 ${rows.length} 条（应为 91）`);
     }

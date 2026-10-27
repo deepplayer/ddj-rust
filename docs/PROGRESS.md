@@ -1,6 +1,6 @@
 # 移植进度（切换上下文先读这里）
 
-> 最后更新：2026-10-27 21:20
+> 最后更新：2026-10-28 01:10
 > 基准：`../data_d/game_7010544/sources/`（反编译）。规则见 [`../AGENTS.md`](../AGENTS.md)。
 > 逐分支台账见 [`AUDIT.md`](AUDIT.md)；里程碑见 [`PLAN.md`](PLAN.md)。
 
@@ -8,19 +8,19 @@
 
 ## 一、一句话现状
 
-骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 66 条（3.9%）**，
+骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 71 条（4.2%）**，
 其中真正落库的只有 4 条，其余是进程内 `MemWorld`（重启即丢）。
 
 ```
 cargo check  --workspace --all-targets                      0 error / 0 warning
 cargo clippy --workspace --exclude ddj-pb --lib --bins -D warnings   通过
-cargo test   --workspace                                    567 passed / 0 failed
+cargo test   --workspace                                    613 passed / 0 failed
 cargo xt check-arch                                         4 条规则通过
 ```
 
 代码量：27 crate / 约 180 个 `.rs` / 约 25 000 行。
 
-## 二、已接线消息（66 / 1681）
+## 二、已接线消息（71 / 1681）
 
 | 模块 | cmdId | 数据源 | 备注 |
 |---|---|---|---|
@@ -54,27 +54,34 @@ cargo xt check-arch                                         4 条规则通过
 | 升星/升阶 | 7003 / 7006 | `MemWorld` | 7003 用**当前**星级门槛；7006 判**宠物总数** |
 | 技能升级 | 7005 | `MemWorld` | ⚠ 皮肤扣道具、普通扣**互动经验** |
 | 二级密码 | 17351-17355 | `MemWorld` | ⚠ **17352 唯一失败也走 Resp** |
+| 防骗手册 | 17151 / 17152 / 17153 | `MemWorld` + 真实 CSV | ⚠ 17152 越界**不发包**；17151 三种失败码在 Resp 里 |
+| 计数器恢复 | 8001 / 8002 | `MemWorld` + 真实 CSV | ⚠ 8002 查不到**不发包**；`time=-1` 表示停表 |
 
 ## 三、未接线（占位，`ret=501`）
 
 `account` `activity` `battle` `chat` `friend` `gm` `guild` `player` `rank` `shop` `task`
 —— 11 个模块，各 27 行占位。
 
-`PlayerMessageHandler`（27 条）当前进度 **14/27**，剩余 13 条：
+`PlayerMessageHandler`（27 条）**27/27 已全部接线**：
 
-已接：1002 / 1003 / 1004 / 1008 / 1009 / 1010 / 1012 / 1015 / 1016 / 1018 / 1019 /
-1020 / 1022 / 1024 / 1100 / 1101 / 1102 / 1104 / 1107 / 1110 / 1115
-
-未接（依赖外部模块或平台侧）：
-
-| cmdId | 方法 | 缺什么 |
+| 分组 | cmdId | 实现位置 |
 |---|---|---|
-| 1112 等 | — | 已由 `PlayerStateStore` 覆盖（1100/1103/1111/1112） |
-| 1151 | `PhoneBindStateSyncRemoteReq` | 平台侧手机绑定状态 |
-| 其余 | `EngineMessageHandler` 的 16/17/18 已在 `handshake.rs` | — |
+| 角色属性 | 1002 / 1003 / 1024 | `install_player.rs`（`MemWorld`）|
+| 连接标记 | 1004 | `install_bind.rs`（`bor`）|
+| 看他人 | 1008 / 1020 | `install_view.rs`（**PG**）|
+| 角色周边 | 1009 / 1010 / 1015 | `install_player.rs` / `install_misc.rs` |
+| 日志 | 1016 / 1101 / 1102 | `install_log.rs`（成功后不回包）|
+| 宣言 | 1018 / 1019 | `install_declare.rs` |
+| VVIP / 广告 | 1012 / 1104 / 1115 | `install_vip.rs` / `install_bind.rs` |
+| 平台信息 | 1022 / 1107 / 1110 | `install_platform.rs`（只读）|
+| 存档回写 | 1100 | `install_state.rs` |
+| 引导 | 1103 | `handlers.rs` → `GuideHandler`（`PlayerStateStore`）|
+| 缓存 | 1111 / 1112 | `handlers.rs` → `CacheSaveHandler` / `CacheGetHandler` |
+| 握手 | 16 / 17 / 18 | `handshake.rs` → `HandshakeHandler`（免登录白名单）|
 
-> `1100/1103/1111/1112` 走 `PlayerStateStore`，`1008/1020` 走 PG，
-> 其余走 `MemWorld`。
+> `1100/1103/1111/1112` 走 `PlayerStateStore`，`1008/1020` 走 PG，其余走 `MemWorld`。
+> 16/17/18 不属于 `PlayerMessageHandler`，是 `EngineMessageHandler` 的三条，
+> 由 `handshake.rs` 实现（挑战密码校验）。
 
 活动族最大：`data_d/.../module/activity/` 下 **1512 个 Java 文件**，一行未动。
 
@@ -186,10 +193,9 @@ Actions 三个 job：`check`（check-arch + clippy + test，阻塞）、
 
 | 项 | 值 |
 |---|---|
-| commit | `99f4f1c`（feat(psw): 接二级密码 17351-17355） |
-| Actions run | `40509673464`，check 2m21s / release 2m3s |
-| sha256 | `75955645ed7595236f07bd365e7bdf402c0af7be5f18f870031b7c51dffde3f3` |
-| 大小 | 16 394 168 字节 |
+| commit | `4b51414`（feat(counter): 接计数器恢复 8001/8002） |
+| Actions run | `40518227315`，check + release 共 4m40s |
+| sha256 | `6598a9d116c99601c8970f99282ac07c763cb4a1356fffc38aec0c223db8bcbe` |
 | 验证 | `./bin/ddj --version` → `ddj 0.1.0`；`./bin/ddj list` 列出 7 个服务 |
 
 > 同一份源码在 Actions 上产出同一字节（验证过两次：`2766e83` 与 `702ac6f`
@@ -274,6 +280,43 @@ WebSocket 监听已启动 addr=0.0.0.0:10544
 | 17354 | `type=1` | 17354 | `ret=0, type=1` |
 | 17355 | 空 | 17355 | `ret=0` + 更新后状态 |
 
+### 防骗手册专项（3 条全链路，2026-10-27）
+
+真实配置 `B-变量表-Config.csv:568` 给了 4 组奖励，所以 `index 0..3` 合法。
+
+| cmd | 请求 | 帧号 | 回包 |
+|---|---|---|---|
+| 17151 | `index=4`（越界） | **17151** | `ret=29`（PARAM_ERROR） |
+| 17151 | `index=0`（未阅读） | **17151** | `ret=6451`（ANTICHEAT_READ） |
+| 17152 | `index=4`（越界） | — | **无回包**（原版 `return`） |
+| 17152 | `index=0` | 17152 | `ret=0` |
+| 17151 | `index=0`（已阅读） | 17151 | `ret=0` + 发奖 |
+| 17151 | `index=0`（再领） | 17151 | `ret=1501`（REPEATED） |
+| 17153 | 空 | 17153 | `info{reward=[0], read=[0]}` |
+
+### 计数器恢复专项（2 条全链路，2026-10-27）
+
+启动日志新增两行：
+
+```text
+防骗手册模板已装载  groups=4
+计数器模板已装载    counter_rows=92 vip_levels=18
+服务就绪            handlers=71
+```
+
+| cmd | 请求 | 回包 |
+|---|---|---|
+| 8001 | 空 | 91 条（92 模板 - 跳过 `templateId=5` 子嗣） |
+| 8001 | — | 2 号 `num=3`（VIP0 上限）`cdTime=-1`（满值停表） |
+| 8001 | — | 不含 5 号 |
+| 8002 | `templateId=2` | `ret=0`，单条 `templateId=2 num=3 cdTime=-1` |
+| 8002 | `templateId=999999` | **无回包**（原版没有 else） |
+
+> 探针坑 1：proto2 的 `repeated int32` 默认 **不打包**（`packed="false"`），
+> 每个元素独立带 tag。按 packed 解析会读到空列表（`AntiCheatInfo` 踩过）。
+> 探针坑 2：protobuf 的 `int64` 负数（如 `cdTime=-1`）是 10 字节 varint，
+> JS 的 32 位位移会溢出成 `4294967295`，必须用 `BigInt` 读。
+
 cmd 5 实收：
 
 ```json
@@ -317,12 +360,17 @@ rm -rf target/debug/incremental && CARGO_INCREMENTAL=0 cargo test -p ddj-game-ha
 
 # 冒烟（需先起服务）
 node e2e/smoke/handlers_smoke.mjs ws://127.0.0.1:10544/
+node e2e/smoke/anticheat_smoke.mjs          # 防骗手册 7 条断言
+node e2e/smoke/counter_smoke.mjs            # 计数器恢复 6 条断言
 node e2e/smoke/view_smoke.mjs
 ```
 
 ## 八、最近提交
 
 ```
+4b51414 feat(counter): 接计数器恢复 8001/8002 + 按反编译逐方法重写 counter.rs
+5f3236f feat(anticheat): 接真实配置 AntiCheatReward + 全链路冒烟
+1149ed7 feat(anticheat): 接防骗手册 17151 领奖 / 17152 已读 / 17153 查询
 99f4f1c feat(psw): 接二级密码 17351-17355 五条
 e526e0d feat(pet): 接技能升级 7005（皮肤 / 普通两条分支）
 10def38 feat(pet): 接升星 7003 / 技能升阶 7006

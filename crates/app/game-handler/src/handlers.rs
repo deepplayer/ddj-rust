@@ -187,6 +187,7 @@ pub fn register(
         n += crate::install_player::install(table, world.clone(), clock.clone());
         n += crate::install_second_psw::install(table, world.clone(), clock.clone());
         n += crate::install_sign::install(table, world.clone(), clock.clone());
+        n += crate::install_special_msg::install(table, world.clone(), clock.clone());
         n += crate::install_state::install(table, world.clone(), clock.clone());
         if let Some(v) = view.repo {
             n += crate::install_view::install(
