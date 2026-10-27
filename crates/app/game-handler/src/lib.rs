@@ -72,6 +72,7 @@ pub mod player;
 pub mod player_misc;
 pub mod player_state;
 pub mod push;
+pub mod queue;
 pub mod rank;
 pub mod runtime;
 pub mod shop;

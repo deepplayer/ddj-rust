@@ -135,6 +135,43 @@ pub fn heartbeat_resp(now: i64) -> HeartbeatConnectResp3 {
     }
 }
 
+// ─────────────────────── 11 测试消息 ───────────────────────
+//
+// 对应 `EngineMessageHandler.testSengReq`（行 74-96）。原版发**三个包**：
+// 1. `TestSengResp_11`，含 5 条 `MsgTestData`：
+//    `type = 0..4`，`data` = 固定的 `LoginReq_4{serverId=99, openId="1",
+//    token="2", sign="3"}` 序列化字节
+// 2. `HeartbeatConnectResp_3{ret=0, serverTime=now}`
+// 3. 再发一次同样的 `HeartbeatConnectResp_3`
+//
+// 这是厂家留的联调接口，数据全硬编码。照抄。
+
+/// 11 号消息里 `MsgTestData.data` 的固定内容：
+/// `LoginReq_4{serverId=99, openId="1", token="2", sign="3"}` 的 protobuf 编码。
+///
+/// 字段号取自生成代码（`LoginReq4`）：`openId=1`、`serverId=2`、`token=3`、`sign=4`。
+/// 这里直接用 prost 编码而不是手拼字节 —— 手拼过一次把 `sign` 当成 tag 42
+/// （实际是 4），靠单测才发现。
+#[must_use]
+pub fn test_data_payload() -> Vec<u8> {
+    use prost::Message as _;
+    let req = ddj_pb::gen::engine_message::LoginReq4 {
+        open_id: Some("1".to_owned()),
+        server_id: Some(99),
+        token: Some("2".to_owned()),
+        sign: Some("3".to_owned()),
+        ..Default::default()
+    };
+    req.encode_to_vec()
+}
+
+/// 构造 `TestSengResp_11` 的 5 条测试数据（`type = 0..4`）。
+#[must_use]
+pub fn test_data_entries() -> Vec<(i32, Vec<u8>)> {
+    let payload = test_data_payload();
+    (0..5).map(|i| (i, payload.clone())).collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -248,6 +285,31 @@ mod tests {
         let a = random_names(&pool, &DeterministicRng::new(42));
         let b = random_names(&pool, &DeterministicRng::new(42));
         assert_eq!(a, b);
+    }
+
+    #[test]
+    fn test_data_payload_roundtrips_as_login_req() {
+        use prost::Message as _;
+        // 关键断言：手拼/编码出来的字节必须能被真实 LoginReq_4 解回来，
+        // 且四个字段值与原版硬编码一致（serverId=99, openId="1", token="2", sign="3"）
+        let bytes = test_data_payload();
+        let back = ddj_pb::gen::engine_message::LoginReq4::decode(&bytes[..]).expect("应能解码");
+        assert_eq!(back.server_id, Some(99));
+        assert_eq!(back.open_id.as_deref(), Some("1"));
+        assert_eq!(back.token.as_deref(), Some("2"));
+        assert_eq!(back.sign.as_deref(), Some("3"));
+    }
+
+    #[test]
+    fn test_data_has_five_entries_with_types_zero_to_four() {
+        let entries = test_data_entries();
+        assert_eq!(entries.len(), 5, "原版 for (i = 0; i < 5; i++)");
+        let types: Vec<i32> = entries.iter().map(|(t, _)| *t).collect();
+        assert_eq!(types, vec![0, 1, 2, 3, 4], "type 依次是 0..4");
+        // 5 条的 data 完全相同
+        for (_, d) in &entries {
+            assert_eq!(d, &test_data_payload());
+        }
     }
 
     #[test]
