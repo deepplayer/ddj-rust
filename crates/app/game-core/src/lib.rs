@@ -21,6 +21,7 @@ pub mod view_repo;
 pub mod bootstrap;
 pub mod create_player_repo;
 pub mod csv_amber;
+pub mod csv_anticheat;
 pub mod csv_names;
 pub mod csv_sign;
 pub mod csv_templates;
