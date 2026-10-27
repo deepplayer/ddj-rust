@@ -202,6 +202,7 @@ pub fn register(
         n += crate::install_counter::install(table, world.clone(), clock.clone());
         n += crate::install_declare::install(table, world.clone(), clock.clone());
         n += crate::install_engine::install(table, world.clone(), clock.clone());
+        n += crate::install_favourable::install(table, world.clone(), clock.clone());
         n += crate::install_pet::install(table, world.clone(), clock.clone());
         n += crate::install_platform::install(table, world.clone(), clock.clone());
         n += crate::install_vip::install(table, world.clone(), clock.clone());

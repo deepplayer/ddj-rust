@@ -156,6 +156,8 @@ pub struct PlayerBox {
     ///
     /// 原版是 `sys_activity_shortcut_install` 表的一行，键 `playerId`。
     pub shortcut_state: i32,
+    /// `FavourableModel`：渠道好评的持久化字段。
+    pub favourable: crate::favourable::FavourableState,
 }
 
 impl MemWorld {

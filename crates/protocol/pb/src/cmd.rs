@@ -274,6 +274,12 @@ pub enum RetCode {
     ShortcutCidError = 4731,
     /// 保存桌面 - 尚未执行保存桌面（`SHORTCUT_NOT_INSTALL`）。
     ShortcutNotInstall = 4732,
+    /// 渠道好评 - 渠道没开放好评系统（`FAVOURABLE_ERROR_1`）。
+    FavourableError1 = 3941,
+    /// 渠道好评 - 已经评价过（`FAVOURABLE_ERROR_2`）。
+    FavourableError2 = 3942,
+    /// 活动进行中 - 参数错误（`ACTIVITY_PARAM_ERROR`）。
+    ActivityParamError = 2754,
     /// VIVO 特权 - 领取奖励失败（`VIVO_WELFARE_SIGN_ERROR`）。
     ///
     /// ⚠ 名字是 VIVO 福利的，但 `ShortcutModel.gainShortcutReward` 的
@@ -402,6 +408,9 @@ impl RetCode {
             4731 => Self::ShortcutCidError,
             4732 => Self::ShortcutNotInstall,
             4722 => Self::VivoWelfareSignError,
+            3941 => Self::FavourableError1,
+            3942 => Self::FavourableError2,
+            2754 => Self::ActivityParamError,
             _ => return None,
         })
     }
@@ -520,6 +529,9 @@ impl RetCode {
             Self::ShortcutCidError => "保存桌面-不是指定渠道",
             Self::ShortcutNotInstall => "保存桌面-尚未执行保存桌面",
             Self::VivoWelfareSignError => "VIVO特权-领取奖励失败",
+            Self::FavourableError1 => "渠道没开放好评系统",
+            Self::FavourableError2 => "已经评价过",
+            Self::ActivityParamError => "活动进行中-参数错误",
         }
     }
 }
@@ -553,7 +565,7 @@ mod tests {
             3600, 3601, 3602, 3603, 3604, 3606, 901, 905, 942,
             906, 907, 908, 909, 911, 912, 913, 910, 946,
             9501, 9502, 9503, 9504, 9505, 6451, 1501,
-            4731, 4732, 4722,
+            4731, 4732, 4722, 3941, 3942, 2754,
         ] {
             let c = RetCode::from_i32(v).unwrap_or_else(|| panic!("缺 {v}"));
             assert_eq!(c.as_i32(), v);
