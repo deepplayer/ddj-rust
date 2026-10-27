@@ -220,6 +220,18 @@ pub enum RetCode {
     PetErrorUpgradeSkinResources = 939,
     /// 珍兽数量太少（`PET_ERROR_PET_NUM_LIMIT`）。
     PetErrorPetNumLimit = 940,
+    /// 珍兽评级尚未开启（`PETRATE_IS_NOT_OPEN`）。
+    PetRateIsNotOpen = 3600,
+    /// 珍兽评级 - 玩家没有该珍兽（`PETRATE_HAVE_NOT_PET`）。
+    PetRateHaveNotPet = 3601,
+    /// 珍兽评级 - 已经是最大等级（`PETRATE_REACH_MAX_LEVEL`）。
+    PetRateReachMaxLevel = 3602,
+    /// 珍兽评级 - 没有该等级配置（`PETRATE_HAVE_NOT_CONFIG`）。
+    PetRateHaveNotConfig = 3603,
+    /// 珍兽评级 - 没有满足升级条件（`PETRATE_NOT_ENOUGHT_CONDISION`）。
+    PetRateNotEnoughtCondision = 3604,
+    /// 珍兽评级 - 预定等级珍兽已达最大数量（`PETRATE_REACH_MAX_NUM`）。
+    PetRateReachMaxNum = 3606,
 }
 
 impl RetCode {
@@ -315,6 +327,12 @@ impl RetCode {
             938 => Self::PetErrorActivateSkinResources,
             939 => Self::PetErrorUpgradeSkinResources,
             940 => Self::PetErrorPetNumLimit,
+            3600 => Self::PetRateIsNotOpen,
+            3601 => Self::PetRateHaveNotPet,
+            3602 => Self::PetRateReachMaxLevel,
+            3603 => Self::PetRateHaveNotConfig,
+            3604 => Self::PetRateNotEnoughtCondision,
+            3606 => Self::PetRateReachMaxNum,
             _ => return None,
         })
     }
@@ -405,6 +423,12 @@ impl RetCode {
             Self::PetErrorActivateSkinResources => "激活皮肤资源不足",
             Self::PetErrorUpgradeSkinResources => "升皮肤资源不足",
             Self::PetErrorPetNumLimit => "珍兽数量太少",
+            Self::PetRateIsNotOpen => "珍兽评级--尚未开启",
+            Self::PetRateHaveNotPet => "珍兽评级--玩家没有该珍兽",
+            Self::PetRateReachMaxLevel => "珍兽评级--珍兽已经是最大等级",
+            Self::PetRateHaveNotConfig => "珍兽评级--没有该等级配置",
+            Self::PetRateNotEnoughtCondision => "珍兽评级--没有满足升级条件",
+            Self::PetRateReachMaxNum => "珍兽评级--预定等级珍兽已经达到最大数量",
         }
     }
 }
@@ -435,6 +459,7 @@ mod tests {
             105, 106, 107,
             2303, 2304, 2305, 4601, 120,
             405, 406, 407, 914, 915, 938, 939, 940,
+            3600, 3601, 3602, 3603, 3604, 3606,
         ] {
             let c = RetCode::from_i32(v).unwrap_or_else(|| panic!("缺 {v}"));
             assert_eq!(c.as_i32(), v);

@@ -405,6 +405,236 @@ mod tests {
         );
     }
 
+    // ── 7026 珍兽评级 ──
+
+    fn rate_ctx() -> PetRateCtx {
+        PetRateCtx {
+            system_open: true,
+            pet_exists: true,
+            current_lv: 1,
+            max_lv: 10,
+            same_lv_count: 0,
+            intimacy: 1000,
+            growth: 1000,
+        }
+    }
+
+    fn rate_tpl() -> PetRateTemplate {
+        PetRateTemplate {
+            need_intimacy: 500,
+            need_growth: 500,
+            limit_num: 3,
+        }
+    }
+
+    #[test]
+    fn rate_system_closed_is_3600() {
+        let c = PetRateCtx {
+            system_open: false,
+            ..rate_ctx()
+        };
+        assert_eq!(
+            set_pet_rate_verdict(&c, Some(&rate_tpl())),
+            PetRateOutcome::Reject(RetCode::PetRateIsNotOpen)
+        );
+    }
+
+    #[test]
+    fn rate_missing_pet_is_3601() {
+        let c = PetRateCtx {
+            pet_exists: false,
+            ..rate_ctx()
+        };
+        assert_eq!(
+            set_pet_rate_verdict(&c, Some(&rate_tpl())),
+            PetRateOutcome::Reject(RetCode::PetRateHaveNotPet)
+        );
+    }
+
+    #[test]
+    fn rate_at_max_level_is_3602() {
+        let c = PetRateCtx {
+            current_lv: 10,
+            max_lv: 10,
+            ..rate_ctx()
+        };
+        assert_eq!(
+            set_pet_rate_verdict(&c, Some(&rate_tpl())),
+            PetRateOutcome::Reject(RetCode::PetRateReachMaxLevel)
+        );
+    }
+
+    #[test]
+    fn rate_missing_config_is_3603() {
+        assert_eq!(
+            set_pet_rate_verdict(&rate_ctx(), None),
+            PetRateOutcome::Reject(RetCode::PetRateHaveNotConfig)
+        );
+    }
+
+    #[test]
+    fn rate_insufficient_intimacy_is_3604() {
+        let c = PetRateCtx {
+            intimacy: 499,
+            ..rate_ctx()
+        };
+        assert_eq!(
+            set_pet_rate_verdict(&c, Some(&rate_tpl())),
+            PetRateOutcome::Reject(RetCode::PetRateNotEnoughtCondision)
+        );
+    }
+
+    #[test]
+    fn rate_insufficient_growth_is_3604() {
+        let c = PetRateCtx {
+            growth: 499,
+            ..rate_ctx()
+        };
+        assert_eq!(
+            set_pet_rate_verdict(&c, Some(&rate_tpl())),
+            PetRateOutcome::Reject(RetCode::PetRateNotEnoughtCondision)
+        );
+    }
+
+    #[test]
+    fn rate_limit_reached_is_3606() {
+        let c = PetRateCtx {
+            same_lv_count: 3,
+            ..rate_ctx()
+        };
+        assert_eq!(
+            set_pet_rate_verdict(&c, Some(&rate_tpl())),
+            PetRateOutcome::Reject(RetCode::PetRateReachMaxNum)
+        );
+    }
+
+    #[test]
+    fn rate_accept_increments_level() {
+        assert_eq!(
+            set_pet_rate_verdict(&rate_ctx(), Some(&rate_tpl())),
+            PetRateOutcome::Accept { new_lv: 2 }
+        );
+    }
+
+    #[test]
+    fn rate_boundary_values_pass() {
+        // 亲密度/成长正好等于门槛、数量正好比上限少 1 → 通过
+        let c = PetRateCtx {
+            intimacy: 500,
+            growth: 500,
+            same_lv_count: 2,
+            ..rate_ctx()
+        };
+        assert!(matches!(
+            set_pet_rate_verdict(&c, Some(&rate_tpl())),
+            PetRateOutcome::Accept { .. }
+        ));
+    }
+
+    // ── 7029 评级互换 ──
+
+    fn replace_ctx() -> PetRateReplaceCtx {
+        PetRateReplaceCtx {
+            system_open: true,
+            pet1_exists: true,
+            pet2_exists: true,
+            lv1: 1,
+            lv2: 2,
+            intimacy1: 1000,
+            growth1: 1000,
+            intimacy2: 1000,
+            growth2: 1000,
+        }
+    }
+
+    #[test]
+    fn replace_system_closed_is_3600_in_resp() {
+        let c = PetRateReplaceCtx {
+            system_open: false,
+            ..replace_ctx()
+        };
+        let out = replace_pet_rate_verdict(&c, Some(&rate_tpl()));
+        assert_eq!(out, PetRateReplaceOutcome::Reject(RetCode::PetRateIsNotOpen));
+        // 关键：7029 走 Resp 里的 ret，不是 ErrorResp_1
+        assert_eq!(out.resolve_ret(), Some(RetCode::PetRateIsNotOpen));
+    }
+
+    #[test]
+    fn replace_missing_pet_is_3601() {
+        let c = PetRateReplaceCtx {
+            pet2_exists: false,
+            ..replace_ctx()
+        };
+        assert_eq!(
+            replace_pet_rate_verdict(&c, Some(&rate_tpl())),
+            PetRateReplaceOutcome::Reject(RetCode::PetRateHaveNotPet)
+        );
+    }
+
+    #[test]
+    fn replace_level_gap_not_one_is_3604() {
+        let c = PetRateReplaceCtx {
+            lv1: 1,
+            lv2: 3,
+            ..replace_ctx()
+        };
+        assert_eq!(
+            replace_pet_rate_verdict(&c, Some(&rate_tpl())),
+            PetRateReplaceOutcome::Reject(RetCode::PetRateNotEnoughtCondision)
+        );
+    }
+
+    #[test]
+    fn replace_missing_config_is_3603() {
+        assert_eq!(
+            replace_pet_rate_verdict(&replace_ctx(), None),
+            PetRateReplaceOutcome::Reject(RetCode::PetRateHaveNotConfig)
+        );
+    }
+
+    #[test]
+    fn replace_swaps_levels() {
+        // lv1=1, lv2=2 → 交换后 lv1=2, lv2=1
+        assert_eq!(
+            replace_pet_rate_verdict(&replace_ctx(), Some(&rate_tpl())),
+            PetRateReplaceOutcome::Accept {
+                lv1_after: 2,
+                lv2_after: 1
+            }
+        );
+    }
+
+    #[test]
+    fn replace_uses_high_level_side_for_condition_check() {
+        // 原版：交换后保证 petDown 是高等级，但校验用的是 petUp（低等级）的数值。
+        // 这里 high_lv 来自 lv2=2，high_intimacy 也取 intimacy2。
+        let c = PetRateReplaceCtx {
+            intimacy2: 100, // 高等级那方数值不足
+            ..replace_ctx()
+        };
+        assert_eq!(
+            replace_pet_rate_verdict(&c, Some(&rate_tpl())),
+            PetRateReplaceOutcome::Reject(RetCode::PetRateNotEnoughtCondision)
+        );
+    }
+
+    #[test]
+    fn replace_reverse_order_same_result() {
+        // lv1=2, lv2=1（与默认相反）→ 仍交换，结果对称
+        let c = PetRateReplaceCtx {
+            lv1: 2,
+            lv2: 1,
+            ..replace_ctx()
+        };
+        assert_eq!(
+            replace_pet_rate_verdict(&c, Some(&rate_tpl())),
+            PetRateReplaceOutcome::Accept {
+                lv1_after: 1,
+                lv2_after: 2
+            }
+        );
+    }
+
     #[test]
     fn set_zero_unmounts_without_ownership() {
         // skinId == 0 是卸下，原版跳过 existedSkin 检查
@@ -412,5 +642,223 @@ mod tests {
             set_skin_verdict(Some(&pet()), 0),
             SkinOutcome::Accept(SkinEffect::Set { skin_id: 0 })
         );
+    }
+}
+
+// ─────────────────────── 珍兽评级（7026 / 7029） ───────────────────────
+//
+// 对应 `PetSet.setPetRate`（`PetSet.java:783-828`）与
+// `PetSet.MsgPetRateLvReplaceReq_7029`（`PetSet.java:830-878`）。
+//
+// ## 两条的错误出口**不一样**（关键差异）
+// - 7026 `setPetRate` **抛 `HandlerException`** → 框架出口 `ErrorResp_1`
+// - 7029 `MsgPetRateLvReplaceReq_7029` **返回 Resp 里的 ret**，不抛异常
+//
+// 所以同样一个 3601，7026 走 `ErrorResp_1{msgId=7026}`，7029 走
+// `MsgPetRateLvReplaceResp_7029{ret=3601}`。照抄。
+//
+// ## 7026 的分支序
+// ```text
+// 1. !SystemOpenUtils.isOpen(pid, 23)          → PETRATE_IS_NOT_OPEN(3600)
+// 2. getPet(petId) == null                      → PETRATE_HAVE_NOT_PET(3601)
+// 3. PetDBCache.get(petId) == null              → 3601
+// 4. pet.getRataLv() >= maxLv                   → PETRATE_REACH_MAX_LEVEL(3602)
+// 5. toRateLv = rataLv + 1
+//    toRateLvNum = 同等级珍兽数量
+// 6. PetRateDB.getPetRateByLv(toRateLv) == null → PETRATE_HAVE_NOT_CONFIG(3603)
+// 7. intimacy < needIntimacy || growth < needGrowth → 3604
+// 8. toRateLvNum >= limitNum                    → PETRATE_REACH_MAX_NUM(3606)
+// 9. setRataLv(toRateLv) + 推 7001(toMsgPetData(11))
+// ```
+//
+// ## 7029 的分支序（注意第 6 步的**交换**）
+// ```text
+// 1. !isOpen(23)                                → ret = 3600
+// 2. petDown == null || petUp == null           → ret = 3601
+// 3. petDB1 == null || petDB2 == null           → ret = 3601
+// 4. if (petUp.rataLv > petDown.rataLv) 交换两者  ← 保证 petDown 是高等级那个
+// 5. abs(down.rataLv - up.rataLv) != 1          → ret = 3604
+// 6. PetRateDB.getPetRateByLv(**petDown**.rataLv) == null → ret = 3603
+//    ⚠ 查的是 petDown（高等级）的配置，但第 7 步校验的是 **petUp** 的数值
+// 7. petUp.intimacy < db.needIntimacy || petUp.growth < db.needGrowth → ret = 3604
+// 8. 交换两者的 rataLv，各推一条 7001
+// ```
+
+/// 珍兽评级配置（`PetRateDB` 的一行）。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PetRateTemplate {
+    /// `needIntimacy`：升级所需亲密度。
+    pub need_intimacy: i64,
+    /// `needGrowth`：升级所需成长。
+    pub need_growth: i64,
+    /// `limitNum`：该等级最多几只。
+    pub limit_num: i32,
+}
+
+/// 7026 的判定输入。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PetRateCtx {
+    /// `SystemOpenUtils.isOpen(pid, 23)`。
+    pub system_open: bool,
+    /// 门客是否存在（`getPet(petId) != null && PetDBCache.get(petId) != null`）。
+    pub pet_exists: bool,
+    /// 当前评级等级（`Pet.getRataLv()`）。
+    pub current_lv: i32,
+    /// `PetRateDBCache.getMaxLv()`。
+    pub max_lv: i32,
+    /// 当前等级下的珍兽数量（`getSameRateLvNume(current_lv + 1)`）。
+    pub same_lv_count: i32,
+    /// 带皮肤加成的亲密度（`getIntimacyWithSkinAdd()`）。
+    pub intimacy: i64,
+    /// 带皮肤加成的成长（`getGrowthWithSkinAdd()`）。
+    pub growth: i64,
+}
+
+/// 7026 的结论。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PetRateOutcome {
+    /// 抛 `HandlerException` → `ErrorResp_1`。
+    Reject(RetCode),
+    /// 通过：升到 `new_lv`，要推 `PetUpdateResp_7001`。
+    Accept {
+        /// 升级后的评级等级。
+        new_lv: i32,
+    },
+}
+
+impl PetRateOutcome {
+    /// 协议上的 `ret`（仅 7029 用；7026 走 `ErrorResp_1`）。
+    #[must_use]
+    pub const fn resolve_ret(&self) -> Option<RetCode> {
+        match self {
+            Self::Reject(code) => Some(*code),
+            Self::Accept { .. } => None,
+        }
+    }
+}
+
+/// `PetSet.setPetRate`（7026）的纯逻辑。
+///
+/// `target_tpl` 是 `PetRateDBCache.getPetRateByLv(current_lv + 1)`。
+#[must_use]
+pub fn set_pet_rate_verdict(ctx: &PetRateCtx, target_tpl: Option<&PetRateTemplate>) -> PetRateOutcome {
+    // 1. 系统未开启
+    if !ctx.system_open {
+        return PetRateOutcome::Reject(RetCode::PetRateIsNotOpen);
+    }
+    // 2/3. 门客不存在（原版分两次判：pet 与 PetDB，结论相同）
+    if !ctx.pet_exists {
+        return PetRateOutcome::Reject(RetCode::PetRateHaveNotPet);
+    }
+    // 4. 已满级
+    if ctx.current_lv >= ctx.max_lv {
+        return PetRateOutcome::Reject(RetCode::PetRateReachMaxLevel);
+    }
+    // 5. 目标等级配置
+    let Some(tpl) = target_tpl else {
+        return PetRateOutcome::Reject(RetCode::PetRateHaveNotConfig);
+    };
+    // 6. 亲密度 / 成长不足
+    if ctx.intimacy < tpl.need_intimacy || ctx.growth < tpl.need_growth {
+        return PetRateOutcome::Reject(RetCode::PetRateNotEnoughtCondision);
+    }
+    // 7. 目标等级已达数量上限
+    if ctx.same_lv_count >= tpl.limit_num {
+        return PetRateOutcome::Reject(RetCode::PetRateReachMaxNum);
+    }
+    PetRateOutcome::Accept {
+        new_lv: ctx.current_lv + 1,
+    }
+}
+
+/// 7029 的判定输入。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PetRateReplaceCtx {
+    /// `SystemOpenUtils.isOpen(pid, 23)`。
+    pub system_open: bool,
+    /// `getPet(petId1)` 与 `PetDBCache.get(petId1)` 是否都存在。
+    pub pet1_exists: bool,
+    /// `getPet(petId2)` 与 `PetDBCache.get(petId2)` 是否都存在。
+    pub pet2_exists: bool,
+    /// `petId1` 的评级等级。
+    pub lv1: i32,
+    /// `petId2` 的评级等级。
+    pub lv2: i32,
+    /// `petId1` 的亲密度（带皮肤）。
+    pub intimacy1: i64,
+    /// `petId1` 的成长（带皮肤）。
+    pub growth1: i64,
+    /// `petId2` 的亲密度（带皮肤）。
+    pub intimacy2: i64,
+    /// `petId2` 的成长（带皮肤）。
+    pub growth2: i64,
+}
+
+/// 7029 的结论。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PetRateReplaceOutcome {
+    /// 回 `MsgPetRateLvReplaceResp_7029{ret}`（**不是** ErrorResp_1）。
+    Reject(RetCode),
+    /// 通过：交换两者等级。
+    Accept {
+        /// `petId1` 的新等级（= 原来的 `lv2`）。
+        lv1_after: i32,
+        /// `petId2` 的新等级（= 原来的 `lv1`）。
+        lv2_after: i32,
+    },
+}
+
+impl PetRateReplaceOutcome {
+    /// 协议上的 `ret`；`None` 表示成功。
+    #[must_use]
+    pub const fn resolve_ret(&self) -> Option<RetCode> {
+        match self {
+            Self::Reject(code) => Some(*code),
+            Self::Accept { .. } => None,
+        }
+    }
+}
+
+/// `PetSet.MsgPetRateLvReplaceReq_7029` 的纯逻辑。
+///
+/// `target_tpl` 是 `PetRateDBCache.getPetRateByLv(高等级那方的 lv)`。
+#[must_use]
+pub fn replace_pet_rate_verdict(
+    ctx: &PetRateReplaceCtx,
+    target_tpl: Option<&PetRateTemplate>,
+) -> PetRateReplaceOutcome {
+    // 1. 系统未开启
+    if !ctx.system_open {
+        return PetRateReplaceOutcome::Reject(RetCode::PetRateIsNotOpen);
+    }
+    // 2/3. 任一门客不存在
+    if !ctx.pet1_exists || !ctx.pet2_exists {
+        return PetRateReplaceOutcome::Reject(RetCode::PetRateHaveNotPet);
+    }
+    // 4. 原版：`if (petUp.rataLv > petDown.rataLv) 交换`
+    //    交换后保证 petDown 是等级更高的那个。
+    //    这里用 `high` / `low` 表达交换后的语义。
+    let (high_lv, low_lv, high_intimacy, high_growth) = if ctx.lv2 > ctx.lv1 {
+        // 交换：petUp 变 petId1，petDown 变 petId2
+        (ctx.lv2, ctx.lv1, ctx.intimacy2, ctx.growth2)
+    } else {
+        (ctx.lv1, ctx.lv2, ctx.intimacy1, ctx.growth1)
+    };
+    // 5. 等级差必须正好 1
+    if (high_lv - low_lv).abs() != 1 {
+        return PetRateReplaceOutcome::Reject(RetCode::PetRateNotEnoughtCondision);
+    }
+    // 6. 查**高等级**那方的配置
+    let Some(tpl) = target_tpl else {
+        return PetRateReplaceOutcome::Reject(RetCode::PetRateHaveNotConfig);
+    };
+    // 7. ⚠ 原版校验的是 `petUp`（交换后等级**低**的那个）的数值
+    //    但用的是 `petDown`（高等级）的配置 —— 这个错位是原版写法，照抄。
+    if high_intimacy < tpl.need_intimacy || high_growth < tpl.need_growth {
+        return PetRateReplaceOutcome::Reject(RetCode::PetRateNotEnoughtCondision);
+    }
+    PetRateReplaceOutcome::Accept {
+        lv1_after: ctx.lv2,
+        lv2_after: ctx.lv1,
     }
 }

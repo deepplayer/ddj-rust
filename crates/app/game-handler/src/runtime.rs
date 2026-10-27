@@ -120,6 +120,8 @@ pub struct PlayerBox {
     pub pet_skins: HashMap<i32, crate::pet::PetSkinState>,
     /// 门客的成长/亲密度/皮肤等级（原版 `Pet` 的可见字段子集）。
     pub pet_extra: HashMap<i32, PetExtra>,
+    /// 门客评级等级：`pet_id → Pet.rataLv`（默认 1）。
+    pub pet_rate: HashMap<i32, i32>,
 }
 
 impl MemWorld {
