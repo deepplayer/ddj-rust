@@ -321,6 +321,74 @@ interact = (long)( a0 + (a1 * intimacy) / (a2 + (a3 * intimacy) / (intimacy + a4
 7023 对照                    → ErrorResp_1{msgId=7023, code=2}   模板未注入
 ```
 
+## A14 `second_psw.rs`（17351-17355）
+
+对应 `SecondPsw.java`（210 行）。handler 侧 5 条全部只做转发。
+
+### ⚠ 17352 是唯一「失败也走 Resp」的一条
+
+| cmd | 失败出口 | 帧号 |
+|---|---|---|
+| 17351 / 17353 / 17354 | `throws HandlerException` → `ErrorResp_1` | **1** |
+| **17352** | 自己 catch 住 → `MsgVerifyPswResp_17352{ret=code}` | **17352** |
+
+实测确认：
+
+```text
+17351 短密码 → frame=1     ErrorResp_1 msgId=17351 code=9501
+17352 错密码 → frame=17352 Resp ret=9505
+```
+
+### ⚠ setPsw 的外层 catch 吞掉内层错误
+
+```java
+try {
+    Integer.parseInt(psw);
+    if (isApplyResetState()) throw COMMON_SERVER_STAGE_ERROR;        // 30
+    if (psw != null && !isVerifySuccess) throw SECOND_PSW_NO_VERIFY; // 9503
+    ...
+} catch (Throwable th) {
+    throw new HandlerException(SECOND_PSW_FORMAT_ERROR);             // 9502
+}
+```
+
+内层的 `30` / `9503` 全被外层吞成 `9502`（「密码只能是数字」）。
+所以「正在重置中」与「未验证就改密码」客户端看到的是同一个错误。
+两个单测分别锁住：
+- `set_psw_modify_requires_verify_but_is_masked_to_9502`
+- `set_psw_during_reset_is_masked_to_9502`
+
+### 各条分支
+
+| cmd | 分支 | 原版位置 | Rust | 用例 | 状态 |
+|---|---|---|---|---|---|
+| 17351 | `psw == null` → 29 | `:119-121` | `set_psw_verdict` | `set_psw_null_is_param_error` | ✅ |
+| 17351 | 长度 ≠ limit → 9501 | `:122-124` | 同 | `set_psw_wrong_length_is_9501` | ✅ |
+| 17351 | 非数字 → 9502 | `:126` | 同 | `set_psw_non_digit_is_9502` | ✅ |
+| 17351 | 首次设置 → `enabled=true` | `:134-137` | `first_set` | `set_psw_first_time_accepts` | ✅ |
+| 17352 | 未设密码 → 30（走 Resp） | `:148-150` | `verify_psw_verdict` | `verify_not_set_is_30_via_resp` | ✅ |
+| 17352 | 错误次数 ≥ attempt → 9504 | `:151-153` | 同 | `verify_too_many_errors_is_9504` | ✅ |
+| 17352 | 密码不符 → 9505 + 计数 +1 | `:157-162` | 同 | `verify_wrong_psw_is_9505` | ✅ |
+| 17352 | 通过 → 清空计数 | `:163-167` | `VerifyOk` | `verify_correct_accepts` | ✅ |
+| 17353 | 未验证 → 9503 | `:174-176` | `set_enabled_verdict` | `enabled_requires_verify` | ✅ |
+| 17354 | 已在重置 → 30 | `:183-185` | `apply_reset_verdict` | `apply_reset_twice_is_30` | ✅ |
+| 17354 | `resetTime * 3600000` | `:186` | 同 | `apply_reset_sets_end_time_in_hours` | ✅ |
+| 17354 | 取消需在重置中 | `:193-195` | `cancel_reset_verdict` | `cancel_reset_requires_pending` | ✅ |
+| 17355 | `toMsg()` 四字段 | `:202-210` | `to_snapshot` | `snapshot_reflects_state` | ✅ |
+
+### 全链路实测
+
+```text
+17355 → ret=0 初始状态
+17351 短密码 → ErrorResp_1{code=9501}
+17351 123456 → ret=0 haveSetPsw=true
+17352 错密码 → ret=9505（帧号 17352）
+17352 对密码 → ret=0
+17353 enabled=0 → ret=0 enabled=false
+17354 type=1 → ret=0 type=1
+17355 → ret=0 更新后状态
+```
+
 ## A7 `login.rs` + `loginvar.rs` + `handshake.rs`（待填）
 
 > 现状：登录 4 / 创角 6 / 握手 16-18 已接线，走真实 PG。`login.rs` 630 行。
