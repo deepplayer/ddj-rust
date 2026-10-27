@@ -53,7 +53,7 @@ if (!(isTourists() || white || (token != null && !token.isEmpty()))) {
 
 ```bash
 # 1) 原版
-cd /home/ubuntu/code/ddj
+cd /path/to/ddj
 docker compose up -d db redis platform game
 docker exec ddj-db mysql -uroot -p"$DB_PASSWORD" platform -e \
   "insert ignore into bf_white_openid(openId,createTime) values('orig-ws-001',0)"
