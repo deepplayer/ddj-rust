@@ -87,6 +87,18 @@ pub struct PlayerBox {
     pub new_player_data: crate::player::PlayerCacheStore,
     /// `Player.manifesto`：出站宣言（`Player.java:287`，列宽 `BATTLE_NOTICE_SIZE`）。
     pub manifesto: String,
+    /// `PlayerCommon` 的 `keyValue` 表（原版 `TypePlayerCacheKey` → 字符串）。
+    ///
+    /// 目前只用到 `TWBindAccount(2)`，但保留通用 map 以免以后每加一个 key
+    /// 都要改结构体。
+    pub key_values: HashMap<i32, String>,
+    /// `ChannelPlayer.bor`（`ChannelPlayer.java:15`，默认 false）。
+    ///
+    /// 1004 会无条件置 true；`AbsPurposePlayPlayer.getCheatReturnData()`
+    /// 用它判断连接是否走过更新包。会话级状态，断线即失效。
+    pub bor: bool,
+    /// `Player.createdateTime`（创角时间，毫秒）。
+    pub create_time: i64,
 }
 
 impl MemWorld {
