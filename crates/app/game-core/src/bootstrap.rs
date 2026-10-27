@@ -369,6 +369,8 @@ impl Bootstrap {
             crate::csv_anticheat::install(std::path::Path::new(&cfg.template.dir));
             crate::csv_counter::install(std::path::Path::new(&cfg.template.dir));
             crate::csv_shortcut::install(std::path::Path::new(&cfg.template.dir));
+            crate::csv_drop::install(std::path::Path::new(&cfg.template.dir));
+            crate::csv_drop::install_pray(std::path::Path::new(&cfg.template.dir));
             tracing::info!(
                 tables = report.tables,
                 rows = report.rows,

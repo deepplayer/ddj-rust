@@ -23,6 +23,7 @@ pub mod create_player_repo;
 pub mod csv_amber;
 pub mod csv_anticheat;
 pub mod csv_counter;
+pub mod csv_drop;
 pub mod csv_names;
 pub mod csv_shortcut;
 pub mod csv_sign;

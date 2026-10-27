@@ -44,6 +44,11 @@ use crate::sign::SignState;
 pub struct MemWorld {
     /// 玩家状态容器（按 `player_id` 分片）。
     players: Mutex<HashMap<i64, PlayerBox>>,
+    /// 焚香祈愿的全服公告栏（原版 `PrayModule.noticeList`）。
+    ///
+    /// ⚠ 原版 `AbsSysActivityModule` 是进程级单例，所以这里的公告栏也是
+    /// 全服共享、重启即丢。`PrayModule.handleEvent` 里 `while (size > 5) remove(0)`。
+    pray_notices: Mutex<Vec<crate::pray::Notice>>,
 }
 
 /// 门客的成长/亲密度/皮肤等级（`Pet` 里与本流程相关的累加字段）。
@@ -158,6 +163,8 @@ pub struct PlayerBox {
     pub shortcut_state: i32,
     /// `FavourableModel`：渠道好评的持久化字段。
     pub favourable: crate::favourable::FavourableState,
+    /// `PrayModel`：焚香祈愿的持久化字段。
+    pub pray: crate::pray::PrayState,
 }
 
 impl MemWorld {
@@ -185,6 +192,15 @@ impl MemWorld {
                 ..PlayerBox::default()
             },
         ))
+    }
+
+    /// 焚香祈愿的全服公告栏（原版 `PrayModule.noticeList`，进程级）。
+    ///
+    /// 跨玩家共享，所以挂在 `MemWorld` 而不是 `PlayerBox`。
+    pub fn pray_notices(&self) -> std::sync::MutexGuard<'_, Vec<crate::pray::Notice>> {
+        self.pray_notices
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
     }
 
     /// 只读访问。
