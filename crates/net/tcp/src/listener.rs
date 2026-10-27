@@ -219,6 +219,22 @@ async fn serve_conn(
         ctx.cmd_id = frame.cmd_id;
         match crate::pipeline::dispatch(&handlers, &guards, &ctx, frame).await {
             Ok(Some(reply)) => {
+                // ⚠ 先把**已入队**的推送帧全部写出，再写回包。
+                //
+                // 原版是「handler 里先 `sendToPlayerId(推送)`，再 `return 回包`」，
+                // 两者走的是同一个 socket 写通道，所以顺序天然是「推送在前」。
+                // 这里的推送走 `mpsc`、回包走 `framed.send`，两条通道各自独立，
+                // 若直接写回包，`select!` 可能先处理回包分支 → 客户端看到
+                // 「先回包、后推送」，与原版相反。
+                //
+                // 典型例子：17071 焚香祈愿先推 `MsgPrayDataResp_17074`、
+                // 再回 `PrayResp_17071`；16004 签到先推 16001 再回 16004。
+                while let Ok(pushed) = outbound.try_recv() {
+                    if let Err(e) = framed.send(pushed).await {
+                        tracing::debug!(peer = %peer, error = %e, "推送写回失败，断连");
+                        return;
+                    }
+                }
                 // `Reply::cmd` 为 `Some` 时换号组帧（`ErrorResp_1` 走这条）。
                 let resp = Frame::new(reply.cmd.unwrap_or(ctx.cmd_id), reply.body);
                 if let Err(e) = framed.send(resp).await {

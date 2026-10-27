@@ -180,6 +180,16 @@ async fn conn(mut socket: WebSocket, peer: SocketAddr, srv: WsServer) {
                         .await
                     {
                         Ok(Some(reply)) => {
+                            // ⚠ 先把**已入队**的推送帧全部写出，再写回包。
+                            // 原版「handler 里先 sendToPlayerId(推送)、再 return 回包」
+                            // 走同一写通道，顺序天然「推送在前」；这里推送走 mpsc、
+                            // 回包走 socket.send，若不先清队列，客户端会看到相反顺序。
+                            // 典型：17071 先推 17074；16004 先推 16001。
+                            while let Ok(pushed) = outbound.try_recv() {
+                                if send_frame(&mut socket, &pushed).await.is_err() {
+                                    return;
+                                }
+                            }
                             let resp = Frame::new(reply.cmd.unwrap_or(ctx.cmd_id), reply.body);
                             if send_frame(&mut socket, &resp).await.is_err() {
                                 return;
