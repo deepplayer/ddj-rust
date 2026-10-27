@@ -1,6 +1,6 @@
 # 移植进度（切换上下文先读这里）
 
-> 最后更新：2026-10-27 19:15
+> 最后更新：2026-10-27 19:30
 > 基准：`../data_d/game_7010544/sources/`（反编译）。规则见 [`../AGENTS.md`](../AGENTS.md)。
 > 逐分支台账见 [`AUDIT.md`](AUDIT.md)；里程碑见 [`PLAN.md`](PLAN.md)。
 
@@ -8,19 +8,19 @@
 
 ## 一、一句话现状
 
-骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 49 条（2.9%）**，
+骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 51 条（3.0%）**，
 其中真正落库的只有 4 条，其余是进程内 `MemWorld`（重启即丢）。
 
 ```
 cargo check  --workspace --all-targets                      0 error / 0 warning
 cargo clippy --workspace --exclude ddj-pb --lib --bins -D warnings   通过
-cargo test   --workspace                                    432 passed / 0 failed
+cargo test   --workspace                                    441 passed / 0 failed
 cargo xt check-arch                                         4 条规则通过
 ```
 
 代码量：27 crate / 约 180 个 `.rs` / 约 25 000 行。
 
-## 二、已接线消息（49 / 1681）
+## 二、已接线消息（51 / 1681）
 
 | 模块 | cmdId | 数据源 | 备注 |
 |---|---|---|---|
@@ -46,6 +46,8 @@ cargo xt check-arch                                         4 条规则通过
 | 广告奖励 | 1104 | `MemWorld` | `PLAYER_ERROR_20(120)` 上限 |
 | 心跳 | 3 | 无 | 免登录；回 `serverTime` |
 | 取随机名 | 5 | 真实 CSV | 免登录；**306000 名字池**已端到端验证 |
+| 排队信息 | 7 | 无 | 免登录；空队列 → `nowIndex=1,maxIndex=1` |
+| 测试消息 | 11 | 无 | 免登录；**三个包**（11 + 3 + 3）已端到端验证 |
 
 ## 三、未接线（占位，`ret=501`）
 
@@ -178,10 +180,10 @@ Actions 三个 job：`check`（check-arch + clippy + test，阻塞）、
 
 | 项 | 值 |
 |---|---|
-| commit | `0a2705e`（feat(engine): 接 3 心跳 / 5 取随机名） |
-| Actions run | `40492605956`，check 2m39s / release 1m42s |
-| sha256 | `b94edaa27de5a5c1cda75e1ff024ee207ed2e476a756ca1e50456f54db0ac38f` |
-| 大小 | 16 181 384 字节 |
+| commit | `019ea79`（feat(engine): 接 7 排队信息 / 11 测试消息） |
+| Actions run | `40495607319`，check 2m19s / release 2m2s |
+| sha256 | `7034ea930d934e6a496f4526fbfdab2ed3a8d94523df43c0cd2fcc0cf69b0361` |
+| 大小 | 16 191 664 字节 |
 | 验证 | `./bin/ddj --version` → `ddj 0.1.0`；`./bin/ddj list` 列出 7 个服务 |
 
 > 同一份源码在 Actions 上产出同一字节（验证过两次：`2766e83` 与 `702ac6f`
@@ -241,6 +243,8 @@ WebSocket 监听已启动 addr=0.0.0.0:10544
 |---|---|---|
 | cmd 5 取随机名 | `lan="zh_CN"` | `ret=0`，10 个真实中文名 |
 | cmd 3 心跳 | 空 body | `ret=0` |
+| cmd 7 排队信息 | 空 body | `ret=0, nowIndex=1, maxIndex=1` |
+| cmd 11 测试消息 | 空 body | **3 个包**：`cmd=11` + `cmd=3` ×2 |
 
 cmd 5 实收：
 
@@ -291,6 +295,7 @@ node e2e/smoke/view_smoke.mjs
 ## 八、最近提交
 
 ```
+019ea79 feat(engine): 接 7 排队信息 / 11 测试消息
 0a2705e feat(engine): 接 3 心跳 / 5 取随机名（含 306000 名字池）
 d7fbafa fix(test): 分叉计数器断言改为「有增长」，修并行竞态
 2d43c57 feat(vip): 接 1012 VVIP 微信奖励 / 1104 广告奖励

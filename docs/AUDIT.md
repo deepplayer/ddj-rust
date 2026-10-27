@@ -72,6 +72,26 @@
 > 现状：4 条消息（1009/1010/1015/1024）已接线，`player_misc.rs` 588 行，有单测。
 > 未登记逐分支台账。过渡期保守默认见 `install_misc.rs` 头部注释。
 
+## A7' `engine.rs`（3 / 5 / 7 / 11）
+
+| 分支 | 原版位置 | 原版行为 | Rust | 用例 | 状态 |
+|---|---|---|---|---|---|
+| 3 | `EngineMessageHandler:26-32` | 无分支，`ret=0` + `serverTime=now` | `heartbeat_resp` | `heartbeat_carries_server_time` | ✅ |
+| 5-a | `PlayerNameMgr$NameData.randomNames` | 池子 `>10` 才抽，否则 `["玩家"]` | `random_names` 的 `<=` 判断 | `random_names_returns_fallback_at_exactly_ten` | ✅ |
+| 5-b | 同上 | 抽样**允许重复**（不去重） | `gen_index` 不去重 | `random_names_allows_duplicates` | ✅ |
+| 5-c | `NameData.init` | `en`="名 姓"，`vi_VN`="姓 名"，其余"姓+名" | `NameLanguage::compose` | `compose_follows_language_order` | ✅ |
+| 5-d | `init` 外层 | 空姓氏 → **break**（不是 continue） | `build_name_pool` 用 `break` | `empty_surname_breaks_outer_loop` | ✅ |
+| 5-e | `init` 内层 | 空名字 → break（该姓氏下截断） | 同上 | `empty_name_breaks_inner_loop_only` | ✅ |
+| 5-f | `LanguageType.get(未知)` | 返回 null → NPE → **不回包** | 返回 `Ok(None)` + warn | `parse_unknown_returns_none` | ✅ 照抄 |
+| 5-g | 真实 CSV | `surname`/`name` 列是**多语言 key**，中文在 `*Remarks` | 读 `*Remarks` | `loads_real_table_with_306000_combinations` | ✅ 306000 |
+| 7-a | `QueueUpManager:41-44` | `index<0?0:index` | `queue_position` | `not_in_queue_but_others_are` | ✅ |
+| 7-b | `:44` | `maxIndex<=0?1:maxIndex` | 同上 | `empty_queue_reports_one_of_one` | ✅ |
+| 7-c | `:46` | `setNowIndex(index2+1)` 1-based | 同上 | `first_in_queue_is_one_based` | ✅ |
+| 7-d | `:50-52` | catch → 只设 `ret=BUSY`，不设位置 | `queue_busy_resp` | `busy_resp_has_no_positions` | ✅ |
+| 11-a | `EngineMessageHandler:74-96` | 5 条 `MsgTestData{type=0..4}` | `test_data_entries` | `test_data_has_five_entries_with_types_zero_to_four` | ✅ |
+| 11-b | 同上 | `data` = `LoginReq_4{99,"1","2","3"}` 字节 | prost 编码 | `test_data_payload_roundtrips_as_login_req` | ✅ |
+| 11-c | 同上 | 连发两次 `HeartbeatConnectResp_3` | `sess.push` 两次 | 端到端验证 3 个包 | ✅ |
+
 ## A7 `login.rs` + `loginvar.rs` + `handshake.rs`（待填）
 
 > 现状：登录 4 / 创角 6 / 握手 16-18 已接线，走真实 PG。`login.rs` 630 行。
