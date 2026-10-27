@@ -172,6 +172,11 @@ pub struct Stats {
     pub handlers: usize,
     /// 已加载配置表数。
     pub templates: usize,
+    /// 偏离原版行为的触发次数（`AGENTS.md` §3 的三处护栏）。
+    ///
+    /// 正常流量下应全为 0。非 0 说明碰到了畸形模板数据或极端数值，
+    /// 日志里搜 `target=ddj::divergence` 能看到具体上下文。
+    pub divergences: Vec<ddj_game_handler::divergence::DivergenceCount>,
 }
 
 /// 指标来源：可以脱离 [`Running`] 存活，供心跳任务取快照。
@@ -197,6 +202,7 @@ impl StatsSource {
             online: self.sessions.online(),
             handlers: self.handlers.len(),
             templates: self.templates.loaded(),
+            divergences: ddj_game_handler::divergence::snapshot(),
         }
     }
 }

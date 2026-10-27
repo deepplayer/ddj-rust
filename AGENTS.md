@@ -57,13 +57,35 @@
 2. `docs/AUDIT.md` 的「已知架构性差异」表登记；
 3. commit message 里单列一段。
 
-当前已知 3 处，均待裁决：
+当前已知 3 处，**已定策略（2026-10-27）：保留护栏 + 触发时记录，等真实客户端验证后再定**。
 
 | 位置 | 原版 | 当前 Rust | 影响面 |
 |---|---|---|---|
 | `item.rs` `MAX_COMPOUND_DEPTH = 64` | 死循环 | 达到上限回 `PARAM_ERROR` | 只在畸形表数据下分叉 |
 | `sign.rs` `rand_pick` | 池空抛 `IndexOutOfBoundsException` | 提前 `break` | 只在 `randTimes > 奖励数` 时分叉 |
-| `item.rs` 各处 `saturating_*` | `long` 乘法回绕（负数） | 饱和到 `i64::MAX` | 只在极端数值下分叉 |
+| `item.rs` `mul_or_record` / `add_or_record` | `long` 溢出回绕（负数） | 饱和到 `i64` 边界 | 只在极端数值下分叉 |
+
+### 记录是硬性要求
+
+每处护栏**必须**在触发时调 `crate::divergence::record(...)`：
+
+```rust
+crate::divergence::record(
+    crate::divergence::Divergence::P1CompoundCycle,
+    format!("compoundId={} useItemId={} chain={:?}", id, use_id, visited),
+);
+```
+
+`detail` 必须带**够定位到具体数据行**的上下文（模板 id / 天数 / 操作数 / 完整路径）。
+新增第 4 处分叉时：
+
+1. 在 `divergence.rs` 的 `Divergence` 枚举加变体（`code()` 用 `P4`）；
+2. 填 `original()` 与 `ours()`（会进日志）；
+3. 加进 `ALL` 与计数器；
+4. 在 `docs/AUDIT.md` 的表里加一行，并写清「`detail` 里带什么、怎么用」；
+5. 补两个单测：触发时计数 +1、正常路径不计数。
+
+查看方式：`ddj status <service>`（单服务查询会打印三行计数）。
 
 ## 4. 每完成一个目标就提交
 

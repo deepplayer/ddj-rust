@@ -98,19 +98,69 @@
 
 ---
 
-## 待裁决偏离（按 AGENTS.md §3，需明确「照抄」还是「保留护栏」）
+## 待裁决偏离（照抄策略 + 可定位记录）
 
-这三处都是「原版会挂死 / panic，Java 那边靠 JVM 或外层 catch 兜住」的情形。
-Rust 没有对应机制，只能二选一：照抄（自己模拟异常）或保留护栏（行为分叉）。
+**决策（2026-10-27）**：三处全部**保留护栏、照抄原版语义**，但每次真的触发时
+必须留下可定位的记录。等真实客户端连上来跑一遍，用记录判断是原版缺陷被踩到、
+还是移植写错了，再决定是否改成「完全照抄原版异常」。
 
-| # | 位置 | 原版行为 | 当前 Rust | 何时分叉 | 状态 |
+### 记录机制
+
+代码：`crates/app/game-handler/src/divergence.rs`
+
+| 项 | 内容 |
+|---|---|
+| 触发时 | 计数器 +1，打一条 `WARN`，`target=ddj::divergence` |
+| 日志字段 | `code` / `original`（原版会怎样）/ `ours`（本工程怎样）/ `occurrences` / `detail`（本次上下文） |
+| 查看计数 | `ddj status <service>` 单服务查询时打印；`Stats.divergences` 也随控制通道返回 |
+| 全 0 时 | 打印「全部未触发（正常）」 |
+| 非 0 时 | 逐条列出 `P1 ×N 原版：...`，并提示去日志搜 `target=ddj::divergence` |
+
+日志样例：
+
+```text
+WARN target=ddj::divergence code=P1 occurrences=1
+  original="ItemSet.itemCompound 的 while(true) 无环检测，会永久循环卡住玩家线程"
+  ours="限制 64 层，超出回 PARAM_ERROR(29)"
+  detail="compoundId=3000 useItemId=9999 compoundNum=1 depth=64 chain=[3000, 3001, 3000, 3001, ...]"
+```
+
+`detail` 的设计目标是**够定位**：
+
+| 分叉 | `detail` 里带什么 | 怎么用 |
+|---|---|---|
+| P1 | `compoundId` / `useItemId` / `compoundNum` / 完整 `chain` 路径 | 拿 chain 去 `D-道具表-Item.csv` 查这几行的 `compoundItem` 列，看哪几行成环 |
+| P2 | `signed_day` / `rand_times` / `pool_len` / `drawn` | 拿 `signed_day` 去 `M-每日签到表-DailySign.csv` 查该行奖励条数是否少于 `rand_times` |
+| P3 | 两个操作数（`a` 与 `b`） | 判断是表数据异常还是客户端伪造了超大数量 |
+
+### 三处明细
+
+| # | 位置 | 原版行为 | 本工程 | 触发条件 | 状态 |
 |---|---|---|---|---|---|
-| P1 | `item.rs:356` `MAX_COMPOUND_DEPTH = 64` | `ItemSet.itemCompound` 的链式 `while(true)` 无环检测，`compoundItem` 成环时**死循环**，该玩家线程永久卡住 | 达到上限 return `PARAM_ERROR(29)` | 仅当模板数据成环（真表 37 行非 0，当前无环） | ⬜ 待裁决 |
-| P2 | `sign.rs:214` `rand_pick` | `DailySignDB.rand` 用 `pool.remove(randomIndex(pool.size()))`，`randTimes > rewardJson.size()` 时池空 → `IndexOutOfBoundsException` → 被 handler 外层 catch → ret=2 | 池空提前 `break`，返回已抽到的部分 | 仅当 `randTimes` 大于奖励条数（真表 21 天全是 1-3 条，`randTimes=3` 时可能触发） | ⬜ 待裁决 |
-| P3 | `item.rs` 全文 8 处 `saturating_*` | Java `long` 乘法溢出会**回绕成负数**，随后 `num < removeNum` 等比较结果与原值不同 | 饱和到 `i64::MAX` | 仅当数量级接近 `i64::MAX`（实际不可能） | ⬜ 待裁决 |
+| P1 | `item.rs` `MAX_COMPOUND_DEPTH = 64` | `ItemSet.itemCompound` 链式 `while(true)` 无环检测，成环时**永久循环**，玩家线程卡死 | 超 64 层记录 P1 + 回 `PARAM_ERROR(29)` | `compoundItem` 列成环。真表 37 行非 0，当前无环 | ✅ 已记录 |
+| P2 | `sign.rs` `rand_pick` | `DailySignDB.rand` 池空抛 `IndexOutOfBoundsException` → handler 外层 catch → `ret=2` | 池空记录 P2 + 提前 `break`，返回已抽到的部分 | `randTimes > 该天奖励条数`。`randTimes` 硬编码 3，若某天只有 1-2 条奖励就触发 | ✅ 已记录 |
+| P3 | `item.rs` `mul_or_record` / `add_or_record` | Java `long` 乘法溢出**回绕成负数**，随后 `num < removeNum` / `checkItem` 结论不同 | 溢出记录 P3 + 饱和到 `i64` 边界 | 数量级接近 `i64::MAX`（正常数据不可能） | ✅ 已记录 |
 
-**裁决方式**：在 `AGENTS.md` §3 表格里把「当前 Rust」一列改成最终决定，然后改代码。
-若选「照抄」，P1 需要显式 `panic!`/超时；P2 需要返回错误码而不是 break；P3 需要用 `wrapping_mul`。
+### 触发路径与单测
+
+| 分叉 | 单测 | 断言 |
+|---|---|---|
+| P1 | `item::compound_tests::cycle_increments_p1_divergence_counter` | 成环后计数 +1 |
+| P2 | `sign::tests::rand_pick_short_pool_records_p2` | 池空后计数 +1 |
+| P2 反例 | `sign::tests::rand_pick_exact_pool_does_not_record` | 刚好抽完不计数 |
+| P3 | `item::compound_tests::mul_overflow_records_p3` | 溢出后计数 +1 |
+| P3 反例 | `item::compound_tests::mul_without_overflow_does_not_record` | 正常乘法不计数 |
+| P3 | `item::compound_tests::add_overflow_records_p3` | 加法溢出 +1 |
+
+### 真实客户端连上后的处置流程
+
+1. `ddj status game` 看三个计数器是否非 0；
+2. 非 0 → 日志搜 `target=ddj::divergence`，取 `detail`；
+3. 按上表「怎么用」定位到具体 CSV 行；
+4. 若确认是**表数据问题** → 修表（不动代码）；
+5. 若确认是**原版缺陷**（例如某天签到奖励本来就只有 2 条，原版客户端也会遇到 ret=2）
+   → 保持现状，把该 CSV 行写进本文档；
+6. 若确认是**移植写错** → 改代码，并从 `divergence.rs` 移除该分叉。
 
 ---
 

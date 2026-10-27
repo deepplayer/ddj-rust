@@ -29,4 +29,5 @@ pub mod modules;
 pub mod player_stores;
 pub mod wiring;
 
+pub use ddj_game_handler::divergence;
 pub use bootstrap::{Bootstrap, Running, ServiceKind, Stats, StatsSource};

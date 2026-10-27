@@ -740,6 +740,7 @@ dependencies = [
  "inventory",
  "md-5",
  "prost",
+ "serde",
  "tokio",
  "tracing",
 ]

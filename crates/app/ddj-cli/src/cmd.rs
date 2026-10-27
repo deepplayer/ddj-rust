@@ -216,7 +216,12 @@ pub async fn status_one(service: &str, paths: &Paths) -> Result<()> {
     let svc = kind.name();
 
     match control::status(&paths.sock(svc)).await {
-        Ok(s) => print_row(&s.stats, Some(s.pid), "运行中"),
+        Ok(s) => {
+            print_row(&s.stats, Some(s.pid), "运行中");
+            // 单服务查询时额外打印分叉明细：真实客户端连上来后，
+            // 这里非 0 就是「碰到了畸形数据」的第一手信号。
+            print_divergences(&s.stats.divergences);
+        }
         Err(_) => match daemon::read_pid(&paths.pid(svc)) {
             Some(pid) => print_row(
                 &empty_stats(svc),
@@ -227,6 +232,30 @@ pub async fn status_one(service: &str, paths: &Paths) -> Result<()> {
         },
     }
     Ok(())
+}
+
+/// 打印三处「偏离原版」护栏的触发次数。
+///
+/// 全 0 时只打一行提示；非 0 时逐条列出，并指出去哪里看日志。
+fn print_divergences(list: &[ddj_game_core::divergence::DivergenceCount]) {
+    if list.is_empty() {
+        return;
+    }
+    println!();
+    if list.iter().all(|d| d.count == 0) {
+        println!("偏离原版护栏：全部未触发（正常）");
+        return;
+    }
+    println!("偏离原版护栏（AGENTS.md §3）：");
+    for d in list.iter().filter(|d| d.count > 0) {
+        println!(
+            "  {} ×{}  原版：{}",
+            d.divergence.code(),
+            d.count,
+            d.divergence.original()
+        );
+    }
+    println!("  定位：日志搜 target=ddj::divergence，详见 docs/AUDIT.md「待裁决偏离」");
 }
 
 /// 列出全部。
@@ -261,6 +290,7 @@ fn empty_stats(svc: &str) -> Stats {
         online: 0,
         handlers: 0,
         templates: 0,
+        divergences: Vec::new(),
     }
 }
 

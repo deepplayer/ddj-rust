@@ -14,7 +14,7 @@
 ```
 cargo check  --workspace --all-targets                      0 error / 0 warning
 cargo clippy --workspace --exclude ddj-pb --lib --bins -D warnings   通过
-cargo test   --workspace                                    386 passed / 0 failed
+cargo test   --workspace                                    396 passed / 0 failed
 cargo xt check-arch                                         4 条规则通过
 ```
 
@@ -91,16 +91,23 @@ cargo xt check-arch                                         4 条规则通过
 
 ## 五、未决问题（需要决策）
 
-### 5.1 三处偏离原版，待裁决
+### 5.1 三处偏离原版 —— 已定策略（2026-10-27）
+
+**决策：保留护栏 + 触发时记录，等真实客户端验证后再定是否改成完全照抄。**
 
 | 位置 | 原版 | 当前 | 何时分叉 |
 |---|---|---|---|
 | `item.rs` `MAX_COMPOUND_DEPTH=64` | 死循环 | 回 `PARAM_ERROR` | 畸形表数据（`compoundItem` 成环） |
 | `sign.rs` `rand_pick` | 抛 `IndexOutOfBounds` | 提前 `break` | `randTimes > 奖励条数` |
-| `item.rs` 各处 `saturating_*` | `long` 回绕成负数 | 饱和到 `i64::MAX` | 极端数值 |
+| `item.rs` `mul_or_record` / `add_or_record` | `long` 回绕成负数 | 饱和到 `i64` 边界 | 极端数值 |
 
-这三处是「原版靠 JVM/外层 catch 兜住，Rust 会挂死」的情形，按 `AGENTS.md` §3 需明确裁决：
-**照抄**（那就得自己模拟 panic / 回绕）还是**保留护栏**。
+记录机制在 `crates/app/game-handler/src/divergence.rs`：
+
+- 触发 → 计数器 +1 + `WARN target=ddj::divergence`，带 `code` / `original` / `ours` / `detail`
+- `ddj status <service>` 单服务查询会打印三行计数（全 0 打「正常」）
+- `detail` 够定位到具体 CSV 行：P1 带完整 `chain`，P2 带 `signed_day`，P3 带两个操作数
+
+真实客户端连上后的处置流程见 `docs/AUDIT.md`「待裁决偏离」§ 真实客户端连上后的处置流程。
 
 ### 5.2 `MemWorld` 换 `PG`
 
@@ -171,6 +178,30 @@ Actions 三个 job：`check`（check-arch + clippy + test，阻塞）、
 
 > 同一份源码在 Actions 上产出同一字节（验证过两次：`2766e83` 与 `702ac6f`
 > 只差文档，sha256 完全一致）。
+
+## 六点六、分叉记录（真实客户端排障用）
+
+三处「偏离原版」的护栏在触发时都会记录，方便真实客户端连上来后定位问题。
+
+```bash
+# 1. 看计数（单服务查询才会打印明细）
+./bin/ddj status game
+# 输出示例（有触发时）：
+# 偏离原版护栏（AGENTS.md §3）：
+#   P1 ×2  原版：ItemSet.itemCompound 的 while(true) 无环检测，会永久循环卡住玩家线程
+#   定位：日志搜 target=ddj::divergence，详见 docs/AUDIT.md「待裁决偏离」
+
+# 2. 看具体上下文
+grep 'ddj::divergence' /tmp/ddj-$(id -u)/game.log | tail
+```
+
+`detail` 字段的定位用法：
+
+| 分叉 | detail 带什么 | 怎么查 |
+|---|---|---|
+| P1 | `compoundId` / `useItemId` / 完整 `chain` 路径 | 拿 chain 去 `D-道具表-Item.csv` 查这几行的 `compoundItem` 列 |
+| P2 | `signed_day` / `rand_times` / `pool_len` / `drawn` | 拿 `signed_day` 去 `M-每日签到表-DailySign.csv` 看该行奖励条数 |
+| P3 | 两个操作数 `a` / `b` | 判断是表数据异常还是客户端伪造超大数量 |
 
 ## 七、常用命令
 

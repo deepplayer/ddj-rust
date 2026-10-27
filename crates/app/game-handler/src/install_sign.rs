@@ -91,7 +91,7 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
                 t.rewards_of_day(next.signed_day)
             });
             let guard = r.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
-            let rewards = sign::rand_pick(&pool, DEFAULT_RAND_TIMES, &*guard);
+            let rewards = sign::rand_pick(&pool, DEFAULT_RAND_TIMES, &*guard, next.signed_day);
             drop(guard);
             Ok(Some(
                 sign::build_sign_resp(&next, &rewards)

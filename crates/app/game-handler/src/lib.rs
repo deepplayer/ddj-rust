@@ -45,6 +45,7 @@ pub mod friend;
 pub mod gm;
 pub mod guild;
 pub mod declare;
+pub mod divergence;
 pub mod handlers;
 pub mod handshake;
 pub mod install_amber;

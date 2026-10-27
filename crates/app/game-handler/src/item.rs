@@ -152,6 +152,44 @@ pub trait ItemLookup {
     fn apply_use(&self, template: &ItemTemplate, num: i64) -> Result<UseApply>;
 }
 
+/// `long` 乘法，溢出时记录 P3 并饱和。
+///
+/// ⚠ **偏离原版**（`AGENTS.md` §3 / `docs/AUDIT.md` P3）：
+/// Java `long` 溢出会回绕成负数，随后的 `num < removeNum` / `checkItem`
+/// 会基于负数得出不同结论。本工程饱和到 `i64::MAX` / `i64::MIN`。
+///
+/// 正常数据永远碰不到溢出（数量级在 10^6 以内），所以这里的分支是冷路径。
+/// 真触发时会打 WARN + 计数器 +1，日志里带操作数，便于判断是表数据异常
+/// 还是客户端伪造了超大数量。
+#[must_use]
+fn mul_or_record(a: i64, b: i64) -> i64 {
+    match a.checked_mul(b) {
+        Some(v) => v,
+        None => {
+            crate::divergence::record(
+                crate::divergence::Divergence::P3SaturatingArith,
+                format!("mul overflow: {a} * {b}"),
+            );
+            a.saturating_mul(b)
+        }
+    }
+}
+
+/// `long` 加法，溢出时记录 P3 并饱和。语义同 [`mul_or_record`]。
+#[must_use]
+fn add_or_record(a: i64, b: i64) -> i64 {
+    match a.checked_add(b) {
+        Some(v) => v,
+        None => {
+            crate::divergence::record(
+                crate::divergence::Divergence::P3SaturatingArith,
+                format!("add overflow: {a} + {b}"),
+            );
+            a.saturating_add(b)
+        }
+    }
+}
+
 /// 失败类型 —— 决定最终回哪个 `ret`。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum UseFailure {
@@ -267,7 +305,7 @@ pub fn use_item(
     // 分支 9（242-292）：代价不足 → HandlerException(26)
     let mut cost = None;
     if let Some((res_id, per)) = gift.use_cost {
-        let total = per.saturating_mul(remove_num);
+        let total = mul_or_record(per, remove_num);
         if !lookups.check_item(res_id, total)? {
             return Ok(UseOutcome::Fail(UseFailure::Handler(
                 RetCode::UseCostResourcesNo,
@@ -353,6 +391,11 @@ pub enum CompoundOutcome {
 ///
 /// 原版 `while` 循环在 `compoundItem` 成环时会**死循环**（Java 里没有防护）。
 /// 这里加一个上限：正常数据永远碰不到，畸形数据返回 `PARAM_ERROR`。
+///
+/// ⚠ **偏离原版**（`AGENTS.md` §3 / `docs/AUDIT.md` P1）：
+/// 触发时会调 [`crate::divergence::record`] 打一条带上下文的 WARN，
+/// 计数器可在 `ddj status` 看到。真实客户端连上来后若这个计数器非 0，
+/// 说明 `D-道具表-Item.csv` 的 `compoundItem` 列成环，需要修表。
 pub const MAX_COMPOUND_DEPTH: usize = 64;
 
 /// `ItemSet.itemCompound` 的纯逻辑部分（字节码 487 B）。
@@ -398,7 +441,7 @@ pub fn compound(input: CompoundInput, lookups: &dyn CompoundLookup) -> Result<Co
         }
         let src = tpl.compound_item[0];
         let per = i64::from(tpl.compound_item[1]);
-        let total = per.saturating_mul(input.compound_num);
+        let total = mul_or_record(per, input.compound_num);
         if !lookups.has_items(src, total)? {
             return Ok(CompoundOutcome::Reject(RetCode::ItemError1));
         }
@@ -408,9 +451,14 @@ pub fn compound(input: CompoundInput, lookups: &dyn CompoundLookup) -> Result<Co
         });
     };
     // 5：沿链下钻到 useItemId
+    //
+    // 原版是 `while(true)`，成环时永久循环。这里用 `for` 限制层数，
+    // 并记录走过路径 —— 触发护栏时能把整条链打进日志，便于定位是哪几行数据成环。
     let mut cur = input.compound_id;
     let mut qty = input.compound_num;
+    let mut visited: Vec<i32> = Vec::new();
     for _ in 0..MAX_COMPOUND_DEPTH {
+        visited.push(cur);
         let Some(t) = lookups.item(cur)? else {
             return Ok(CompoundOutcome::Reject(RetCode::ParamError));
         };
@@ -418,7 +466,7 @@ pub fn compound(input: CompoundInput, lookups: &dyn CompoundLookup) -> Result<Co
             return Ok(CompoundOutcome::Reject(RetCode::ParamError));
         }
         let src = t.compound_item[0];
-        qty = qty.saturating_mul(i64::from(t.compound_item[1]));
+        qty = mul_or_record(qty, i64::from(t.compound_item[1]));
         if src == use_item_id {
             if qty <= 0 {
                 return Ok(CompoundOutcome::Reject(RetCode::ParamError));
@@ -433,6 +481,19 @@ pub fn compound(input: CompoundInput, lookups: &dyn CompoundLookup) -> Result<Co
         }
         cur = src;
     }
+    // 走到这里 = 超过 MAX_COMPOUND_DEPTH 还没命中 useItemId。
+    // 原版会在这里永久循环（P1），本工程记录后回参数错误。
+    crate::divergence::record(
+        crate::divergence::Divergence::P1CompoundCycle,
+        format!(
+            "compoundId={} useItemId={} compoundNum={} depth={} chain={:?}",
+            input.compound_id,
+            use_item_id,
+            input.compound_num,
+            MAX_COMPOUND_DEPTH,
+            visited
+        ),
+    );
     Ok(CompoundOutcome::Reject(RetCode::ParamError))
 }
 
@@ -603,7 +664,7 @@ pub fn effective_use(
     // 10
     let cost = gift.use_cost;
     if let Some((cid, cnum)) = cost {
-        if !lookups.check_item(cid, cnum.saturating_mul(remove_num))? {
+        if !lookups.check_item(cid, mul_or_record(cnum, remove_num))? {
             return Ok(UseOutcome::Fail(UseFailure::Handler(
                 RetCode::UseCostResourcesNo,
             )));
@@ -616,7 +677,7 @@ pub fn effective_use(
     }
     Ok(UseOutcome::Accept {
         remove_num,
-        cost: cost.map(|(cid, cnum)| (cid, cnum.saturating_mul(remove_num))),
+        cost: cost.map(|(cid, cnum)| (cid, mul_or_record(cnum, remove_num))),
         has_msg_use_result: applied.has_msg_use_result,
     })
 }
@@ -695,7 +756,7 @@ fn merge_pairs(list: &[(i32, i64)]) -> Vec<(i32, i64)> {
     let mut out: Vec<(i32, i64)> = Vec::new();
     for &(id, num) in list {
         match out.iter_mut().find(|(k, _)| *k == id) {
-            Some(slot) => slot.1 = slot.1.saturating_add(num),
+            Some(slot) => slot.1 = add_or_record(slot.1, num),
             None => out.push((id, num)),
         }
     }
@@ -775,9 +836,9 @@ pub fn effective_one_key_use(
             plan.interrupted = true;
             break;
         }
-        let this_cost = cost_num.saturating_mul(remove_num);
+        let this_cost = mul_or_record(cost_num, remove_num);
         // 循环内：累计校验
-        if !lookups.check_item(cost_id, total_cost.saturating_add(this_cost))? {
+        if !lookups.check_item(cost_id, add_or_record(total_cost, this_cost))? {
             plan.interrupted = true;
             break;
         }
@@ -788,7 +849,7 @@ pub fn effective_one_key_use(
         }
         plan.used.push((eff.id, remove_num));
         plan.cost.push((cost_id, this_cost));
-        total_cost = total_cost.saturating_add(this_cost);
+        total_cost = add_or_record(total_cost, this_cost);
         plan.gains.extend(applied.msg_resources);
     }
     plan.cost = merge_pairs(&plan.cost);
@@ -1269,6 +1330,51 @@ mod compound_tests {
             compound(input(3000, 1, Some(9999)), &f).unwrap(),
             CompoundOutcome::Reject(RetCode::ParamError)
         );
+    }
+
+    #[test]
+    fn cycle_increments_p1_divergence_counter() {
+        use crate::divergence::Divergence;
+        let before = Divergence::P1CompoundCycle.count();
+        let f = Fake::new(
+            &[(3000, 1, &[3001, 2]), (3001, 1, &[3000, 2])],
+            &[(9999, 1_000_000)],
+        );
+        let _ = compound(input(3000, 1, Some(9999)), &f);
+        assert_eq!(
+            Divergence::P1CompoundCycle.count(),
+            before + 1,
+            "触发护栏必须留下可定位的记录"
+        );
+    }
+
+    #[test]
+    fn mul_overflow_records_p3() {
+        use crate::divergence::Divergence;
+        let before = Divergence::P3SaturatingArith.count();
+        // 原版 long 会回绕成负数；这里饱和到 i64::MAX 并记录
+        assert_eq!(mul_or_record(i64::MAX, 2), i64::MAX);
+        assert_eq!(Divergence::P3SaturatingArith.count(), before + 1);
+    }
+
+    #[test]
+    fn mul_without_overflow_does_not_record() {
+        use crate::divergence::Divergence;
+        let before = Divergence::P3SaturatingArith.count();
+        assert_eq!(mul_or_record(100, 3), 300);
+        assert_eq!(
+            Divergence::P3SaturatingArith.count(),
+            before,
+            "正常乘法不应留下记录"
+        );
+    }
+
+    #[test]
+    fn add_overflow_records_p3() {
+        use crate::divergence::Divergence;
+        let before = Divergence::P3SaturatingArith.count();
+        assert_eq!(add_or_record(i64::MAX, 1), i64::MAX);
+        assert_eq!(Divergence::P3SaturatingArith.count(), before + 1);
     }
 
     struct EffFake {

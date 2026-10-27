@@ -212,11 +212,31 @@ pub fn claim_box(
 /// 原版 `pool.remove(UtilsTools.randomIndex(pool.size()))`，池子空时会抛
 /// `IndexOutOfBoundsException`；这里提前 break，畸形配置（`randTimes` 大于奖励数）
 /// 退化成「能抽多少抽多少」，不 panic。
-pub fn rand_pick(reward_json: &[Reward], rand_times: i32, rng: &dyn RngSource) -> Vec<Reward> {
+///
+/// ⚠ **偏离原版**（`AGENTS.md` §3 / `docs/AUDIT.md` P2）：
+/// 池空时调 [`crate::divergence::record`] 记录，日志里带 `signed_day` 与
+/// `pool_len` / `rand_times`，可直接定位到 `M-每日签到表-DailySign.csv` 的哪一行。
+///
+/// `signed_day` 只用于日志定位，不参与抽取逻辑。
+pub fn rand_pick(
+    reward_json: &[Reward],
+    rand_times: i32,
+    rng: &dyn RngSource,
+    signed_day: i32,
+) -> Vec<Reward> {
     let mut pool = reward_json.to_vec();
-    let mut out = Vec::with_capacity(reward_json.len().min(rand_times.max(0) as usize));
-    for _ in 0..rand_times.max(0) {
+    let want = rand_times.max(0);
+    let mut out = Vec::with_capacity(reward_json.len().min(want as usize));
+    for i in 0..want {
         if pool.is_empty() {
+            // 原版此处抛 IndexOutOfBounds（P2）
+            crate::divergence::record(
+                crate::divergence::Divergence::P2RandPickShortPool,
+                format!(
+                    "signed_day={signed_day} rand_times={want} pool_len={} drawn={i}",
+                    reward_json.len()
+                ),
+            );
             break;
         }
         let idx = rng.gen_index(pool.len());
@@ -404,7 +424,7 @@ mod tests {
     fn rand_pick_draws_without_replacement() {
         let pool = [(1, 50), (22, 1), (101, 1), (102, 1), (103, 1)];
         let rng = DeterministicRng::new(7);
-        let picked = rand_pick(&pool, 3, &rng);
+        let picked = rand_pick(&pool, 3, &rng, 1);
         assert_eq!(picked.len(), 3);
         let mut ids: Vec<i32> = picked.iter().map(|(id, _)| *id).collect();
         let mut dedup = ids.clone();
@@ -418,21 +438,48 @@ mod tests {
     #[test]
     fn rand_pick_is_deterministic_for_same_seed() {
         let pool = [(1, 50), (22, 1), (101, 1), (102, 1), (103, 1)];
-        let a = rand_pick(&pool, 3, &DeterministicRng::new(42));
-        let b = rand_pick(&pool, 3, &DeterministicRng::new(42));
+        let a = rand_pick(&pool, 3, &DeterministicRng::new(42), 1);
+        let b = rand_pick(&pool, 3, &DeterministicRng::new(42), 1);
         assert_eq!(a, b);
+    }
+
+    #[test]
+    fn rand_pick_short_pool_records_p2() {
+        use crate::divergence::Divergence;
+        let before = Divergence::P2RandPickShortPool.count();
+        // 池里 1 条却要抽 5 次：原版会抛 IndexOutOfBounds（P2）
+        let picked = rand_pick(&[(1, 50)], 5, &DeterministicRng::new(1), 7);
+        assert_eq!(picked.len(), 1, "能抽多少抽多少");
+        assert_eq!(
+            Divergence::P2RandPickShortPool.count(),
+            before + 1,
+            "池空必须留下可定位的记录"
+        );
+    }
+
+    #[test]
+    fn rand_pick_exact_pool_does_not_record() {
+        use crate::divergence::Divergence;
+        let before = Divergence::P2RandPickShortPool.count();
+        let picked = rand_pick(&[(1, 50), (2, 60), (3, 70)], 3, &DeterministicRng::new(1), 7);
+        assert_eq!(picked.len(), 3);
+        assert_eq!(
+            Divergence::P2RandPickShortPool.count(),
+            before,
+            "刚好抽完不应留下记录"
+        );
     }
 
     #[test]
     fn rand_pick_tolerates_short_pool() {
         let pool = [(1, 50), (22, 1)];
-        let picked = rand_pick(&pool, 5, &DeterministicRng::new(1));
+        let picked = rand_pick(&pool, 5, &DeterministicRng::new(1), 1);
         assert_eq!(picked.len(), 2);
     }
 
     #[test]
     fn rand_pick_zero_times_is_empty() {
-        assert!(rand_pick(&[(1, 50)], 0, &DeterministicRng::new(1)).is_empty());
+        assert!(rand_pick(&[(1, 50)], 0, &DeterministicRng::new(1), 1).is_empty());
     }
 
     #[test]
