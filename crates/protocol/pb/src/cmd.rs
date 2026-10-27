@@ -204,6 +204,22 @@ pub enum RetCode {
     AppraisalGainAchievement = 4601,
     /// 观看广告奖励领取次数达到上限（`PLAYER_ERROR_20`）。
     PlayerError20 = 120,
+    /// 人才 - 门客尚未解锁（`TALENT_ERROR_5`）。
+    TalentError5 = 405,
+    /// 人才 - 皮肤不属于该门客（`TALENT_ERROR_6`）。
+    TalentError6 = 406,
+    /// 人才 - 还未获得皮肤（`TALENT_ERROR_7`）。
+    TalentError7 = 407,
+    /// 宠物系统还未开放（`PET_ERROR_UNOPEN_SYSTEM`）。
+    PetErrorUnopenSystem = 914,
+    /// VIP 等级不足（`PET_ERROR_INTERACT_ALL_VIP`）。
+    PetErrorInteractAllVip = 915,
+    /// 激活皮肤资源不足（`PET_ERROR_ACTIVATE_SKIN_RESOURCES`）。
+    PetErrorActivateSkinResources = 938,
+    /// 升皮肤资源不足（`PET_ERROR_UPGRADE_SKIN_RESOURCES`）。
+    PetErrorUpgradeSkinResources = 939,
+    /// 珍兽数量太少（`PET_ERROR_PET_NUM_LIMIT`）。
+    PetErrorPetNumLimit = 940,
 }
 
 impl RetCode {
@@ -291,6 +307,14 @@ impl RetCode {
             2305 => Self::FortuneErrorNoJurisdiction,
             4601 => Self::AppraisalGainAchievement,
             120 => Self::PlayerError20,
+            405 => Self::TalentError5,
+            406 => Self::TalentError6,
+            407 => Self::TalentError7,
+            914 => Self::PetErrorUnopenSystem,
+            915 => Self::PetErrorInteractAllVip,
+            938 => Self::PetErrorActivateSkinResources,
+            939 => Self::PetErrorUpgradeSkinResources,
+            940 => Self::PetErrorPetNumLimit,
             _ => return None,
         })
     }
@@ -373,6 +397,14 @@ impl RetCode {
             Self::FortuneErrorNoJurisdiction => "你当前没有权限修改宣言",
             Self::AppraisalGainAchievement => "鉴宝大会- 已领取",
             Self::PlayerError20 => "观看广告奖励领取次数达到上限",
+            Self::TalentError5 => "人才- 门客尚未解锁",
+            Self::TalentError6 => "人才- 皮肤不属于改门客",
+            Self::TalentError7 => "人才- 还未获得皮肤",
+            Self::PetErrorUnopenSystem => "系统还未开放",
+            Self::PetErrorInteractAllVip => "VIP等级不足",
+            Self::PetErrorActivateSkinResources => "激活皮肤资源不足",
+            Self::PetErrorUpgradeSkinResources => "升皮肤资源不足",
+            Self::PetErrorPetNumLimit => "珍兽数量太少",
         }
     }
 }
@@ -402,6 +434,7 @@ mod tests {
             25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 99, 101, 102, 103, 104,
             105, 106, 107,
             2303, 2304, 2305, 4601, 120,
+            405, 406, 407, 914, 915, 938, 939, 940,
         ] {
             let c = RetCode::from_i32(v).unwrap_or_else(|| panic!("缺 {v}"));
             assert_eq!(c.as_i32(), v);

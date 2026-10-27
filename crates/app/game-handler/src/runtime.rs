@@ -46,6 +46,17 @@ pub struct MemWorld {
     players: Mutex<HashMap<i64, PlayerBox>>,
 }
 
+/// 门客的成长/亲密度/皮肤等级（`Pet` 里与本流程相关的累加字段）。
+#[derive(Debug, Clone, Default)]
+pub struct PetExtra {
+    /// `Pet.growth`。
+    pub growth: i64,
+    /// `Pet.intimacy`。
+    pub intimacy: i64,
+    /// `skinId → 皮肤等级`（`Pet.skins` 里每个 `PetSkin.lv`）。
+    pub skin_lv: HashMap<i32, i32>,
+}
+
 /// 单个玩家的全部内存态。
 #[derive(Debug, Default)]
 pub struct PlayerBox {
@@ -105,6 +116,10 @@ pub struct PlayerBox {
     pub ad_reward_times: i32,
     /// `PlayerAdvertising.dayTime`：用来判断是否隔天（原版 `refresh()` 用）。
     pub ad_reward_day: i64,
+    /// 门客皮肤状态：`pet_id → PetSkinState`（原版 `PetSet.allPet` 的子集）。
+    pub pet_skins: HashMap<i32, crate::pet::PetSkinState>,
+    /// 门客的成长/亲密度/皮肤等级（原版 `Pet` 的可见字段子集）。
+    pub pet_extra: HashMap<i32, PetExtra>,
 }
 
 impl MemWorld {
