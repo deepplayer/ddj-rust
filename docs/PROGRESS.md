@@ -1,6 +1,6 @@
 # 移植进度（切换上下文先读这里）
 
-> 最后更新：2026-10-28 01:30
+> 最后更新：2026-10-28 01:40
 > 基准：`../data_d/game_7010544/sources/`（反编译）。规则见 [`../AGENTS.md`](../AGENTS.md)。
 > 逐分支台账见 [`AUDIT.md`](AUDIT.md)；里程碑见 [`PLAN.md`](PLAN.md)。
 
@@ -8,19 +8,19 @@
 
 ## 一、一句话现状
 
-骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 75 条（4.5%）**，
+骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 78 条（4.6%）**，
 其中真正落库的只有 4 条，其余是进程内 `MemWorld`（重启即丢）。
 
 ```
 cargo check  --workspace --all-targets                      0 error / 0 warning
 cargo clippy --workspace --exclude ddj-pb --lib --bins -D warnings   通过
-cargo test   --workspace                                    635 passed / 0 failed
+cargo test   --workspace                                    654 passed / 0 failed
 cargo xt check-arch                                         4 条规则通过
 ```
 
 代码量：27 crate / 约 180 个 `.rs` / 约 25 000 行。
 
-## 二、已接线消息（75 / 1681）
+## 二、已接线消息（78 / 1681）
 
 | 模块 | cmdId | 数据源 | 备注 |
 |---|---|---|---|
@@ -58,6 +58,7 @@ cargo xt check-arch                                         4 条规则通过
 | 计数器恢复 | 8001 / 8002 | `MemWorld` + 真实 CSV | ⚠ 8002 查不到**不发包**；`time=-1` 表示停表 |
 | 客户端特约 | 1109 | 无状态 | 原版是空壳：恒回 `{ret=0, msgId}`，`data` 永不设置 |
 | 保存桌面 | 17301 / 17302 / 17303 | `MemWorld` + 真实 CSV | ⚠ 渠道配置实测为空 → `eligible` 恒 false，17302/17303 恒回 4731（原版状态）|
+| 渠道好评 | 17101 / 17102 / 17103 | `MemWorld` + 真实 CSV | ⚠ **三条都不走 `ErrorResp_1`**；17102 渠道不符回 `ret=0` |
 
 ## 三、未接线（占位，`ret=501`）
 
@@ -195,9 +196,9 @@ Actions 三个 job：`check`（check-arch + clippy + test，阻塞）、
 
 | 项 | 值 |
 |---|---|
-| commit | `fd23e8f`（feat(shortcut): 接保存桌面 17301-17303 + channelId/cid 数据链）|
-| Actions run | `40547832552`，check 2m19s / release 2m4s |
-| sha256 | `c7d53cbcbbec728794b2189d2661a5f4c1b4e8c274a1cfe0f93411a0c6173632` |
+| commit | `7ecd12c`（feat(favourable): 接渠道好评 17101/17102/17103）|
+| Actions run | `40550245679`，共 4m37s |
+| sha256 | `243c6e60010ca285873948895dad26a6b7cffdf4f08448f93c6037f619ebc228` |
 | 验证 | `./bin/ddj --version` → `ddj 0.1.0`；`./bin/ddj list` 列出 7 个服务 |
 
 > 同一份源码在 Actions 上产出同一字节（验证过两次：`2766e83` 与 `702ac6f`
@@ -333,6 +334,21 @@ WebSocket 监听已启动 addr=0.0.0.0:10544
 （`data/sql/platform.sql:562`），所以 `shortcutConfigMap` 为空。
 这是原版线上数据的真实状态，不是移植 bug。等运营配了渠道才有意义。
 
+### 渠道好评专项（3 条，2026-10-28）
+
+启动日志新增一行 `好评奖励已装载 count=4`，`handlers=78`。
+
+| cmd | 请求 | 帧号 | 回包 |
+|---|---|---|---|
+| 17101 | 空 | 17101 | `ret=0, lastCloseTime=0, 列表空, 无 URL` |
+| 17102 | `id=1` | **17102** | `ret=0`（渠道不符直接返回，**不是错误码**） |
+| 17103 | `id=1, star=5, evaluation="good"` | **17103** | `ret=3941`（渠道没开放好评系统） |
+
+三条都**不走 `ErrorResp_1`** —— 原版三个方法的签名都没有 `throws HandlerException`。
+这是与 17301-17303（走 `ErrorResp_1`）最大的区别。
+
+17102 在渠道不符时回 `ret=0` 而不是错误码，客户端会当成"没发生过"。
+
 ### 本轮打通的数据链：`channelId` / `cid`
 
 这两列之前完全没落库，导致所有按渠道判定的消息都没法实现。现在全线打通：
@@ -402,12 +418,15 @@ node e2e/smoke/handlers_smoke.mjs ws://127.0.0.1:10544/
 node e2e/smoke/anticheat_smoke.mjs          # 防骗手册 7 条断言
 node e2e/smoke/counter_smoke.mjs            # 计数器恢复 6 条断言
 node e2e/smoke/shortcut_smoke.mjs           # 保存桌面 + 1109，4 条断言
+node e2e/smoke/favourable_smoke.mjs         # 渠道好评 3 条断言
 node e2e/smoke/view_smoke.mjs
 ```
 
 ## 八、最近提交
 
 ```
+7ecd12c feat(favourable): 接渠道好评 17101/17102/17103
+94f3f65 docs: 补 17301-17303/1109 端到端实测 + 保存桌面冒烟脚本
 fd23e8f feat(shortcut): 接保存桌面 17301-17303 + 打通 channelId/cid 数据链
 95881e5 feat(special): 接 1109 客户端特约消息（原版是空壳，照抄）
 4b51414 feat(counter): 接计数器恢复 8001/8002 + 按反编译逐方法重写 counter.rs

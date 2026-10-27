@@ -713,6 +713,127 @@ CreatePlayerReq_6.cid      (字段 12) ─┤
 
 ---
 
+## A18 `favourable.rs` + `install_favourable.rs`（17101 / 17102 / 17103）
+
+对应 `FavourableMessageHandler.java:29-83`、`FavourableModel.java`（110 行）、
+`PlatformServerModule.java:88-90`（字段）+ `:357-377`（读取）。
+
+### ⚠ 三条都不走 `ErrorResp_1`
+
+三个方法的签名**都没有** `throws HandlerException`，方法体内也没有 `throw`：
+
+| cmd | 方法签名 | 失败出口 | 帧号 |
+|---|---|---|---|
+| 17101 | `public Message getFavourable(...)` 无 `throws` | 无失败分支 | 17101 |
+| 17102 | 无 `throws` | `CloseFavourableWindowResp_17102{ret}` | 17102 |
+| 17103 | 无 `throws` | `FeedBackResp_17103{ret}` | 17103 |
+
+### ⚠ 17102 渠道不符回 `ret=0`，不是错误码
+
+```java
+int channelId = player.getChannelId();
+if (!PlatformServerModule.FAVOURABLE_CHANNELS.contains(Integer.valueOf(channelId))) {
+    return builder.setRet(0).build();   // ← 0，且不带任何数据
+}
+CommentDB commentDB = CommentDBCache.getCache().get(id);
+if (commentDB == null) {
+    return builder.setRet(LanguageUtils.ACTIVITY_PARAM_ERROR.getValue()).build();  // 2754
+}
+```
+
+客户端收到 `ret=0` 会把这次关窗当成"没发生过"（`lastCloseTime=0`、列表空）。
+
+### ⚠ `closeWindow` 的取模翻转有三处反直觉
+
+```java
+if (!openCnt.containsKey(id)) {
+    openCnt.put(id, 1);
+} else {
+    int maxTimes = commentDB.getMaxTimes();
+    if (maxTimes > 0) {
+        if (maxTimes != openCnt.get(id)) isRefresh = false;      // ← 是 !=，不是 <=
+        openCnt.put(id, (openCnt.get(id) + 1) % maxTimes);
+    }
+}
+if (isRefresh) lastCloseTime = now;
+```
+
+1. **`maxTimes == 0` 时什么都不做** —— 计数停在旧值，但 `isRefresh` 保持 `true`，
+   所以 `lastCloseTime` **每次都会刷新**。
+2. **`maxTimes != 当前计数` → 不刷新时间**。因为后面 `% maxTimes` 把计数限制在
+   `[0, maxTimes)`，`maxTimes == 当前计数` 只可能出现在 `maxTimes == 1` 且计数为 `1`。
+   也就是绝大多数情况下 `lastCloseTime` **不会**被更新。
+3. `(count + 1) % maxTimes` 让计数在 `0..maxTimes-1` 循环。
+
+三条各有一个单测锁：
+`close_max_times_zero_freezes_count` /
+`close_refresh_only_when_count_equals_max_times` /
+`close_wraps_with_modulo` + `close_wraps_back_to_zero`。
+
+### ⚠ 17103 渠道判定优先于「已评价」
+
+```java
+if (!FAVOURABLE_CHANNELS.contains(channelId)) return setRet(FAVOURABLE_ERROR_1);  // 3941
+if (model.isFeedBack())                       return setRet(FAVOURABLE_ERROR_2);  // 3942
+```
+
+单测 `feedback_channel_checked_before_already_done` 锁这条。
+
+### ⚠ 17101 已评价时只回 `ret=0`
+
+```java
+if (!isFeedBack) {
+    builder.setLastCloseTime(...);
+    for (...) builder.addMsgFavourable(...);
+    builder.setCafeUrl(CAFE_URL);
+    builder.setOneStoreUrl(ONE_STORE_URL);
+}
+return builder.setRet(0).build();
+```
+
+已评价过 → 四个字段全不设置。
+
+### 实测数据状态
+
+| 数据 | 实测 | 后果 |
+|---|---|---|
+| `CommentDB`（445 张 CSV 里搜不到这个实体） | 不存在 | `CommentDBCache.get(id)` 恒 `null` → **17102 恒回 2754** |
+| `bf_config.configId=19/20/21`（`platform.sql:517-519`） | 全是 `NULL` | `CAFE_URL`/`ONE_STORE_URL` 为空、`FAVOURABLE_CHANNELS` 为空 → **17103 恒回 3941** |
+| `ConfigDBCache.CommentReward`（`B-变量表-Config.csv:456`，id=456） | `1=100;231=2;211=1;202=1` | 4 个奖励，但走不到发放分支 |
+
+### 端到端实测（2026-10-28）
+
+启动日志：`好评奖励已装载 count=4` / `服务就绪 handlers=78`
+
+```text
+17101 → ret=0, lastCloseTime=0, 列表空, 无 URL
+17102 → 帧号 17102, ret=0        （渠道不符，不是 2754 —— 渠道判定在前）
+17103 → 帧号 17103, ret=3941     （渠道没开放好评系统）
+```
+
+### 分支明细
+
+| cmd | 分支 | 原版位置 | Rust | 用例 | 状态 |
+|---|---|---|---|---|---|
+| 17101 | 未评价 → 四字段 | `:35-46` | `install_favourable` 内联 | 端到端 | ✅ |
+| 17101 | 已评价 → 只回 ret=0 | `:47` | 同 | 端到端 | ✅ |
+| 17102 | 渠道不符 → ret=0 | `:52-54` | `close_verdict` | `close_not_in_channel_returns_ok` | ✅ |
+| 17102 | 模板缺失 → 2754 | `:56-59` | 同 | `close_missing_template_is_2754` | ✅ |
+| 17102 | 首次 → count=1 | `:62-63` | 同 | `close_first_time_sets_count_one_and_refreshes` | ✅ |
+| 17102 | `maxTimes=0` → 冻结计数 | `:65-71` | 同 | `close_max_times_zero_freezes_count` | ✅ |
+| 17102 | `maxTimes != count` → 不刷新 | `:67-69` | 同 | `close_refresh_only_when_count_equals_max_times` | ✅ |
+| 17102 | `(count+1) % maxTimes` | `:70` | 同 | `close_wraps_with_modulo` / `..back_to_zero` | ✅ |
+| 17103 | 渠道不符 → 3941 | `:66-68` | `feedback_verdict` | `feedback_not_in_channel_is_3941` | ✅ |
+| 17103 | 已评价 → 3942 | `:74-76` | 同 | `feedback_already_done_is_3942` | ✅ |
+| 17103 | 通过 → 发奖 | `:77-81` | 同 | `feedback_accepts_with_rewards` | ✅ |
+| 配置 | `configId=19/20/21` 解析 | `:357-377` | `PlatformUrls::parse` | `parse_urls_and_channels` / `parse_all_none_yields_empty` | ✅ |
+
+### 已知分叉
+
+无。三条的每个分支都对上了。
+
+---
+
 ## A7 `login.rs` + `loginvar.rs` + `handshake.rs`（待填）
 
 > 现状：登录 4 / 创角 6 / 握手 16-18 已接线，走真实 PG。`login.rs` 630 行。
