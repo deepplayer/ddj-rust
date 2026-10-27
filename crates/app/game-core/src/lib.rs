@@ -24,6 +24,7 @@ pub mod csv_amber;
 pub mod csv_anticheat;
 pub mod csv_counter;
 pub mod csv_names;
+pub mod csv_shortcut;
 pub mod csv_sign;
 pub mod csv_templates;
 pub mod gm_backend;

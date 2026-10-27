@@ -145,6 +145,17 @@ pub struct PlayerBox {
     /// ⚠ 原版是两层 map（先 templateId 再 param1），这里摊平成二元组键，
     /// 语义等价；`param1` 只有 `templateId == 5`（子嗣）才非 0。
     pub counter_map: HashMap<(i32, i64), crate::counter::CounterState>,
+    /// `Player.channelId`：登录时从库里读回（创角时写入）。
+    ///
+    /// 17301/17101/17081 等按渠道判定的消息都靠它，
+    /// 见 `crates/data/db/migrations/0006_player_channel.sql`。
+    pub channel_id: i32,
+    /// `Player.cid`：同上。
+    pub cid: String,
+    /// `ShortcutModel.state`：0 未保存 / 1 待领 / 2 已领。
+    ///
+    /// 原版是 `sys_activity_shortcut_install` 表的一行，键 `playerId`。
+    pub shortcut_state: i32,
 }
 
 impl MemWorld {

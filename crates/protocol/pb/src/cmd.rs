@@ -270,6 +270,15 @@ pub enum RetCode {
     AnticheatRead = 6451,
     /// 冲榜活动 - 奖励已领取不能重复领（`ACTIVITY_RANK_LIST_ERROR_REPEATED`）。
     ActivityRankListErrorRepeated = 1501,
+    /// 保存桌面 - 不是指定渠道（`SHORTCUT_CID_ERROR`）。
+    ShortcutCidError = 4731,
+    /// 保存桌面 - 尚未执行保存桌面（`SHORTCUT_NOT_INSTALL`）。
+    ShortcutNotInstall = 4732,
+    /// VIVO 特权 - 领取奖励失败（`VIVO_WELFARE_SIGN_ERROR`）。
+    ///
+    /// ⚠ 名字是 VIVO 福利的，但 `ShortcutModel.gainShortcutReward` 的
+    /// 「已领过」分支用的就是它（原版复制粘贴，照抄）。
+    VivoWelfareSignError = 4722,
 }
 
 impl RetCode {
@@ -390,6 +399,9 @@ impl RetCode {
             9505 => Self::SecondPswPswError,
             6451 => Self::AnticheatRead,
             1501 => Self::ActivityRankListErrorRepeated,
+            4731 => Self::ShortcutCidError,
+            4732 => Self::ShortcutNotInstall,
+            4722 => Self::VivoWelfareSignError,
             _ => return None,
         })
     }
@@ -505,6 +517,9 @@ impl RetCode {
             Self::SecondPswPswError => "二级密码- （密码验证）密码错误",
             Self::AnticheatRead => "防骗手册-未阅读完成无法领取奖励",
             Self::ActivityRankListErrorRepeated => "冲榜活动- 奖励已经领取，不能重复领取",
+            Self::ShortcutCidError => "保存桌面-不是指定渠道",
+            Self::ShortcutNotInstall => "保存桌面-尚未执行保存桌面",
+            Self::VivoWelfareSignError => "VIVO特权-领取奖励失败",
         }
     }
 }
@@ -538,6 +553,7 @@ mod tests {
             3600, 3601, 3602, 3603, 3604, 3606, 901, 905, 942,
             906, 907, 908, 909, 911, 912, 913, 910, 946,
             9501, 9502, 9503, 9504, 9505, 6451, 1501,
+            4731, 4732, 4722,
         ] {
             let c = RetCode::from_i32(v).unwrap_or_else(|| panic!("缺 {v}"));
             assert_eq!(c.as_i32(), v);

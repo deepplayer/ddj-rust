@@ -113,6 +113,13 @@ pub enum LoginOutcome {
         banned_time: i64,
         /// 本次握手的挑战值（`LoginResp_4.loginvar`，1..=10000）。
         loginvar: i32,
+        /// `Player.channelId`（创角时落库，登录时读回）。
+        ///
+        /// 不发给客户端（`LoginResp_4` 没有这个字段），只用来回填 `MemWorld`，
+        /// 供 17301/17101/17081 等按渠道判定的消息取用。
+        channel_id: i32,
+        /// `Player.cid`。
+        cid: String,
     },
 }
 
@@ -153,7 +160,7 @@ pub fn evaluate(req: &LoginReq4, st: &ServerState) -> LoginOutcome {
 ///
 /// 原版这层是 `PlayerServerModule.getPlayerByOpenId(openId, serverId)`，
 /// 现在由仓储实现（见 `game-core` 的 `PgAccountLookup`）。
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Account {
     /// 已有角色 ID。
     pub player_id: PlayerId,
@@ -161,6 +168,10 @@ pub struct Account {
     pub create_player_time: i64,
     /// 封禁截止（`-1` 永久封禁，`0` 未封禁）。
     pub banned_time: i64,
+    /// `Player.channelId`（创角时写入，登录时读回）。
+    pub channel_id: i32,
+    /// `Player.cid`。
+    pub cid: String,
 }
 
 /// 账号查询。
@@ -206,6 +217,8 @@ pub async fn resolve(
                 create_player_time: acc.create_player_time,
                 banned_time: acc.banned_time,
                 loginvar,
+                channel_id: acc.channel_id,
+                cid: acc.cid,
             }
         }
     }
@@ -223,7 +236,7 @@ pub async fn handle_with(
     now_ms: i64,
     loginvar: i32,
     handshake: Option<&dyn HandshakeStore>,
-) -> Result<(LoginResp4, Option<PlayerId>)> {
+) -> Result<(LoginResp4, Option<(PlayerId, i32, String)>)> {
     let LoginRequest { req } = LoginRequest::decrypt(body)?;
     let open_id = req.open_id.clone().unwrap_or_default();
     let server_id = req.server_id.unwrap_or(st.server_id);
@@ -239,7 +252,12 @@ pub async fn handle_with(
         "登录判定完成"
     );
     let player = match &outcome {
-        LoginOutcome::Accepted { player_id, .. } => Some(*player_id),
+        LoginOutcome::Accepted {
+            player_id,
+            channel_id,
+            cid,
+            ..
+        } => Some((*player_id, *channel_id, cid.clone())),
         _ => None,
     };
     Ok((build_resp(outcome), player))
@@ -465,6 +483,8 @@ mod tests {
             create_player_time: 1_650_000_000_000,
             banned_time: 0,
             loginvar: 608,
+            channel_id: 0,
+            cid: String::new(),
         });
         assert_eq!(r.ret, 0);
         assert_eq!(r.ok, Some(true));
@@ -521,7 +541,7 @@ mod account_tests {
                 .lock()
                 .expect("锁")
                 .push((open_id.to_owned(), server_id));
-            self.hit
+            self.hit.clone()
         }
     }
 
@@ -530,6 +550,8 @@ mod account_tests {
             player_id: PlayerId::new(pid),
             create_player_time: 1_700_000_000_000,
             banned_time: 0,
+            channel_id: 0,
+            cid: String::new(),
         }
     }
 

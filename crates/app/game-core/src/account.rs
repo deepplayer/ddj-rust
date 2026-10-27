@@ -32,6 +32,8 @@ impl AccountLookup for PgAccountLookup {
                 player_id: PlayerId::new(row.player_id),
                 create_player_time: row.create_time.timestamp_millis(),
                 banned_time: 0,
+                channel_id: row.channel_id,
+                cid: row.cid,
             }),
             Ok(None) => None,
             Err(e) => {

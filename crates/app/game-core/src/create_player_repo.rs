@@ -64,14 +64,17 @@ impl CreatePlayerRepo for PgCreatePlayerRepo {
     async fn create(&self, row: &NewPlayerRow) -> bool {
         let ok = sqlx::query(
             "INSERT INTO player \
-             (player_id, user_id, name, level, exp, vip, open_id, server_id, create_time) \
-             VALUES ($1, 0, $2, 1, 0, 0, $3, $4, to_timestamp($5 / 1000.0))",
+             (player_id, user_id, name, level, exp, vip, open_id, server_id, create_time, \
+              channel_id, cid) \
+             VALUES ($1, 0, $2, 1, 0, 0, $3, $4, to_timestamp($5 / 1000.0), $6, $7)",
         )
         .bind(row.player_id)
         .bind(&row.name)
         .bind(&row.open_id)
         .bind(row.server_id)
         .bind(row.now_ms)
+        .bind(row.channel_id)
+        .bind(&row.cid)
         .execute(&self.pool)
         .await;
         match ok {

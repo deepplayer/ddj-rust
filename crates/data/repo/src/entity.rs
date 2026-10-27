@@ -28,6 +28,10 @@ pub struct PlayerRow {
     pub server_id: i32,
     /// 角色创建时间（对应原版 `createPlayerTime`）。
     pub create_time: DateTime<Utc>,
+    /// `Player.channelId`（`CreatePlayerReq_6.channelId`）。
+    pub channel_id: i32,
+    /// `Player.cid`（`CreatePlayerReq_6.cid`）。
+    pub cid: String,
 }
 
 /// `item` 表。

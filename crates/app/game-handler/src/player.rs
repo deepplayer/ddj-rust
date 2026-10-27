@@ -435,6 +435,12 @@ pub struct NewPlayerRow {
     pub sex: String,
     /// 建角时间（毫秒）。
     pub now_ms: i64,
+    /// `Player.channelId`（`CreatePlayerReq_6.channelId`，字段 11）。
+    ///
+    /// 大量活动拿它做白名单判断，见 `crates/data/db/migrations/0006_player_channel.sql`。
+    pub channel_id: i32,
+    /// `Player.cid`（`CreatePlayerReq_6.cid`，字段 12）。
+    pub cid: String,
 }
 
 /// 把校验结果转成 `CreatePlayerResp6`（ret-only 信封）。

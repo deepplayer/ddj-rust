@@ -45,6 +45,9 @@ pub struct LoginHandler {
     state: ServerState,
     lookup: Option<Arc<dyn AccountLookup>>,
     handshake: Option<Arc<dyn HandshakeStore>>,
+    /// 过渡期内存态：登录成功后把 `channelId` / `cid` 回填进去。
+    /// 未注册 `MemWorld` 时为 `None`（单测与纯逻辑路径）。
+    world: Option<Arc<MemWorld>>,
 }
 
 impl LoginHandler {
@@ -55,6 +58,7 @@ impl LoginHandler {
             state,
             lookup: None,
             handshake: None,
+            world: None,
         }
     }
 
@@ -65,6 +69,7 @@ impl LoginHandler {
             state,
             lookup: Some(lookup),
             handshake: None,
+            world: None,
         }
     }
 
@@ -72,6 +77,13 @@ impl LoginHandler {
     #[must_use]
     pub fn with_handshake(mut self, hs: Arc<dyn HandshakeStore>) -> Self {
         self.handshake = Some(hs);
+        self
+    }
+
+    /// 挂上内存态（登录成功后回填 `channelId` / `cid`）。
+    #[must_use]
+    pub fn with_world(mut self, w: Arc<MemWorld>) -> Self {
+        self.world = Some(w);
         self
     }
 }
@@ -104,8 +116,16 @@ impl ErasedHandler for LoginHandler {
         .await?;
         // 登录成功 → 把角色绑进会话。之后 `player_id` 才有值，
         // 需要登录的消息（握手回执 16/17/18、背包等）才会放行。
-        if let (Some(p), Some(sess)) = (player, ctx.session.as_ref()) {
+        if let (Some((p, channel_id, cid)), Some(sess)) = (player, ctx.session.as_ref()) {
             sess.bind_player(p);
+            // `Player.channelId` / `Player.cid` 随会话落进 `MemWorld`，
+            // 供 17301/17101/17081 等按渠道判定的消息读回（见 0006 迁移）。
+            if let Some(w) = self.world.as_ref() {
+                w.with(p, |b| {
+                    b.channel_id = channel_id;
+                    b.cid = cid;
+                });
+            }
         }
         Ok(Some(Bytes::from(resp.encode_to_vec()).into()))
     }
@@ -143,8 +163,12 @@ pub fn register(
     let h = match lookup {
         Some(l) => {
             let h = LoginHandler::with_lookup(state, l);
-            match handshake.clone() {
+            let h = match handshake.clone() {
                 Some(hs) => h.with_handshake(hs),
+                None => h,
+            };
+            match runtime.as_ref() {
+                Some((w, _)) => h.with_world(w.clone()),
                 None => h,
             }
         }
@@ -186,6 +210,7 @@ pub fn register(
         n += crate::install_misc::install(table, world.clone(), clock.clone());
         n += crate::install_player::install(table, world.clone(), clock.clone());
         n += crate::install_second_psw::install(table, world.clone(), clock.clone());
+        n += crate::install_shortcut::install(table, world.clone(), clock.clone());
         n += crate::install_sign::install(table, world.clone(), clock.clone());
         n += crate::install_special_msg::install(table, world.clone(), clock.clone());
         n += crate::install_state::install(table, world.clone(), clock.clone());
@@ -287,6 +312,8 @@ impl ErasedHandler for CreatePlayerHandler {
                         ico: req.ico.clone().unwrap_or_default(),
                         sex: req.sex.unwrap_or_default().to_string(),
                         now_ms: now,
+                        channel_id: req.channel_id.unwrap_or(0),
+                        cid: req.cid.clone().unwrap_or_default(),
                     };
                     if self.repo.create(&row).await {
                         tracing::info!(
