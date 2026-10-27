@@ -130,6 +130,10 @@ pub struct PlayerBox {
     pub pet_star: HashMap<i32, i32>,
     /// 技能阶级：`(pet_id, skill_id) → Pet.skillClass[offset]`。
     pub pet_skill_class: HashMap<(i32, i32), i32>,
+    /// 技能等级：`(pet_id, skill_id) → Pet.skillLv[offset]`。
+    pub pet_skill_lv: HashMap<(i32, i32), i32>,
+    /// 皮肤技能等级：`skill_id → Pet.skinSkillLv`。
+    pub pet_skin_skill_lv: HashMap<i32, i32>,
 }
 
 impl MemWorld {

@@ -252,6 +252,10 @@ pub enum RetCode {
     PetErrorSkillMaxLv = 912,
     /// 宠物 - 技能已达最大阶级（`PET_ERROR_SKILL_MAX_CLASS`）。
     PetErrorSkillMaxClass = 913,
+    /// 宠物 - 互动经验不足（`PET_ERROR_INTERACTION_LIMIT`）。
+    PetErrorInteractionLimit = 910,
+    /// 珍兽 - 升级条件不满足（`PET_ERROR_CONDITION_NOT_MET`）。
+    PetErrorConditionNotMet = 946,
 }
 
 impl RetCode {
@@ -363,6 +367,8 @@ impl RetCode {
             911 => Self::PetErrorSkillClassLimit,
             912 => Self::PetErrorSkillMaxLv,
             913 => Self::PetErrorSkillMaxClass,
+            910 => Self::PetErrorInteractionLimit,
+            946 => Self::PetErrorConditionNotMet,
             _ => return None,
         })
     }
@@ -469,6 +475,8 @@ impl RetCode {
             Self::PetErrorSkillClassLimit => "宠物- 技能升阶所需资源不足",
             Self::PetErrorSkillMaxLv => "宠物- 技能已经达到最大等级",
             Self::PetErrorSkillMaxClass => "宠物- 技能已经达到最大阶级",
+            Self::PetErrorInteractionLimit => "宠物- 互动经验不足",
+            Self::PetErrorConditionNotMet => "珍兽- 升级条件不满足",
         }
     }
 }
@@ -500,7 +508,7 @@ mod tests {
             2303, 2304, 2305, 4601, 120,
             405, 406, 407, 914, 915, 938, 939, 940,
             3600, 3601, 3602, 3603, 3604, 3606, 901, 905, 942,
-            906, 907, 908, 909, 911, 912, 913,
+            906, 907, 908, 909, 911, 912, 913, 910, 946,
         ] {
             let c = RetCode::from_i32(v).unwrap_or_else(|| panic!("缺 {v}"));
             assert_eq!(c.as_i32(), v);

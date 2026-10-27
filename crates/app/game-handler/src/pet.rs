@@ -1714,3 +1714,538 @@ mod star_tests {
         ));
     }
 }
+
+// ─────────────────────── 技能升级 7005 ───────────────────────
+//
+// 对应 `PetSet.skillLevel`（`PetSet.java:419-497`）。
+//
+// ## 有两条完全不同的分支
+// ```text
+// 前置（两条共用）：
+//   1. pet == null                                    → 901
+//   2. PetSkillDB == null || PetSkillDB.petId != petId → PARAM_ERROR(29)
+//
+// 分支 A：`pet.isPetSkinSkill(skillId)` 为真（皮肤技能）
+//   3. skinSkillLv 不含该 skillId                      → 909
+//   4. !isOpenPetSkinSkill(skillId)                    → 909
+//   5. lv = getSkinSkillLv(skillId)
+//      skillOffset = petSkillDB.getSkillNum() - 1     ← 注意是 skillNum-1
+//      nextUpgradeDB(lv + 1) == null                   → 912 已满级
+//   6. petSkillDB.goodId == 0                          → 909
+//   7. 扣 (goodId, upgradeDB.getSkinCost()[offset]) 失败 → COMMON_SERVER_RESOURCES_NO(6)
+//   8. setSkinSkillLv(skillId, lv + 1)
+//
+// 分支 B：普通技能
+//   3. offset = petDB.skillId.indexOf(skillId)
+//      lv = getSkillLv(offset)；lv == 0                → 909
+//   4. nextUpgradeDB(lv + 1) == null                   → 912 已满级
+//   5. getAllPet().size() < upgradeDB.getPetNum()      → 940
+//   6. unlockSkillType > 0 && !isFitUnlockCondition    → 946 条件不满足
+//   7. cost = upgradeDB.getCost()[offset]
+//      interaction < cost                             → 910 互动经验不足
+//   8. interaction -= cost; setSkillLv(offset, lv+1)
+//
+// 公共收尾：
+//   - 推 7001(skillLv, tag 6)
+//   - notifyTalentRefresh()
+// ```
+//
+// ⚠ **两条分支的扣费资源不同**：皮肤技能扣 `goodId` 道具，
+// 普通技能扣 **互动经验**（`Pet.interaction`，就是 7002/7030 攒的那个）。
+// 这是最容易搞混的地方 —— 普通技能升级不花道具，花的是互动值。
+
+/// `PetSkillDB` 的一行（本流程用到的字段）。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct PetSkillTemplate {
+    /// `petId`：技能属于哪只宠物。
+    pub pet_id: i32,
+    /// `skillNum`：皮肤技能的下标来源（`skillNum - 1`）。
+    pub skill_num: i32,
+    /// `goodId`：皮肤技能消耗的道具 id（0 表示不可升）。
+    pub good_id: i32,
+    /// `unlockSkillType`：>0 表示需要额外解锁条件。
+    pub unlock_skill_type: i32,
+}
+
+/// `PetSkillUpgradeDB` 的一行（按等级索引）。
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct PetSkillUpgradeTemplate {
+    /// `petNum`：升到该等级所需的最少宠物数量。
+    pub pet_num: i32,
+    /// `cost[offset]`：普通技能的**互动经验**消耗。
+    pub cost: Vec<i64>,
+    /// `skinCost[offset]`：皮肤技能的道具消耗。
+    pub skin_cost: Vec<i64>,
+}
+
+/// 7005 的判定输入。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PetSkillLevelCtx {
+    /// 门客是否存在。
+    pub pet_exists: bool,
+    /// `PetSkillDB.petId == petId`（技能属于这只宠物）。
+    pub skill_belongs: bool,
+    /// `pet.isPetSkinSkill(skillId)`。
+    pub is_skin_skill: bool,
+    /// 皮肤技能：`skinSkillLv` 是否含该 skillId。
+    pub skin_lv_present: bool,
+    /// 皮肤技能：`isOpenPetSkinSkill(skillId)`。
+    pub skin_skill_open: bool,
+    /// 皮肤技能当前等级（`getSkinSkillLv`）。
+    pub skin_lv: i32,
+    /// 普通技能：`petDB.skillId.indexOf(skillId)`。
+    pub skill_offset: Option<usize>,
+    /// 普通技能当前等级（`getSkillLv(offset)`）。
+    pub skill_lv: i32,
+    /// 玩家宠物总数（`getAllPet().size()`）。
+    pub pet_count: usize,
+    /// `Pet.interaction`：互动经验余额。
+    pub interaction: i64,
+    /// 普通技能：`isFitUnlockCondition` 是否满足。
+    pub unlock_condition_met: bool,
+    /// 皮肤技能：`goodId` 道具是否够付 `skin_cost`。
+    pub can_pay_good: bool,
+}
+
+/// 7005 的结论。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PetSkillLevelOutcome {
+    /// 抛 `HandlerException` → `ErrorResp_1`。
+    Reject(RetCode),
+    /// 通过：需要执行副作用。
+    Accept(PetSkillLevelEffect),
+}
+
+impl PetSkillLevelOutcome {
+    /// 协议上的 `ret`。
+    #[must_use]
+    pub const fn resolve_ret(&self) -> Option<RetCode> {
+        match self {
+            Self::Reject(code) => Some(*code),
+            Self::Accept(_) => None,
+        }
+    }
+}
+
+/// 通过后要执行的副作用。
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PetSkillLevelEffect {
+    /// 皮肤技能升级：扣 `goodId` 道具。
+    Skin {
+        /// 新的皮肤技能等级。
+        new_lv: i32,
+        /// 要扣的道具 id。
+        good_id: i32,
+        /// 要扣的数量。
+        cost: i64,
+        /// 写回用的下标（`skillNum - 1`）。
+        offset: usize,
+    },
+    /// 普通技能升级：扣**互动经验**。
+    Normal {
+        /// 新的技能等级。
+        new_lv: i32,
+        /// 要扣的互动经验。
+        cost: i64,
+        /// 技能下标。
+        offset: usize,
+    },
+}
+
+/// `PetSet.skillLevel`（7005）的纯逻辑。
+///
+/// - `upgrade_tpl`：`PetSkillUpgradeDBCache.get(current_lv)`
+/// - `next_tpl`：`PetSkillUpgradeDBCache.get(current_lv + 1)`
+#[must_use]
+pub fn pet_skill_level_verdict(
+    ctx: &PetSkillLevelCtx,
+    skill_tpl: Option<&PetSkillTemplate>,
+    upgrade_tpl: Option<&PetSkillUpgradeTemplate>,
+    next_tpl: Option<&PetSkillUpgradeTemplate>,
+) -> PetSkillLevelOutcome {
+    // 1. 门客不存在
+    if !ctx.pet_exists {
+        return PetSkillLevelOutcome::Reject(RetCode::PetErrorNotExistPet);
+    }
+    // 2. 技能模板缺失或不属于该宠物
+    let Some(skill) = skill_tpl else {
+        return PetSkillLevelOutcome::Reject(RetCode::ParamError);
+    };
+    if !ctx.skill_belongs {
+        return PetSkillLevelOutcome::Reject(RetCode::ParamError);
+    }
+
+    if ctx.is_skin_skill {
+        // 分支 A：皮肤技能
+        // 3/4. 未解锁
+        if !ctx.skin_lv_present || !ctx.skin_skill_open {
+            return PetSkillLevelOutcome::Reject(RetCode::PetErrorSkillLock);
+        }
+        // 5. 已满级
+        if next_tpl.is_none() {
+            return PetSkillLevelOutcome::Reject(RetCode::PetErrorSkillMaxLv);
+        }
+        // 6. goodId == 0 → 不可升
+        if skill.good_id == 0 {
+            return PetSkillLevelOutcome::Reject(RetCode::PetErrorSkillLock);
+        }
+        // 7. 扣道具
+        let Some(up) = upgrade_tpl else {
+            return PetSkillLevelOutcome::Reject(RetCode::ServerBusy);
+        };
+        // ⚠ 下标是 `skillNum - 1`
+        let offset = usize::try_from(skill.skill_num - 1).unwrap_or(0);
+        let cost = up.skin_cost.get(offset).copied().unwrap_or(0);
+        if cost > 0 && !ctx.can_pay_good {
+            // 原版这里是 `COMMON_SERVER_RESOURCES_NO(6)`
+            return PetSkillLevelOutcome::Reject(RetCode::ResourcesNo);
+        }
+        PetSkillLevelOutcome::Accept(PetSkillLevelEffect::Skin {
+            new_lv: ctx.skin_lv + 1,
+            good_id: skill.good_id,
+            cost,
+            offset,
+        })
+    } else {
+        // 分支 B：普通技能
+        // 3. 未解锁
+        let Some(offset) = ctx.skill_offset else {
+            return PetSkillLevelOutcome::Reject(RetCode::PetErrorSkillLock);
+        };
+        if ctx.skill_lv == 0 {
+            return PetSkillLevelOutcome::Reject(RetCode::PetErrorSkillLock);
+        }
+        // 4. 已满级
+        if next_tpl.is_none() {
+            return PetSkillLevelOutcome::Reject(RetCode::PetErrorSkillMaxLv);
+        }
+        let Some(up) = upgrade_tpl else {
+            return PetSkillLevelOutcome::Reject(RetCode::ServerBusy);
+        };
+        // 5. 宠物总数不足
+        if ctx.pet_count < usize::try_from(up.pet_num).unwrap_or(0) {
+            return PetSkillLevelOutcome::Reject(RetCode::PetErrorPetNumLimit);
+        }
+        // 6. 额外解锁条件
+        if skill.unlock_skill_type > 0 && !ctx.unlock_condition_met {
+            return PetSkillLevelOutcome::Reject(RetCode::PetErrorConditionNotMet);
+        }
+        // 7. ⚠ 扣的是**互动经验**，不是道具
+        let cost = up.cost.get(offset).copied().unwrap_or(0);
+        if ctx.interaction < cost {
+            return PetSkillLevelOutcome::Reject(RetCode::PetErrorInteractionLimit);
+        }
+        PetSkillLevelOutcome::Accept(PetSkillLevelEffect::Normal {
+            new_lv: ctx.skill_lv + 1,
+            cost,
+            offset,
+        })
+    }
+}
+
+#[cfg(test)]
+mod skill_level_tests {
+    use super::*;
+
+    fn skill_tpl() -> PetSkillTemplate {
+        PetSkillTemplate {
+            pet_id: 100,
+            skill_num: 2,
+            good_id: 5001,
+            unlock_skill_type: 0,
+        }
+    }
+
+    fn up_tpl() -> PetSkillUpgradeTemplate {
+        PetSkillUpgradeTemplate {
+            pet_num: 3,
+            cost: vec![10, 20, 30],
+            skin_cost: vec![100, 200],
+        }
+    }
+
+    fn normal_ctx() -> PetSkillLevelCtx {
+        PetSkillLevelCtx {
+            pet_exists: true,
+            skill_belongs: true,
+            is_skin_skill: false,
+            skin_lv_present: false,
+            skin_skill_open: false,
+            skin_lv: 0,
+            skill_offset: Some(0),
+            skill_lv: 1,
+            pet_count: 5,
+            interaction: 1000,
+            unlock_condition_met: true,
+            can_pay_good: true,
+        }
+    }
+
+    fn skin_ctx() -> PetSkillLevelCtx {
+        PetSkillLevelCtx {
+            is_skin_skill: true,
+            skin_lv_present: true,
+            skin_skill_open: true,
+            skin_lv: 1,
+            ..normal_ctx()
+        }
+    }
+
+    // ── 公共前置 ──
+
+    #[test]
+    fn level_missing_pet_is_901() {
+        let c = PetSkillLevelCtx {
+            pet_exists: false,
+            ..normal_ctx()
+        };
+        assert_eq!(
+            pet_skill_level_verdict(&c, Some(&skill_tpl()), Some(&up_tpl()), Some(&up_tpl())),
+            PetSkillLevelOutcome::Reject(RetCode::PetErrorNotExistPet)
+        );
+    }
+
+    #[test]
+    fn level_missing_skill_template_is_param_error() {
+        assert_eq!(
+            pet_skill_level_verdict(&normal_ctx(), None, Some(&up_tpl()), Some(&up_tpl())),
+            PetSkillLevelOutcome::Reject(RetCode::ParamError)
+        );
+    }
+
+    #[test]
+    fn level_skill_not_belonging_is_param_error() {
+        let c = PetSkillLevelCtx {
+            skill_belongs: false,
+            ..normal_ctx()
+        };
+        assert_eq!(
+            pet_skill_level_verdict(&c, Some(&skill_tpl()), Some(&up_tpl()), Some(&up_tpl())),
+            PetSkillLevelOutcome::Reject(RetCode::ParamError)
+        );
+    }
+
+    // ── 分支 B：普通技能 ──
+
+    #[test]
+    fn normal_skill_locked_is_909() {
+        let c = PetSkillLevelCtx {
+            skill_lv: 0,
+            ..normal_ctx()
+        };
+        assert_eq!(
+            pet_skill_level_verdict(&c, Some(&skill_tpl()), Some(&up_tpl()), Some(&up_tpl())),
+            PetSkillLevelOutcome::Reject(RetCode::PetErrorSkillLock)
+        );
+    }
+
+    #[test]
+    fn normal_skill_no_offset_is_909() {
+        let c = PetSkillLevelCtx {
+            skill_offset: None,
+            ..normal_ctx()
+        };
+        assert_eq!(
+            pet_skill_level_verdict(&c, Some(&skill_tpl()), Some(&up_tpl()), Some(&up_tpl())),
+            PetSkillLevelOutcome::Reject(RetCode::PetErrorSkillLock)
+        );
+    }
+
+    #[test]
+    fn normal_skill_max_lv_is_912() {
+        assert_eq!(
+            pet_skill_level_verdict(&normal_ctx(), Some(&skill_tpl()), Some(&up_tpl()), None),
+            PetSkillLevelOutcome::Reject(RetCode::PetErrorSkillMaxLv)
+        );
+    }
+
+    #[test]
+    fn normal_skill_insufficient_pet_count_is_940() {
+        let c = PetSkillLevelCtx {
+            pet_count: 2,
+            ..normal_ctx()
+        };
+        assert_eq!(
+            pet_skill_level_verdict(&c, Some(&skill_tpl()), Some(&up_tpl()), Some(&up_tpl())),
+            PetSkillLevelOutcome::Reject(RetCode::PetErrorPetNumLimit)
+        );
+    }
+
+    #[test]
+    fn normal_skill_unlock_condition_is_946() {
+        let mut s = skill_tpl();
+        s.unlock_skill_type = 1;
+        let c = PetSkillLevelCtx {
+            unlock_condition_met: false,
+            ..normal_ctx()
+        };
+        assert_eq!(
+            pet_skill_level_verdict(&c, Some(&s), Some(&up_tpl()), Some(&up_tpl())),
+            PetSkillLevelOutcome::Reject(RetCode::PetErrorConditionNotMet)
+        );
+    }
+
+    #[test]
+    fn normal_skill_unlock_type_zero_skips_condition() {
+        // unlockSkillType == 0 时即使条件不满足也放行
+        let c = PetSkillLevelCtx {
+            unlock_condition_met: false,
+            ..normal_ctx()
+        };
+        assert!(matches!(
+            pet_skill_level_verdict(&c, Some(&skill_tpl()), Some(&up_tpl()), Some(&up_tpl())),
+            PetSkillLevelOutcome::Accept(_)
+        ));
+    }
+
+    #[test]
+    fn normal_skill_insufficient_interaction_is_910() {
+        let c = PetSkillLevelCtx {
+            interaction: 9, // cost[0] = 10
+            ..normal_ctx()
+        };
+        assert_eq!(
+            pet_skill_level_verdict(&c, Some(&skill_tpl()), Some(&up_tpl()), Some(&up_tpl())),
+            PetSkillLevelOutcome::Reject(RetCode::PetErrorInteractionLimit)
+        );
+    }
+
+    #[test]
+    fn normal_skill_costs_interaction_not_item() {
+        // ⚠ 关键：普通技能扣的是互动经验，不是道具
+        match pet_skill_level_verdict(
+            &normal_ctx(),
+            Some(&skill_tpl()),
+            Some(&up_tpl()),
+            Some(&up_tpl()),
+        ) {
+            PetSkillLevelOutcome::Accept(PetSkillLevelEffect::Normal {
+                new_lv, cost, offset, ..
+            }) => {
+                assert_eq!(new_lv, 2);
+                assert_eq!(cost, 10, "cost[offset=0] = 10");
+                assert_eq!(offset, 0);
+            }
+            other => panic!("应走普通分支，得到 {other:?}"),
+        }
+    }
+
+    #[test]
+    fn normal_skill_interaction_exact_boundary_passes() {
+        let c = PetSkillLevelCtx {
+            interaction: 10, // 正好等于 cost
+            ..normal_ctx()
+        };
+        assert!(matches!(
+            pet_skill_level_verdict(&c, Some(&skill_tpl()), Some(&up_tpl()), Some(&up_tpl())),
+            PetSkillLevelOutcome::Accept(_)
+        ));
+    }
+
+    // ── 分支 A：皮肤技能 ──
+
+    #[test]
+    fn skin_skill_not_present_is_909() {
+        let c = PetSkillLevelCtx {
+            skin_lv_present: false,
+            ..skin_ctx()
+        };
+        assert_eq!(
+            pet_skill_level_verdict(&c, Some(&skill_tpl()), Some(&up_tpl()), Some(&up_tpl())),
+            PetSkillLevelOutcome::Reject(RetCode::PetErrorSkillLock)
+        );
+    }
+
+    #[test]
+    fn skin_skill_not_open_is_909() {
+        let c = PetSkillLevelCtx {
+            skin_skill_open: false,
+            ..skin_ctx()
+        };
+        assert_eq!(
+            pet_skill_level_verdict(&c, Some(&skill_tpl()), Some(&up_tpl()), Some(&up_tpl())),
+            PetSkillLevelOutcome::Reject(RetCode::PetErrorSkillLock)
+        );
+    }
+
+    #[test]
+    fn skin_skill_max_lv_is_912() {
+        assert_eq!(
+            pet_skill_level_verdict(&skin_ctx(), Some(&skill_tpl()), Some(&up_tpl()), None),
+            PetSkillLevelOutcome::Reject(RetCode::PetErrorSkillMaxLv)
+        );
+    }
+
+    #[test]
+    fn skin_skill_good_id_zero_is_909() {
+        let mut s = skill_tpl();
+        s.good_id = 0;
+        assert_eq!(
+            pet_skill_level_verdict(&skin_ctx(), Some(&s), Some(&up_tpl()), Some(&up_tpl())),
+            PetSkillLevelOutcome::Reject(RetCode::PetErrorSkillLock)
+        );
+    }
+
+    #[test]
+    fn skin_skill_insufficient_good_is_resources_no() {
+        // ⚠ 皮肤分支扣道具失败回的是 COMMON_SERVER_RESOURCES_NO(6)，不是 911
+        let c = PetSkillLevelCtx {
+            can_pay_good: false,
+            ..skin_ctx()
+        };
+        assert_eq!(
+            pet_skill_level_verdict(&c, Some(&skill_tpl()), Some(&up_tpl()), Some(&up_tpl())),
+            PetSkillLevelOutcome::Reject(RetCode::ResourcesNo)
+        );
+    }
+
+    #[test]
+    fn skin_skill_uses_skill_num_minus_one_as_offset() {
+        // skillNum = 2 → offset = 1 → skinCost[1] = 200
+        match pet_skill_level_verdict(
+            &skin_ctx(),
+            Some(&skill_tpl()),
+            Some(&up_tpl()),
+            Some(&up_tpl()),
+        ) {
+            PetSkillLevelOutcome::Accept(PetSkillLevelEffect::Skin {
+                new_lv,
+                good_id,
+                cost,
+                offset,
+            }) => {
+                assert_eq!(new_lv, 2);
+                assert_eq!(good_id, 5001);
+                assert_eq!(offset, 1, "skillNum(2) - 1 = 1");
+                assert_eq!(cost, 200, "skinCost[1] = 200");
+            }
+            other => panic!("应走皮肤分支，得到 {other:?}"),
+        }
+    }
+
+    #[test]
+    fn skin_branch_ignores_interaction() {
+        // 皮肤分支不检查 interaction，只看 goodId
+        let c = PetSkillLevelCtx {
+            interaction: 0,
+            ..skin_ctx()
+        };
+        assert!(matches!(
+            pet_skill_level_verdict(&c, Some(&skill_tpl()), Some(&up_tpl()), Some(&up_tpl())),
+            PetSkillLevelOutcome::Accept(PetSkillLevelEffect::Skin { .. })
+        ));
+    }
+
+    #[test]
+    fn normal_branch_ignores_good_id() {
+        // 普通分支不检查 goodId，只看 interaction
+        let c = PetSkillLevelCtx {
+            can_pay_good: false,
+            ..normal_ctx()
+        };
+        assert!(matches!(
+            pet_skill_level_verdict(&c, Some(&skill_tpl()), Some(&up_tpl()), Some(&up_tpl())),
+            PetSkillLevelOutcome::Accept(PetSkillLevelEffect::Normal { .. })
+        ));
+    }
+}
