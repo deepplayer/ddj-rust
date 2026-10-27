@@ -175,6 +175,7 @@ pub fn register(
         n += crate::install_amber::install(table, world.clone(), clock.clone());
         n += crate::install_bind::install(table, world.clone(), clock.clone());
         n += crate::install_declare::install(table, world.clone(), clock.clone());
+        n += crate::install_engine::install(table, world.clone(), clock.clone());
         n += crate::install_platform::install(table, world.clone(), clock.clone());
         n += crate::install_vip::install(table, world.clone(), clock.clone());
         n += crate::install_item::install(table, world.clone(), clock.clone());

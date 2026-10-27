@@ -365,6 +365,7 @@ impl Bootstrap {
             crate::csv_templates::install(std::path::Path::new(&cfg.template.dir));
             crate::csv_sign::install(std::path::Path::new(&cfg.template.dir));
             crate::csv_amber::install(std::path::Path::new(&cfg.template.dir));
+            crate::csv_names::install(std::path::Path::new(&cfg.template.dir));
             tracing::info!(
                 tables = report.tables,
                 rows = report.rows,
