@@ -124,8 +124,6 @@ pub struct PlayerBox {
     pub pet_extra: HashMap<i32, PetExtra>,
     /// 门客评级等级：`pet_id → Pet.rataLv`（默认 1）。
     pub pet_rate: HashMap<i32, i32>,
-    /// 计数器状态：`templateId → CounterState`（原版 `counter_recovery` 表）。
-    pub counters: HashMap<i32, crate::counter::CounterState>,
     /// 门客星级：`pet_id → Pet.star`（默认 0）。
     pub pet_star: HashMap<i32, i32>,
     /// 技能阶级：`(pet_id, skill_id) → Pet.skillClass[offset]`。
@@ -138,6 +136,15 @@ pub struct PlayerBox {
     pub second_psw: crate::second_psw::SecondPswState,
     /// 防骗手册状态（原版 `AntiCheatModel`）。
     pub anticheat: crate::anticheat::AntiCheatState,
+    /// 计数器集合自身的 `time`（原版 `CounterRecoverySet.time`）。
+    ///
+    /// 用来判断「跨天 / 跨周」；`0` 表示尚未 dbInit。
+    pub counter_set_time: i64,
+    /// 计数器 `(templateId, param1) → CounterState`（原版 `allCounterRecovery`）。
+    ///
+    /// ⚠ 原版是两层 map（先 templateId 再 param1），这里摊平成二元组键，
+    /// 语义等价；`param1` 只有 `templateId == 5`（子嗣）才非 0。
+    pub counter_map: HashMap<(i32, i64), crate::counter::CounterState>,
 }
 
 impl MemWorld {

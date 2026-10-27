@@ -90,10 +90,18 @@ impl RawTable {
     }
 }
 
-/// 读一张 CSV。
+/// 读一张 CSV，主键列名固定是 `id`（Java 侧绝大多数 DB 表都是）。
 ///
-/// 表头固定 6 行，主键列名固定是 `id`（Java 侧所有 DB 表都是）。
+/// 表头固定 6 行。
 pub fn load_raw(path: &Path) -> Result<RawTable, String> {
+    load_raw_pk(path, "id")
+}
+
+/// 读一张 CSV，主键列名由调用方指定。
+///
+/// 少数表的 `@Pk` 不叫 `id`，例如 `V-VIP表-Vip.csv` 的主键是 `level`。
+/// 表头固定 6 行。
+pub fn load_raw_pk(path: &Path, pk: &str) -> Result<RawTable, String> {
     let mut rdr = csv::ReaderBuilder::new()
         .has_headers(false)
         .flexible(true)
@@ -119,8 +127,8 @@ pub fn load_raw(path: &Path) -> Result<RawTable, String> {
     let columns = head[4].clone();
     let id_col = columns
         .iter()
-        .position(|c| c == "id")
-        .ok_or_else(|| format!("{}: 第 5 行找不到 id 列", path.display()))?;
+        .position(|c| c == pk)
+        .ok_or_else(|| format!("{}: 第 5 行找不到 {pk} 列", path.display()))?;
 
     let mut rows = Vec::new();
     let mut by_id = HashMap::new();

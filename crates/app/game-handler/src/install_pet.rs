@@ -403,14 +403,14 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
             let (pet_ids, counter) = w.peek(p, |b| {
                 let ids: Vec<i32> = b.pet_skins.keys().copied().collect();
                 let st = b
-                    .counters
-                    .get(&counter::PET_INTERACT_TEMPLATE_ID)
+                    .counter_map
+                    .get(&(counter::PET_INTERACT_TEMPLATE_ID, 0))
                     .copied()
                     .unwrap_or_default();
                 (ids, st)
             });
             // 先 refresh 再判精力
-            let refreshed = counter::refresh(counter, &tpl.counter, COUNTER_MAX_LIMIT, now);
+            let refreshed = counter::cd_recovery(counter, &tpl.counter, COUNTER_MAX_LIMIT, now);
             let out = pet::interact_verdict(pet_ids.len(), refreshed.state.num, all);
             match out {
                 InteractOutcome::Reject(code) => Ok(Some(reject_reply(7002, code))),
@@ -424,12 +424,19 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
                     }
                     drop(rng);
                     // 扣精力
-                    let removed = counter::remove_num(refreshed.state, times, now);
+                    let removed = counter::remove_num(
+                        refreshed.state,
+                        &tpl.counter,
+                        times,
+                        false,
+                        COUNTER_MAX_LIMIT,
+                        now,
+                    );
                     // 按宠物聚合经验
                     let mut results: Vec<MsgInteractResult> = Vec::new();
                     w.with(p, |b| {
-                        b.counters
-                            .insert(counter::PET_INTERACT_TEMPLATE_ID, removed.state);
+                        b.counter_map
+                            .insert((counter::PET_INTERACT_TEMPLATE_ID, 0), removed.state);
                         for id in &picked {
                             let intimacy = b.pet_extra.get(id).map_or(0, |x| x.intimacy);
                             let base = pet::interact_exp(&tpl.exp, intimacy);
@@ -488,13 +495,13 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
                 (
                     b.pet_skins.keys().copied().collect::<Vec<i32>>(),
                     b.bag.get(&INTERACT_ITEM_ID).copied().unwrap_or(0),
-                    b.counters
-                        .get(&counter::PET_INTERACT_TEMPLATE_ID)
+                    b.counter_map
+                        .get(&(counter::PET_INTERACT_TEMPLATE_ID, 0))
                         .copied()
                         .unwrap_or_default(),
                 )
             });
-            let refreshed = counter::refresh(counter, &tpl.counter, COUNTER_MAX_LIMIT, now);
+            let refreshed = counter::cd_recovery(counter, &tpl.counter, COUNTER_MAX_LIMIT, now);
             let out = pet::interact_times_verdict(
                 pet_ids.len(),
                 times,
@@ -536,7 +543,8 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
                                 }),
                             }
                         }
-                        b.counters.insert(counter::PET_INTERACT_TEMPLATE_ID, refreshed.state);
+                        b.counter_map
+                            .insert((counter::PET_INTERACT_TEMPLATE_ID, 0), refreshed.state);
                     });
                     for r in &results {
                         if let Some(id) = r.pet_id {

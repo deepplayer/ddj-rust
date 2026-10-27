@@ -54,6 +54,7 @@ pub mod handshake;
 pub mod install_amber;
 pub mod install_anticheat;
 pub mod install_bind;
+pub mod install_counter;
 pub mod install_declare;
 pub mod install_engine;
 pub mod install_item;
