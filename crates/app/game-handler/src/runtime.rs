@@ -85,6 +85,8 @@ pub struct PlayerBox {
     pub reset_address_times: i32,
     /// 客户端缓存回写（`1100` 写，原版 `Player.newPlayerData`）。
     pub new_player_data: crate::player::PlayerCacheStore,
+    /// `Player.manifesto`：出站宣言（`Player.java:287`，列宽 `BATTLE_NOTICE_SIZE`）。
+    pub manifesto: String,
 }
 
 impl MemWorld {

@@ -194,6 +194,14 @@ pub enum RetCode {
     ItemError5 = 1105,
     /// 时效道具已过期（`ITEM_ERROR_11`）。
     ItemError11 = 1111,
+    /// 宣言中有非法字符（`DECLARE_ERROR_STRING_ILLEGAL`）。
+    DeclareErrorStringIllegal = 2303,
+    /// 宣言的长度不符（`DECLARE_ERROR_LONG_ERROR`）。
+    DeclareErrorLongError = 2304,
+    /// 你当前没有权限修改宣言（`FORTUNE_ERROR_NO_JURISDICTION`）。
+    FortuneErrorNoJurisdiction = 2305,
+    /// 鉴宝大会 - 已领取（`APPRAISAL_GAIN_ACHIEVEMENT`）。
+    AppraisalGainAchievement = 4601,
 }
 
 impl RetCode {
@@ -276,6 +284,10 @@ impl RetCode {
             1104 => Self::ItemError4,
             1105 => Self::ItemError5,
             1111 => Self::ItemError11,
+            2303 => Self::DeclareErrorStringIllegal,
+            2304 => Self::DeclareErrorLongError,
+            2305 => Self::FortuneErrorNoJurisdiction,
+            4601 => Self::AppraisalGainAchievement,
             _ => return None,
         })
     }
@@ -353,6 +365,10 @@ impl RetCode {
             Self::ItemError4 => "道具错误 4",
             Self::ItemError5 => "道具错误 5",
             Self::ItemError11 => "时效道具已过期",
+            Self::DeclareErrorStringIllegal => "宣言中有非法字符",
+            Self::DeclareErrorLongError => "宣言的长度不符",
+            Self::FortuneErrorNoJurisdiction => "你当前没有权限修改宣言",
+            Self::AppraisalGainAchievement => "鉴宝大会- 已领取",
         }
     }
 }
@@ -381,6 +397,7 @@ mod tests {
             0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
             25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 99, 101, 102, 103, 104,
             105, 106, 107,
+            2303, 2304, 2305, 4601,
         ] {
             let c = RetCode::from_i32(v).unwrap_or_else(|| panic!("缺 {v}"));
             assert_eq!(c.as_i32(), v);
