@@ -54,8 +54,10 @@ fn one_res(s: &str) -> Option<(i32, i64)> {
 }
 
 /// 从 CSV 读出游历事件表。
-fn load_events(template_dir: &Path) -> Result<Vec<TravelEvent>, String> {
-    let t = load_raw(&template_dir.join(EVENTS_CSV))?;
+///
+/// `template_dir` 是 `.../resource/template`，CSV 在它下面的 `csv/` 子目录。
+pub fn load_events(template_dir: &Path) -> Result<Vec<TravelEvent>, String> {
+    let t = load_raw(&template_dir.join("csv").join(EVENTS_CSV))?;
     let mut out = Vec::with_capacity(t.rows.len());
     for row in &t.rows {
         let Some(id) = t.int(row, "id") else { continue };
@@ -97,9 +99,9 @@ fn load_events(template_dir: &Path) -> Result<Vec<TravelEvent>, String> {
 /// - `TravelFirstEventOffspring` → 首个子嗣的事件次数门槛
 /// - `PartnerInviteTime` → 十连叠加的邀请次数
 /// - `PartnerChangeCost` → 15009 变性消耗
-fn load_config(template_dir: &Path) -> TravelConfig {
+pub fn load_config(template_dir: &Path) -> TravelConfig {
     let mut cfg = TravelConfig::default();
-    let Ok(t) = load_raw(&template_dir.join(CONFIG_CSV)) else {
+    let Ok(t) = load_raw(&template_dir.join("csv").join(CONFIG_CSV)) else {
         return cfg;
     };
     for row in &t.rows {
@@ -147,7 +149,14 @@ fn load_config(template_dir: &Path) -> TravelConfig {
 
 /// 装配游历事件表 + 配置；失败只记日志（15002/15004 抽不出事件 → 回 1005）。
 pub fn install(template_dir: &Path) {
-    match load_events(template_dir) {
+    let events = load_events(template_dir);
+    let cfg = load_config(template_dir);
+    apply(events, cfg);
+}
+
+/// 把已装载的结果注入 handler 层（单独抽出便于单测）。
+fn apply(events: Result<Vec<TravelEvent>, String>, cfg: TravelConfig) {
+    match events {
         Ok(list) => {
             tracing::info!(travel_events = list.len(), "游历事件表已装载");
             ddj_game_handler::install_travel::install_templates(list);
@@ -156,7 +165,6 @@ pub fn install(template_dir: &Path) {
             tracing::warn!(error = %e, "游历事件表装载失败，15002/15004 将抽不到事件");
         }
     }
-    let cfg = load_config(template_dir);
     tracing::info!(
         physical_strength = cfg.physical_strength,
         fixed_point_travel = ?cfg.fixed_point_travel,
@@ -173,8 +181,12 @@ mod tests {
     use super::*;
     use std::path::PathBuf;
 
+    /// `DDJ_CSV_DIR` 指向 `.../template/csv`，`load_*` 要的是 `.../template`。
     fn csv_dir() -> Option<PathBuf> {
-        std::env::var("DDJ_CSV_DIR").ok().map(PathBuf::from)
+        std::env::var("DDJ_CSV_DIR")
+            .ok()
+            .map(PathBuf::from)
+            .and_then(|p| p.parent().map(Path::to_path_buf))
     }
 
     #[test]
@@ -188,6 +200,17 @@ mod tests {
     fn res_pairs_parses_list() {
         assert_eq!(res_pairs("20=1;21=2"), vec![(20, 1), (21, 2)]);
         assert_eq!(res_pairs(""), Vec::new());
+    }
+
+    /// ⚠ 回归：`install` 曾把 `template_dir` 直接当 CSV 目录，
+    /// 启动日志出现「游历事件表装载失败 …/template/Y-游历事件-TravelEvents.csv 不存在」，
+    /// 同时配置里 `first_event_girl = 0`。这里锁住真实目录形态。
+    #[test]
+    fn template_dir_is_the_parent_of_csv() {
+        let Some(dir) = csv_dir() else { return };
+        assert!(dir.join("csv").join(EVENTS_CSV).exists());
+        assert!(dir.join("csv").join(CONFIG_CSV).exists());
+        assert!(!dir.join(EVENTS_CSV).exists(), "CSV 不在 template 根目录");
     }
 
     #[test]
