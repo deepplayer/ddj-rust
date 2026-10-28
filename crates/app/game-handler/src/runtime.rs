@@ -165,6 +165,11 @@ pub struct PlayerBox {
     pub favourable: crate::favourable::FavourableState,
     /// `PrayModel`：焚香祈愿的持久化字段。
     pub pray: crate::pray::PrayState,
+    /// `CornucopiaActPlayer.records`：聚宝盆自己的抽奖记录（38303 回显）。
+    ///
+    /// 原版是 `activity_cornucopia_player` 表的一列（`ConcurrentLinkedQueue`），
+    /// 过渡期只放内存。真正的写入在 38302（抽奖），届时再决定是否迁 PG。
+    pub cornucopia_records: Vec<crate::install_cornucopia::LuckRecord>,
 }
 
 impl MemWorld {

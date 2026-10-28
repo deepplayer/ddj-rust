@@ -389,6 +389,19 @@ impl Bootstrap {
         // （`open_server_day` 恒为 1 = 开服当天）。
         crate::csv_system_open::install_server_facts(&db.platform, cfg.service.server_id).await;
 
+        // `ActivityDbTemplateCache`：`bf_activity`（实测 11 行）。
+        // 活动族处理器的 `isOpen()` / `getActivityDbTemplate()` 全靠它。
+        match crate::pg_activity::load(&db.platform).await {
+            Ok(c) => {
+                tracing::info!(rows = c.len(), "活动模板已装载");
+                ddj_game_handler::install_activity::install(c);
+            }
+            Err(e) => {
+                tracing::warn!(error = %e, "活动模板装载失败，所有活动按不存在处理");
+                ddj_game_handler::install_activity::install(Default::default());
+            }
+        }
+
         let mut table = HandlerTable::empty();
         // 原版 `getPlayerIDRange()` 是运行时常量，创角与看他人共用一个。
         const PLAYER_ID_RANGE: i64 = 1_000_000;

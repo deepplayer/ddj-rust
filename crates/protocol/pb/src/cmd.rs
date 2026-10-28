@@ -280,6 +280,10 @@ pub enum RetCode {
     FavourableError2 = 3942,
     /// 活动进行中 - 参数错误（`ACTIVITY_PARAM_ERROR`）。
     ActivityParamError = 2754,
+    /// 活动不存在（`ACTIVITY_NO_EXITS`）。
+    ActivityNoExits = 2751,
+    /// 活动已结束（`ACTIVITY_NO_OPEN`）。
+    ActivityNoOpen = 2752,
     /// 焚香祈愿 - 未开放（`PRAY_ERROR_UN_OPEN`）。
     PrayErrorUnOpen = 3901,
     /// 焚香祈愿 - 资源不足（`PRAY_ERROR_COST`）。
@@ -417,6 +421,8 @@ impl RetCode {
             3941 => Self::FavourableError1,
             3942 => Self::FavourableError2,
             2754 => Self::ActivityParamError,
+            2751 => Self::ActivityNoExits,
+            2752 => Self::ActivityNoOpen,
             _ => return None,
         })
     }
@@ -540,6 +546,8 @@ impl RetCode {
             Self::FavourableError1 => "渠道没开放好评系统",
             Self::FavourableError2 => "已经评价过",
             Self::ActivityParamError => "活动进行中-参数错误",
+            Self::ActivityNoExits => "活动不存在",
+            Self::ActivityNoOpen => "活动已结束",
         }
     }
 }
@@ -573,7 +581,7 @@ mod tests {
             3600, 3601, 3602, 3603, 3604, 3606, 901, 905, 942,
             906, 907, 908, 909, 911, 912, 913, 910, 946,
             9501, 9502, 9503, 9504, 9505, 6451, 1501,
-            4731, 4732, 4722, 3941, 3942, 2754, 3901, 3902,
+            4731, 4732, 4722, 3941, 3942, 2754, 2751, 2752, 3901, 3902,
         ] {
             let c = RetCode::from_i32(v).unwrap_or_else(|| panic!("缺 {v}"));
             assert_eq!(c.as_i32(), v);

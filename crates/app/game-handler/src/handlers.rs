@@ -199,6 +199,7 @@ pub fn register(
         n += crate::install_amber::install(table, world.clone(), clock.clone());
         n += crate::install_anticheat::install(table, world.clone(), clock.clone());
         n += crate::install_bind::install(table, world.clone(), clock.clone());
+        n += crate::install_cornucopia::install(table, world.clone(), clock.clone());
         n += crate::install_counter::install(table, world.clone(), clock.clone());
         n += crate::install_declare::install(table, world.clone(), clock.clone());
         n += crate::install_engine::install(table, world.clone(), clock.clone());

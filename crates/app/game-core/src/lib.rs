@@ -32,6 +32,7 @@ pub mod csv_templates;
 pub mod gm_backend;
 pub mod lifecycle_modules;
 pub mod modules;
+pub mod pg_activity;
 pub mod player_stores;
 pub mod wiring;
 
