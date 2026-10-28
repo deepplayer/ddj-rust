@@ -1,6 +1,6 @@
 # 移植进度（切换上下文先读这里）
 
-> 最后更新：2026-10-28 02:25
+> 最后更新：2026-10-28 07:05
 > 基准：`../data_d/game_7010544/sources/`（反编译）。规则见 [`../AGENTS.md`](../AGENTS.md)。
 > 逐分支台账见 [`AUDIT.md`](AUDIT.md)；里程碑见 [`PLAN.md`](PLAN.md)。
 
@@ -8,19 +8,23 @@
 
 ## 一、一句话现状
 
-骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 80 条（4.8%）**，
+骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 82 条（4.9%）**，
 其中真正落库的只有 4 条，其余是进程内 `MemWorld`（重启即丢）。
+
+本轮补了**两个跨模块底座**（不增加消息数但解锁后续一大批）：
+- `SystemOpenUtils.isOpen` —— `data_d` 里 60 个文件调它
+- `ActivityDbTemplate` 时间判定 —— 50+ 个活动处理器的入口条件
 
 ```
 cargo check  --workspace --all-targets                      0 error / 0 warning
 cargo clippy --workspace --exclude ddj-pb --lib --bins -D warnings   通过
-cargo test   --workspace                                    703 passed / 0 failed
+cargo test   --workspace                                    740 passed / 0 failed
 cargo xt check-arch                                         4 条规则通过
 ```
 
 代码量：27 crate / 约 180 个 `.rs` / 约 25 000 行。
 
-## 二、已接线消息（80 / 1681）
+## 二、已接线消息（82 / 1681）
 
 | 模块 | cmdId | 数据源 | 备注 |
 |---|---|---|---|
@@ -60,11 +64,22 @@ cargo xt check-arch                                         4 条规则通过
 | 保存桌面 | 17301 / 17302 / 17303 | `MemWorld` + 真实 CSV | ⚠ 渠道配置实测为空 → `eligible` 恒 false，17302/17303 恒回 4731（原版状态）|
 | 渠道好评 | 17101 / 17102 / 17103 | `MemWorld` + 真实 CSV | ⚠ **三条都不走 `ErrorResp_1`**；17102 渠道不符回 `ret=0` |
 | 焚香祈愿 | 17071 / 17072 | `MemWorld` + 真实 CSV | ⚠ 单抽首日免费、十连不免费；**先推 17074 再回 17071** |
+| 系统开放 | 1015（改造） | **真实 CSV** + PG | 查不到 `systemId` → `ret=2`（原版 NPE） |
+| 聚宝盆记录 | 38303 / 38304 | `MemWorld` + PG `bf_activity` | ⚠ 两条都**不检查 `isOpen`**；38304 恒空列表 |
 
 ## 三、未接线（占位，`ret=501`）
 
 `account` `activity` `battle` `chat` `friend` `gm` `guild` `player` `rank` `shop` `task`
 —— 11 个模块，各 27 行占位。
+
+### 已就位但还没被用的底座（下一批可以直接接）
+
+| 底座 | 位置 | 解锁什么 |
+|---|---|---|
+| `SystemOpenUtils.isOpen` | `system_open.rs` / `install_system_open.rs` | 60 个文件的开门判定 |
+| `ActivityDbTemplate` 时间判定 | `activity_template.rs` / `install_activity.rs` | 50+ 活动处理器的入口 |
+| `DropUtils.rand` 底座 | `drop.rs` | 一切走掉落表的玩法 |
+| `CounterRecovery` 计数器 | `counter.rs` | 一切「每日次数」玩法 |
 
 `PlayerMessageHandler`（27 条）**27/27 已全部接线**：
 
@@ -115,8 +130,24 @@ cargo xt check-arch                                         4 条规则通过
 | 平台配置 | `bf_word_config` / `bf_wechat_official_account` / `switchPayment` | ⬜ 未接（`PlatformSnapshot` 注入点已留） |
 | 等级表 | `S-身份表-Status.csv` | ⬜ 未接 |
 | 名字表 | `W_玩家名字_PlayerName.csv` | ✅ 真实 CSV，306000 名 × 3 语言 |
+| 系统开放表 | `G-功能开启表-SystemOpen.csv`（100 行） | ✅ 真实 CSV |
+| 开服时间 | PG `bf_server.open_time` | ✅ 真实 PG |
+| 活动模板 | PG `bf_activity`（11 行） | ✅ 真实 PG |
+| VIP 等级 | `player.vip`（登录时读到 `PlayerRow.vip`，还没写进 `PlayerBox`） | ⬜ 未接 → `isOpen` 的 `unlockType=3` 对所有人关闭 |
 
-## 五、未决问题（需要决策）
+## 五、下一步（按解锁收益排序）
+
+1. **`ActivitySet` 活动实例层** —— 现在只有模板（时间判定），还没有
+   「某玩家在某活动下的状态」。有了它，`Cornucopia` / `Wonderland` / `Bridge` /
+   `Nianbeast` / `GroupBuy` / `Fishing` 的只读查询（`xxxInfo` / `xxxRecord`）
+   可以一次接一大片。
+2. **`PlayerBox.vip`** —— 从 `PlayerRow.vip` 写进去，`SystemOpen` 的
+   `unlockType=3`（23 行）立刻生效。
+3. **`Travel`（15002 / 15004 / 15009）** —— 1384 行模块，但 `place` / `allTimes`
+   的开放判定已就位（`isOpen(3)` = 1 级、`isOpen(102)` = 3 级 VIP）。
+4. **`OceanTrade`（41001-41003）** —— 1360 行，`isOpen(19)` 已就位（开服 10 天）。
+
+## 六、未决问题（需要决策）
 
 ### 5.1 三处偏离原版 —— 已定策略（2026-10-27）
 

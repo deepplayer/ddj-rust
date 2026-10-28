@@ -1012,6 +1012,190 @@ commit `cd05ab3`。
 
 ---
 
+## A20 `system_open.rs` + `install_system_open.rs`（系统开放底座）
+
+原版：`data_d/game_7010544/sources/bf/game/server/utils/SystemOpenUtils.java`（`isOpen`）
++ `data_d/libs/jb3.common.v1/sources/bf/template/db/SystemOpenDB.java`
++ `data_d/libs/jb3.common.v1/sources/bf/template/cache/SystemOpenDBCache.java`
+数据：`G-功能开启表-SystemOpen.csv`（实测 **100 行**）+ PG `bf_server.open_time`
+
+### 为什么先做它
+
+`isOpen` 是 `data_d` 里被引用最多的单点：**60 个文件**调它，其中 22 个在
+`message/handler/`。此前一直没接，导致 1015 恒回 `ret=2`、17071 的门禁是空壳
+（`let _ = SYSTEM_OPEN_PRAY;`）、17081 / 41001 完全悬空。
+
+### 逐分支
+
+| `unlockType` | 原版位置 | 原版判定 | Rust | 用例 | 状态 |
+|---|---|---|---|---|---|
+| 1 | `:44` | `player.getLv() >= parseInt(value)` | `f.level >= num` | `level_gate` | ✅ |
+| 2 | `:49` | 通关关卡 id | `f.stage_id` | — | ✅ |
+| 3 | `:54` | `player.getVipLv()` | `f.vip_lv`（**过渡期恒 0**） | `facts_carry_level_and_open_day_only` | ⚠ |
+| 4 | `:60` | `TalentSet.getAllTalent().size()` | `f.talent_count` | `multi_type_is_or` | ✅ |
+| 5 | `:66` | `AccountRoom.getOpenId()` | `f.account_room_open_id` | — | ✅ |
+| 6 | `:74` | `TraderSet.getTradeNum()` | `f.trade_num` | — | ✅ |
+| 7 | `:82` | `ChildrenSet.isHaveChild()` | `f.have_child`（不看 value） | `type_7_and_16_ignore_value` | ✅ |
+| 8 | `:88` | `PetSet.getAllPet().size()` | `f.pet_count` | — | ✅ |
+| **9** | **无 case** | — | `return None` | `absent_case_types_never_open` | ⚠ |
+| 10 | `:96` | `BuildingSet.getBuildingCount()` | `f.building_count` | — | ✅ |
+| **11 / 12 / 14 / 23 / 25+** | **无 case** | — | `return None` | 同上 | ⚠ |
+| 13 | `:102` | `GsServer.getOpenServerDay()` | `f.open_server_day` | `real_open_time_row_120_opens_on_day_two` | ✅ |
+| 15 | `:115` | `HuntingArea.getMaxMapId()` | `f.hunting_max_map_id` | — | ✅ |
+| 16 | `:122` | `Homeland.isEnabled()` | `f.homeland_enabled`（不看 value） | `type_16_and_14_reads_flag_not_value` | ✅ |
+| 17 | `:128` | `family != null && family.getLv() >= v` | `f.family_lv` | `type_17_needs_family` | ✅ |
+| 18 | `:136` | `for (t : values) if (getTalent(t) != null)` | `any_talent_owned`（扫**整个** value） | `type_18_scans_whole_value_list` | ✅ |
+| 19 | `:143` | `player.getFortuneLv()` | `f.fortune_lv` | — | ✅ |
+| 20 | `:148` | `getTalentNum(values.get(0)) >= 1` | `any_talent_at_level`（取**首值**） | `type_20_uses_first_value_as_talent_level` | ✅ |
+| 21 | `:155` | `NpcSpouseModel.getUnlockNpcIds().size()` | `f.npc_spouse_count` | — | ✅ |
+| 22 | `:161` | `CloseFriendSet.getCloseFriendNum()` | `f.close_friend_num` | — | ✅ |
+| 24 | `:176` | `getLongStat(BuildingEvent)` | `f.building_event_stat` | `type_24_uses_long_stat` | ✅ |
+
+### ⚠ 三个照抄的反直觉行为
+
+**1. `unlockType` 数组是 OR 语义，不是 AND**
+
+```java
+for (i = 0; i < unlockTypesSize; i++) {
+    switch (unlockType[i]) { case 1: if (...) return true; ... }   // ← 命中就 true
+}
+return false;
+```
+
+CSV 里 `13;4 = 5;5`（27 / 28 行）表示「开服 5 天**或**门客 5 个」都能开。
+
+**2. `unlockType` 常量存在 ≠ `isOpen` 处理了它**
+
+`SystemOpenDBCache` 定义了 `TYPE_1`…`TYPE_305` 共 60 个常量，
+但 `isOpen` 的 `switch` 只有 20 个 case。实测 CSV 里 `type=9`（108 行
+「子嗣-全部培养」）与 `type=12`（114 行「产业界面-关卡按钮」）都在
+**没有 case 的名单里** → 这两行**永远不开放**。不补 case。
+
+**3. `16` 有 case 但 `14` 没有**
+
+容易被 `TYPE_16` 这类常量名误导。以 `isOpen` 的 `switch` 为准。
+`17`（家族等级）也有 case，别当成缺失项。
+
+### ⚠ 过渡期只启用 2 个事实
+
+| 事实 | 来源 | 状态 |
+|---|---|---|
+| `level` | `PlayerBox.level`（登录时从 PG 读） | ✅ 真实 |
+| `open_server_day` | PG `bf_server.open_time` | ✅ 真实 |
+| 其余 16 项 | 家族 / 产业 / 狩猎 / 门客 / 珍兽 / 知己 / 账房 / 通商 / 子嗣 / 府邸 / 才华 … 未接 | ⬜ 恒默认 |
+
+**没有**用近似字段顶替未接语义。例如 `unlockType=20` 要的是「达到某阶的**门客阶数**」，
+而 `PlayerBox.pet_skill_class` 是**技能阶级**，拿它近似会让本该关闭的功能误开。
+默认值是「不满足」，只会让功能**晚开**，不会误开。
+
+`unlockType=3`（VIP）受影响最大：23 行用到它，最低门槛 3 级，
+所以这些功能对**所有**玩家关闭，直到 VIP 等级落库。
+
+### ⚠ 数据缺口（原版线上也是这个状态）
+
+PG `bf_config` 里 `configId` 23 / 24（渠道祈愿的时段与档位）实测是**空串**，
+所以 `cidTimeMap` / `cidChargeMap` 为空 → 17081 / 17082 会恒回
+`PRAY_CID_ERROR_UN_OPEN(3951)`。这是原始数据状态，不是移植 bug。
+
+### 已知分叉
+
+| 场景 | 原版 | 本工程 | 影响 |
+|---|---|---|---|
+| `unlockType` 比 `value` 长 | `values.get(i)` → `IndexOutOfBoundsException` → 整个 `isOpen` 抛出 | 跳过该对，继续判后面的 | 只在畸形配置下分叉（实测 100 行全部等长） |
+| `value` 非数字 | `Integer.parseInt` → `NumberFormatException` → 抛出 | 判「不命中」 | 同上 |
+| `SystemOpenDB` 为 null | `return false` | 同（空表） | 一致 |
+
+### 端到端
+
+1015 现在走真实模板：查不到 `systemId` → `ret=2`（原版 NPE 被 catch），
+查得到且 `name` 末段是数字 → `ret=0`。`name` 末段不是数字（如 `change_word_626`）时
+`LogicUtils.getDescribeName` 取末段 `626` → 解析成 626，`ret=0`。
+
+---
+
+## A21 `activity_template.rs` + `install_activity.rs` + `pg_activity.rs`（活动模板底座）
+
+原版：`data_d/game_7010544/sources/bf/game/server/module/activity/ActivityDbTemplate.java`
+（239 行）+ `AbsActivityDBTemplate` + `ActivityDbTemplateCache`
+数据：PG `bf_activity`（实测 **11 行**）
+
+### 为什么先做它
+
+活动族处理器**全部**都先查 `ActivityDbTemplate`，再调
+`isOpen()` / `isBetweenStartAndEndShowTime()` / `isEndShowTime()` 之一。
+这一层不接，50+ 个活动处理器（`Cornucopia` / `Wonderland` / `Bridge` /
+`ActivityNianbeast` / `GroupBuy` / `Fishing` / `LanternRiddles` / `GmAnnual` …）
+全都只能写「占位 ret=501」。
+
+### 六个判定
+
+| 方法 | 原版 | 区间口径 | Rust | 用例 |
+|---|---|---|---|---|
+| `isOpen` | `:100` `isNowInTime(start, now, end)` | **闭** `start <= now <= end` | `is_open` | `is_open_is_closed_interval` |
+| `isShowTime` | `:112` | **闭** `startShow <= now <= endShow` | `is_show_time` | — |
+| `isBetweenStartAndEndShowTime` | `:124` | **开** `start < now < endShow` | `is_between_start_and_end_show_time` | `is_between_start_and_end_show_time_is_open_interval` |
+| `isEnd` | `:120` | `now > end` | `is_end` | `is_end_and_is_end_show_time_are_strict` |
+| `isEndShowTime` | `:108` | `now > endShow` | `is_end_show_time` | 同上 |
+| `isGainRewardStage` | `:132` | `end <= now < endShow` | `is_gain_reward_stage` | `gain_reward_stage_is_between_end_and_end_show` |
+
+### ⚠ 四个照抄的反直觉行为
+
+**1. `isOpen` 闭区间 vs `isBetween...` 开区间**
+
+```java
+public boolean isOpen() { return UtilsTools.isNowInTime(startTimeLong, now, endTimeLong); }
+public boolean isBetweenStartAndEndShowTime() {
+    return now > this.startTimeLong && now < this.endShowTimeLong;   // ← 手写 >
+}
+```
+
+`isNowInTime` 含两端。**正好卡在边界那一毫秒**两者结论相反。
+
+**2. `isEnd` / `isEndShowTime` 都是 `>` 不是 `>=`** —— 结束那一毫秒仍算未结束。
+
+**3. `isOpen()` 不看 `switchStatus`**
+
+实测 `actId=100043242`（星斗森林）`switchStatus=0`，但只要时间在范围内
+`isOpen()` 照样 `true`。关闭靠上层别的地方拦，不在模板层。
+
+**4. 缓存键是 `(typeId, actId)` 二元组**
+
+同一个 `actId` 配不同 `typeId` 是两行。上层传错 `actType` 就查不到 → `null`
+→ 抛 `ACTIVITY_NO_EXITS(2751)`。
+
+### 当前数据的真实状态
+
+11 行时间全是 `2023-07-20 09:00:00 ~ 2026-07-26 23:59:59`，
+**当前时刻全部已结束**。这是原始数据状态，不是移植 bug ——
+现有数据下活动族只能验「结束 / 未开放」错误出口，验不到成功路径。
+
+`timeType` 全是 `1`（绝对时间），所以 `timeType = 2`（按开服天数偏移，
+格式 `3#10:00:00`）**无数据可验**，本次不实现。
+
+### 已知分叉
+
+| 场景 | 原版 | 本工程 | 影响 |
+|---|---|---|---|
+| 时间列为 NULL / 非法 | `UtilsTools.getDateTime` 返回 `0L` → `isEnd()` 在 `now > 0` 时**恒真** | 返回 `None` → 所有判定 `false`（不开放） | 只会让活动**晚开**，不会误开 |
+
+### 聚宝盆 38303 / 38304
+
+| cmd | 原版 | 依赖 | 状态 |
+|---|---|---|---|
+| 38301 开始寻宝 | `cornucopiaActPlayer.startMap(player)` | `CornucopiaActPlayer` 完整实体 + 掉落 | ⬜ |
+| 38302 抽奖 | `drawItem(player, pos)` | 同上 + `WeightRandomModelUtils` | ⬜ |
+| **38303 自己的记录** | `querySelfRecord()` | `records` 队列（逻辑为零） | ✅ |
+| **38304 全服最近记录** | `queryRecentRecords()` | `recentRecords` 队列（逻辑为零） | ✅ |
+
+**38303 不检查 `isOpen()`**：原版调 `getCornucopiaActPlayer(playerId, actId, false)`
+—— 第三个参数 `checkOpen = false`，活动结束后仍能查自己的历史记录。
+38304 同样只查模板存在性，不查 `isOpen`。
+
+`CornucopiaActCommon.recentRecords` 的上限是 **10** 条（`while (size > 10) poll()`）；
+`CornucopiaActPlayer.records` 没有上限。
+
+---
+
 ## A7 `login.rs` + `loginvar.rs` + `handshake.rs`（待填）
 
 > 现状：登录 4 / 创角 6 / 握手 16-18 已接线，走真实 PG。`login.rs` 630 行。
