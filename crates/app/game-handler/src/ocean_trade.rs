@@ -579,6 +579,10 @@ impl NegotiationCalc {
     }
 
     /// `getDamage()`：`new BigInteger(player.getMoney())` —— **当前银两**，不是总财力。
+    ///
+    /// ⚠ 原版这个方法直接读 `Player.money`，**不读** `calc` 自己的字段。
+    /// 调用方必须在 `settle_before()` 之后先 `calc.pre_money = player.money`，
+    /// 再调本方法（见 `negotiate_once` / `negotiate_quickly`）。
     #[must_use]
     pub fn damage(&self) -> BigInt {
         self.pre_money.clone()
@@ -823,7 +827,10 @@ fn negotiate_once(
         input.total_money.clone(),
     );
     calc.settle_before(row);
-    calc.pre_money = calc.damage();
+    // ⚠ 原版 `settleBefore()` **不设** `preMoney`；`getDamage()` 返回的是
+    // `new BigInteger(player.getMoney())`（玩家当前银两），而不是 `calc.preMoney`（初值 0）。
+    // 所以这里必须显式用 `input.money` 赋给 `pre_money`，否则会走「0 银两」分支。
+    calc.pre_money = input.money.clone();
     calc.need_money = calc.damage_for_kill();
 
     if calc.pre_money >= calc.need_money {
@@ -910,7 +917,8 @@ fn negotiate_quickly(
             break;
         };
         calc.settle_before(row);
-        calc.pre_money = calc.damage();
+        // 同 `negotiate_once`：`getDamage()` 读的是 `player.getMoney()`。
+        calc.pre_money = input.money.clone();
         calc.need_money = calc.damage_for_kill();
         if calc.pre_money >= calc.need_money {
             // onWinQuickly：不扣钱、不发奖励（奖励攒起来最后一起给）
@@ -1147,6 +1155,41 @@ mod tests {
         assert!(!advanced);
         assert!(c.cost_money.is_zero());
         assert!(c.subtract_cost.is_zero());
+    }
+
+    #[test]
+    fn negotiate_once_uses_player_money_not_calc_field() {
+        // 回归：`settleBefore()` 不设 `preMoney`，`getDamage()` 直接读
+        // `player.getMoney()`。早期实现漏了这一步，`preMoney` 恒为 0 →
+        // `damageForKill()` 也恒为 0 → 走「0 银两」分支，回包 `damageHp=0`。
+        let t = tables();
+        let mut st = OceanTradeState {
+            checkpoint_id: 1,
+            ..OceanTradeState::default()
+        };
+        let input = NegotiateInput {
+            season_id: 1,
+            negotiate_type: 0,
+            num: 1,
+            money: BigInt::from(20000),
+            total_money: BigInt::zero(),
+            open_19: true,
+            open_112: false,
+            tables: &t,
+            season_invalid: false,
+        };
+        let out = negotiate_verdict(&mut st, &input, &|_| Vec::new()).expect("应成功");
+        // rate = max(0.2, npcPower/totalMoney)；totalMoney=0 走兜底 0.2
+        //   subtractCost = 20000 / 0.2 = 100000
+        //   costMoney    = 100000 * 0.2 = 20000，不小于 preMoney → 不兜底
+        assert_eq!(out.pre_money, BigInt::from(20000));
+        assert_eq!(out.damage_hp, BigInt::from(100_000));
+        assert_eq!(out.cost_money, BigInt::from(20000));
+        assert_eq!(out.win_num, 0);
+        assert!(!out.end_game);
+        // npcCost 12250000000 - 100000
+        assert_eq!(out.npc_hp, BigInt::from(12_249_900_000_i64));
+        assert_eq!(parse_big(&st.hp_cost), BigInt::from(100_000));
     }
 
     #[test]

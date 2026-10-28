@@ -218,7 +218,11 @@ fn load_rank(csv: &Path) -> Vec<(i32, Vec<(i32, i64)>)> {
     };
     let mut out = Vec::with_capacity(t.rows.len());
     for row in &t.rows {
-        let Some(rank) = t.int(row, "rank") else {
+        // `rank` 列是 `list;,` 型（`1;1`、`5;11;20`），取**最后一段**当排名。
+        let Some(rank_cell) = t.text(row, "rank") else {
+            continue;
+        };
+        let Some(rank) = list_of(&rank_cell).last().and_then(|v| v.parse().ok()) else {
             continue;
         };
         out.push((
@@ -351,6 +355,10 @@ mod tests {
         let t = CsvOceanTrade::load(&dir).expect("装载关卡表");
         assert_eq!(t.rank_rewards().len(), 13, "实测 13 数据行");
         assert_eq!(t.rank_rewards()[0].0, 1, "按 rank 升序");
+        // `rank` 列是 `list;,` 型（`1;1`、`5;11;20`），取最后一段。
+        // 第 5 行实测 `5,11;20,...` ⇒ rank = 20。
+        assert_eq!(t.rank_rewards()[4].0, 20, "`5;11;20` 取末段 20");
+        assert!(!t.rank_rewards()[0].1.is_empty(), "第 1 名奖励非空");
     }
 
     #[test]
