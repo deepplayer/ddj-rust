@@ -30,7 +30,7 @@ impl PlayerRepo for PgPlayerRepo {
     async fn find(&self, id: PlayerId) -> Result<Option<PlayerRow>> {
         let row = sqlx::query_as::<sqlx::Postgres, PlayerRow>(
             "SELECT player_id, user_id, name, level, exp, vip, last_login, open_id, server_id, create_time, \
-                    channel_id, cid \
+                    channel_id, cid, money::text, total_money::text, max_total_money::text \
              FROM player WHERE player_id = $1",
         )
         .bind(id.get())
@@ -42,14 +42,18 @@ impl PlayerRepo for PgPlayerRepo {
 
     async fn save(&self, row: &PlayerRow) -> Result<()> {
         sqlx::query::<sqlx::Postgres>(
-            "UPDATE player SET name = $1, level = $2, exp = $3, vip = $4, last_login = $5 \
-             WHERE player_id = $6",
+            "UPDATE player SET name = $1, level = $2, exp = $3, vip = $4, last_login = $5, \
+                    money = $6::numeric, total_money = $7::numeric, max_total_money = $8::numeric \
+             WHERE player_id = $9",
         )
         .bind(&row.name)
         .bind(row.level)
         .bind(row.exp)
         .bind(row.vip)
         .bind(row.last_login)
+        .bind(&row.money)
+        .bind(&row.total_money)
+        .bind(&row.max_total_money)
         .bind(row.player_id)
         .execute(&self.pool.game)
         .await
@@ -60,7 +64,7 @@ impl PlayerRepo for PgPlayerRepo {
     async fn find_by_open_id(&self, open_id: &str, server_id: i32) -> Result<Option<PlayerRow>> {
         let row = sqlx::query_as::<sqlx::Postgres, PlayerRow>(
             "SELECT player_id, user_id, name, level, exp, vip, last_login, open_id, server_id, create_time, \
-                    channel_id, cid \
+                    channel_id, cid, money::text, total_money::text, max_total_money::text \
              FROM player WHERE open_id = $1 AND server_id = $2",
         )
         .bind(open_id)
@@ -74,8 +78,8 @@ impl PlayerRepo for PgPlayerRepo {
     async fn create(&self, row: &PlayerRow) -> Result<()> {
         sqlx::query::<sqlx::Postgres>(
             "INSERT INTO player (player_id, user_id, name, level, exp, vip, last_login, open_id, server_id, \
-                                create_time, channel_id, cid) \
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)",
+                                create_time, channel_id, cid, money, total_money, max_total_money) \
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13::numeric, $14::numeric, $15::numeric)",
         )
         .bind(row.player_id)
         .bind(row.user_id)
@@ -89,6 +93,9 @@ impl PlayerRepo for PgPlayerRepo {
         .bind(row.create_time)
         .bind(row.channel_id)
         .bind(&row.cid)
+        .bind(&row.money)
+        .bind(&row.total_money)
+        .bind(&row.max_total_money)
         .execute(&self.pool.game)
         .await
         .map_err(|e| ddj_core::AppError::BadRequest(format!("建角色: {e}")))?;

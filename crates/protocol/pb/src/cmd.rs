@@ -288,6 +288,14 @@ pub enum RetCode {
     PrayErrorUnOpen = 3901,
     /// 焚香祈愿 - 资源不足（`PRAY_ERROR_COST`）。
     PrayErrorCost = 3902,
+    /// `LanguageUtils.OCEAN_TRADE_NOT_OPEN(3001)`：远洋贸易未开启。
+    OceanTradeNotOpen = 3001,
+    /// `LanguageUtils.OCEAN_TRADE_NUM_ILLEGAL(3002)`：关卡数非法 / 已通关。
+    OceanTradeNumIllegal = 3002,
+    /// `LanguageUtils.OCEAN_TRADE_NEGOTIATION_QUICKLY_BE_LOCKED(3003)`：一键谈判未解锁。
+    OceanTradeQuicklyLocked = 3003,
+    /// `LanguageUtils.OCEAN_TRADE_SEASON_ID_ILLEGAL(3004)`：赛季 id 不匹配。
+    OceanTradeSeasonIdIllegal = 3004,
     /// 猜灯谜 - 未开放（`LANTERNRIDDLE_IS_NOT_OPEN`）。
     LanternRiddleNotOpen = 5400,
     /// 猜灯谜 - 参数（选项 id）错误（`LANTERNRIDDLE_DATE_ERROR`）。
@@ -456,6 +464,10 @@ impl RetCode {
             2356 => Self::NpcNoOpen,
             3901 => Self::PrayErrorUnOpen,
             3902 => Self::PrayErrorCost,
+            3001 => Self::OceanTradeNotOpen,
+            3002 => Self::OceanTradeNumIllegal,
+            3003 => Self::OceanTradeQuicklyLocked,
+            3004 => Self::OceanTradeSeasonIdIllegal,
             5400 => Self::LanternRiddleNotOpen,
             5401 => Self::LanternRiddleDateError,
             5402 => Self::LanternRiddleIsReturn,
@@ -595,6 +607,10 @@ impl RetCode {
             Self::NpcNoOpen => "知己-功能未开启",
             Self::PrayErrorUnOpen => "焚香祈愿-未开放",
             Self::PrayErrorCost => "焚香祈愿-资源不足",
+            Self::OceanTradeNotOpen => "远洋贸易-未开启",
+            Self::OceanTradeNumIllegal => "远洋贸易-关卡数非法",
+            Self::OceanTradeQuicklyLocked => "远洋贸易-一键谈判未解锁",
+            Self::OceanTradeSeasonIdIllegal => "远洋贸易-赛季id非法",
             Self::LanternRiddleNotOpen => "猜灯谜-未开放",
             Self::LanternRiddleDateError => "猜灯谜-参数错误",
             Self::LanternRiddleIsReturn => "猜灯谜-题号错误",
@@ -644,6 +660,7 @@ mod tests {
             4731, 4732, 4722, 3941, 3942, 2754, 2751, 2752, 3901, 3902,
             1001, 1003, 1004, 1005, 1006, 2356,
             5400, 5401, 5402, 5403, 5404, 5405, 5406, 5407,
+            3001, 3002, 3003, 3004,
         ] {
             let c = RetCode::from_i32(v).unwrap_or_else(|| panic!("缺 {v}"));
             assert_eq!(c.as_i32(), v);

@@ -116,14 +116,20 @@ impl ErasedHandler for LoginHandler {
         .await?;
         // 登录成功 → 把角色绑进会话。之后 `player_id` 才有值，
         // 需要登录的消息（握手回执 16/17/18、背包等）才会放行。
-        if let (Some((p, channel_id, cid)), Some(sess)) = (player, ctx.session.as_ref()) {
+        if let (Some((p, channel_id, cid, money, total_money)), Some(sess)) =
+            (player, ctx.session.as_ref())
+        {
             sess.bind_player(p);
             // `Player.channelId` / `Player.cid` 随会话落进 `MemWorld`，
             // 供 17301/17101/17081 等按渠道判定的消息读回（见 0006 迁移）。
+            // `money` / `totalMoney` 同理：原版 `Player` 整行从库里加载，
+            // 登录完就有值；移植版在这里补上（见 0007 迁移）。
             if let Some(w) = self.world.as_ref() {
                 w.with(p, |b| {
                     b.channel_id = channel_id;
                     b.cid = cid;
+                    b.money.clone_from(&money);
+                    b.total_money.clone_from(&total_money);
                 });
             }
         }
@@ -213,11 +219,11 @@ pub fn register(
         n += crate::install_log::install(table, world.clone(), clock.clone());
         n += crate::install_misc::install(table, world.clone(), clock.clone());
         n += crate::install_player::install(table, world.clone(), clock.clone());
+        n += crate::install_ocean_trade::install(table, world.clone(), clock.clone());
         n += crate::install_second_psw::install(table, world.clone(), clock.clone());
         n += crate::install_shortcut::install(table, world.clone(), clock.clone());
         n += crate::install_sign::install(table, world.clone(), clock.clone());
         n += crate::install_special_msg::install(table, world.clone(), clock.clone());
-        n += crate::install_travel::install(table, world.clone(), clock.clone());
         n += crate::install_state::install(table, world.clone(), clock.clone());
         if let Some(v) = view.repo {
             n += crate::install_view::install(

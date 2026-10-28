@@ -120,6 +120,10 @@ pub enum LoginOutcome {
         channel_id: i32,
         /// `Player.cid`。
         cid: String,
+        /// `Player.money`：银两（十进制字符串）。
+        money: String,
+        /// `Player.totalMoney`：总财力（十进制字符串）。
+        total_money: String,
     },
 }
 
@@ -172,7 +176,22 @@ pub struct Account {
     pub channel_id: i32,
     /// `Player.cid`。
     pub cid: String,
+    /// `Player.money`：银两（`Player.java:146`，`BigInteger` 的十进制表示）。
+    ///
+    /// 原版 `Player` 整行从库里加载，所以登录时银两一定已就位；
+    /// 这里跟着 `Account` 一起带回来，登录成功后写进 `PlayerBox`。
+    pub money: String,
+    /// `Player.totalMoney`：总财力（`Player.java:266`）。
+    pub total_money: String,
 }
+
+/// 登录成功后要回填进 `MemWorld` 的角色字段。
+///
+/// 原版 `Player` 是整行从库里加载的，登录完就等于 `MemWorld` 里有一份完整实体；
+/// 移植版把「登录期读到的列」用这个元组带出来，由 `handlers.rs` 写进 `PlayerBox`。
+///
+/// 字段顺序：`player_id` / `channel_id` / `cid` / `money` / `total_money`。
+pub type LoginPlayer = (PlayerId, i32, String, String, String);
 
 /// 账号查询。
 #[async_trait]
@@ -219,6 +238,8 @@ pub async fn resolve(
                 loginvar,
                 channel_id: acc.channel_id,
                 cid: acc.cid,
+                money: acc.money,
+                total_money: acc.total_money,
             }
         }
     }
@@ -236,7 +257,7 @@ pub async fn handle_with(
     now_ms: i64,
     loginvar: i32,
     handshake: Option<&dyn HandshakeStore>,
-) -> Result<(LoginResp4, Option<(PlayerId, i32, String)>)> {
+) -> Result<(LoginResp4, Option<LoginPlayer>)> {
     let LoginRequest { req } = LoginRequest::decrypt(body)?;
     let open_id = req.open_id.clone().unwrap_or_default();
     let server_id = req.server_id.unwrap_or(st.server_id);
@@ -256,8 +277,16 @@ pub async fn handle_with(
             player_id,
             channel_id,
             cid,
+            money,
+            total_money,
             ..
-        } => Some((*player_id, *channel_id, cid.clone())),
+        } => Some((
+            *player_id,
+            *channel_id,
+            cid.clone(),
+            money.clone(),
+            total_money.clone(),
+        )),
         _ => None,
     };
     Ok((build_resp(outcome), player))
@@ -485,6 +514,8 @@ mod tests {
             loginvar: 608,
             channel_id: 0,
             cid: String::new(),
+            money: "20000".to_owned(),
+            total_money: "0".to_owned(),
         });
         assert_eq!(r.ret, 0);
         assert_eq!(r.ok, Some(true));
@@ -552,6 +583,8 @@ mod account_tests {
             banned_time: 0,
             channel_id: 0,
             cid: String::new(),
+            money: "20000".to_owned(),
+            total_money: "0".to_owned(),
         }
     }
 

@@ -34,6 +34,8 @@ impl AccountLookup for PgAccountLookup {
                 banned_time: 0,
                 channel_id: row.channel_id,
                 cid: row.cid,
+                money: row.money,
+                total_money: row.total_money,
             }),
             Ok(None) => None,
             Err(e) => {

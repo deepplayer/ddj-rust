@@ -65,8 +65,8 @@ impl CreatePlayerRepo for PgCreatePlayerRepo {
         let ok = sqlx::query(
             "INSERT INTO player \
              (player_id, user_id, name, level, exp, vip, open_id, server_id, create_time, \
-              channel_id, cid) \
-             VALUES ($1, 0, $2, 1, 0, 0, $3, $4, to_timestamp($5 / 1000.0), $6, $7)",
+              channel_id, cid, money) \
+             VALUES ($1, 0, $2, 1, 0, 0, $3, $4, to_timestamp($5 / 1000.0), $6, $7, $8::numeric)",
         )
         .bind(row.player_id)
         .bind(&row.name)
@@ -75,6 +75,10 @@ impl CreatePlayerRepo for PgCreatePlayerRepo {
         .bind(row.now_ms)
         .bind(row.channel_id)
         .bind(&row.cid)
+        // 原版 `PlayerCached.java:91` 创角时把 `ConfigDBCache.InitializeSilverNum`
+        // 传进 `new Player(...)` 的 `str4`（即 `this.money`）。
+        // `B-变量表-Config.csv:7` 实测值 = 20000。
+        .bind("20000")
         .execute(&self.pool)
         .await;
         match ok {

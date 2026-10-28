@@ -121,6 +121,8 @@ tracing-subscriber   = { version = "0.3", features = ["env-filter", "json"] }
 tracing-opentelemetry = "0.26"
 metrics              = "0.23"
 metrics-exporter-prometheus = "0.15"
+num-bigint           = "0.4"
+num-traits           = "0.2"
 thiserror            = "2.0"
 anyhow               = "1.0"
 rand                 = "0.8"

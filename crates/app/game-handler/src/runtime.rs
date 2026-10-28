@@ -190,6 +190,31 @@ pub struct PlayerBox {
     /// 原版是 `activity_cornucopia_player` 表的一列（`ConcurrentLinkedQueue`），
     /// 过渡期只放内存。真正的写入在 38302（抽奖），届时再决定是否迁 PG。
     pub cornucopia_records: Vec<crate::install_cornucopia::LuckRecord>,
+    /// `Player.money`：银两（`Player.java:146`，`BigInteger` 的十进制表示）。
+    ///
+    /// 原版是 `String`，全程用 `new BigInteger(this.money)` 运算 —— 因为远洋贸易
+    /// 400 号关卡的 `cost` 已经是 `4680000000000000000`（`4.68e18`，贴着 i64 上限
+    /// `9.22e18`），再往后走的关卡会溢出。所以这里也保持字符串 + `BigInt` 运算，
+    /// 落库列是 `NUMERIC(40,0)`（见 `0007_player_money.sql`）。
+    pub money: String,
+    /// `Player.totalMoney`：总财力（`Player.java:266`，`BigDecimal`）。
+    ///
+    /// 原版 `refreshTotalMoney()`（`:1862`）从 `TalentSet` + `ChildrenSet` 汇总。
+    /// 这两个集合都还没接（AUDIT A22 未接线表），所以现阶段恒为 `"0"`。
+    pub total_money: String,
+    /// `OceanTradePlayer`：远洋贸易的持久化字段（`ocean_trade_player` 表）。
+    pub ocean_trade: crate::ocean_trade::OceanTradeState,
+    /// `OceanTradeCommonData`：赛季槽位（原版在 `OceanTradeService` 里，全服一份）。
+    ///
+    /// 过渡期挂在玩家身上 —— 因为赛季滚动是懒计算的（`initDelay` / 进消息时推进），
+    /// 单实例下与全服一份等价。见 AUDIT A24。
+    pub ocean_common: crate::ocean_trade::OceanTradeCommonData,
+    /// `OceanTradeService` 的内存排行榜（`playerId → checkpointId`）。
+    ///
+    /// 原版是**全服共享**的 `TreeSet`；过渡期挂在玩家身上，见 AUDIT A24。
+    pub ocean_rank: Vec<crate::ocean_trade::RankEntry>,
+    /// `getCurrentSeasonId()` 的缓存值（原版是 `currentOceanTradeTime.getId()`）。
+    pub ocean_season_id: i64,
     /// `LanternRiddlesActPlayer`：猜灯谜进度，键是 `actId`。
     ///
     /// 原版是 `activity_lantern_riddle` 表的一行（`playerId + activityType + activityId`），
@@ -206,8 +231,25 @@ impl PlayerBox {
     pub fn new_player() -> Self {
         Self {
             travel_place: 1,
+            money: INITIAL_MONEY.to_owned(),
+            total_money: "0".to_owned(),
             ..Self::default()
         }
+    }
+
+    /// `OceanTradePlayer.isEndGame()`。
+    #[must_use]
+    pub const fn is_end_game(&self) -> bool {
+        self.ocean_trade.end_game
+    }
+
+    /// `service.checkSeasonEndOrNextSeason(curSeasonId)`。
+    ///
+    /// 原版判的是 `currentOceanTradeTime.isEnd() || seasonId != current.id`；
+    /// 过渡期赛季槽位挂在本玩家身上（见 `ocean_common` 的注释）。
+    #[must_use]
+    pub fn ocean_trade_season_invalid(&self, season_id: i64) -> bool {
+        self.ocean_common.season_invalid(season_id)
     }
 }
 
@@ -235,6 +277,10 @@ impl MemWorld {
                 level: 1,
                 // 原版 `Travel(playerId)` 构造时 `place = 1`
                 travel_place: 1,
+                // 原版创角时 `new Player(..., InitializeSilverNum, ...)`
+                // （`PlayerCached.java:91`，`B-变量表-Config.csv:7` = 20000）。
+                money: INITIAL_MONEY.to_owned(),
+                total_money: "0".to_owned(),
                 ..PlayerBox::default()
             }
         }))
@@ -254,6 +300,14 @@ impl MemWorld {
         self.with(player, |b| f(b))
     }
 }
+
+/// 创角时的初始银两。
+///
+/// 原版 `PlayerCached.java:91` → `new Player(..., ConfigDBCache.InitializeSilverNum, ...)`，
+/// 即 `B-变量表-Config.csv:7` 的 `InitializeSilverNum` = `20000`。
+/// 真模板表装载后应改为从 `ConfigTable` 读；现阶段与 `csv_names` 的既有做法一致，
+/// 用常量对上线上数据（见 AUDIT A24 的「未接线」表）。
+pub const INITIAL_MONEY: &str = "20000";
 
 /// `prost::DecodeError` → `AppError`（原版对应「解包失败」直接断开）。
 pub fn decode_err(e: prost::DecodeError) -> AppError {

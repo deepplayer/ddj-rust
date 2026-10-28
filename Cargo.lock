@@ -739,6 +739,8 @@ dependencies = [
  "ddj-session",
  "inventory",
  "md-5",
+ "num-bigint",
+ "num-traits",
  "prost",
  "serde",
  "tokio",

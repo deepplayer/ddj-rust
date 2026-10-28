@@ -87,6 +87,8 @@ pub mod lantern_riddles;
 pub mod loginvar;
 pub mod mail;
 pub mod platform_info;
+pub mod install_ocean_trade;
+pub mod ocean_trade;
 pub mod pet;
 pub mod pray;
 pub mod player;

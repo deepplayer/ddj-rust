@@ -1540,6 +1540,102 @@ LanternRiddlesActPlayer activity = (LanternRiddlesActPlayer) activitySet.getActi
 `RiddleState` 放在 `PlayerBox.lantern: HashMap<i32, RiddleState>`（按 `actId` 索引），
 不落库 —— 与原版 `LanternRiddlesActPlayer` 一样是活动实例层内存态。
 
+## A24 `ocean_trade.rs` + `install_ocean_trade.rs` + `csv_ocean_trade.rs`（远洋贸易 41001 / 41002 / 41003）
+
+> 基准：`data_d/game_7010544/sources/bf/game/server/message/handler/OceanTradeMessageHandler.java`、
+> `.../module/oceanTrade/OceanTradePlayer.java`、`.../OceanTradeService.java`、
+> `.../OceanTradeCommonData.java`、`.../OceanTradeTime.java`、`.../OceanTradeServerModule.java`、
+> `.../OceanTradeNegotiationCalculator`（`OceanTradePlayer` 内部类）、
+> `data_d/libs/jb3.common.v1/sources/bf/template/db/OceanTradeDB.java`、
+> `.../OceanTradeDBCache.java`。
+
+### 三条消息的入口链
+
+| cmd | 方法 | 前置（按执行顺序） | 失败出口 |
+|---|---|---|---|
+| 41001 | `enterOceanTrade(player)` | `isOpen(19)` | `ErrorResp_1` `3001` |
+| 41002 | `oceanTradeRankList(player, type)` | **无**（连 `isOpen` 都不判） | 无 |
+| 41003 | `negotiate(player, type, num)` | `isOpen(19)` → `seasonId == curSeasonId` → `!isEndGame()` → 结算内 `checkSeasonEndOrNextSeason` / `isOpen(112)` / `num` 越界 | `ErrorResp_1` `3001` / `3004` / `3002` / `3003` |
+
+41002 无前置这一点是照抄：原版排行榜消息**不判系统开放**，41001/41003 才判。
+
+### 照抄的行为（原版即如此，不是移植缺陷）
+
+1. **`toNextCheckpoint` 先比较旧 id 再前移**
+   ```java
+   int curId = checkpointId;
+   checkpointId = cache.getNextCheckpointId(curId);
+   if (curId == cache.getLastCheckpointId()) endGame = true;
+   ```
+   ⇒ 最后一关被**打通的这一刻** `endGame` 才置真，同时 `checkpointId` 已经跳到 `nextId(last) = last`（`ceiling` 无解回原值）。所以 `endGame=true` 时 `checkpointId` **仍等于最后一关**。
+2. **`getRate()` 的分母是 `getTotalMoney()`，`getDamage()` 的分子是 `getMoney()`**
+   两个不是同一个量：分母含门客/子女加成，分子只是身上银两。
+3. **`getCurCostMoney()` 读 builder 上已设的 `costMoney`**
+   ⇒ `onWin` / `calNewCost` 里的 `cost = getCurCostMoney().add(...)` 是**累加**语义，每关在上一关的基础上叠加。
+4. **`calNewCost` 的 `costMoney < preMoney` 兜底**
+   ```java
+   costMoney = subtractCost.multiply(rate);
+   if (costMoney < preMoney) { costMoney = preMoney; subtractCost = subtractCost.add(ONE); }
+   ```
+   修正的是 `costMoney`，但 `subtractCost` 也跟着 +1，导致「花的钱」与「扣的血」不再严格 `cost = damage × rate` —— 原版如此。
+5. **一键谈判（`type != 0`）不逐关扣钱**
+   `onWinQuickly` 里没有 `player.removeMoney`，钱在循环外由 `removeMoney(totalCostMoney)` **一次性**扣；而 `calNewCostQuickly` 依然把每关的 `costMoney` 累加进 builder。
+6. **一键的循环上限用 `getMaxCheckpointQuicklySize()`**
+   ```java
+   if (checkpointSize <= 0 || checkpointSize > getMaxCheckpointQuicklySize()) throw NUM_ILLEGAL;
+   ```
+   `getMaxCheckpointQuicklySize() = cache.checkpointSize() - cache.getPrevCheckpointId(checkpointId)`，
+   `getPrevCheckpointId` 是 `floor(cp-1)`（无解回 **0**），所以它是「从当前关到末尾的关卡数 **加一**」——
+   能一键的最多关数比理论值多 1（例：在关卡 1 上 `prev=0`、`size=400` ⇒ 可一次推 400 关，而实际只剩 400 关）。
+7. **`refresh()` 的双条件**
+   ```java
+   if (currentSeasonId != curSeasonId && seasonStartTime != currentSeasonStartTime) { ... }
+   ```
+   两个条件都用**字段原值**比较，且第二个是 `!=` 而非 `>`；`seasonStartTime > 0` 才判 `intervalDay / OceanTradeSeasonTime > 1` 决定是否清 `progress`。
+8. **`addOrUpdate` 的满榜守卫**
+   ```java
+   if (list.size() >= ActualNumber && list.get(list.size()-1).getCheckpointId() >= checkpointId) return;
+   ```
+   注意 `>=` —— 与榜尾**同分**也进不去。
+9. **排行比较器是双键、次键方向相反**
+   ```java
+   checkpointId 降序；相同则 updateTime 升序
+   ```
+10. **`checkSeasonEndOrNextSeason` 让 41003 在赛季末尾必失败**
+    `isEnd()` 或 `seasonId != current.id` 都抛 `3004`；而 `41001` 在同一时刻只是把 `seasonId` 设成 0。
+
+### 本轮未接的部分（过渡实现）
+
+| 原版 | 依赖 | 当前处理 |
+|---|---|---|
+| `player.getTotalMoney()` | `TalentSet.getTotalMoney()` + `ChildrenSet.getTotalMoney()` | `PlayerBox.total_money`，恒 `"0"`；`getRate()` 分母为 0 时退化为 `CheckpointCostInterval[0] = 0.2`（原版会抛 `ArithmeticException`） |
+| 排行榜 `OceanTradeService` 全服 `TreeSet` | 跨玩家共享结构 + `PlayerOfflineDataServerModule` | `PlayerBox.ocean_rank: Vec<RankEntry>`（**每个玩家一份**，单实例下等价）；`MsgRankingEntryData` 只填 `key`/`var_str`/`rank`，名字/等级/装扮/家族留空 |
+| `LastOceanTrade`（上赛季榜 + `handleTopThree`） | 赛季存档 | 41001 的 `top_three` 取当前榜前 3；41002 `type != 0` 也回当前榜 |
+| `bf_ocean_trade_time` / `id_generator` | 赛季表 | `OceanTradeCommonData` 挂在 `PlayerBox.ocean_common`，懒滚动（`initDelay` 语义） |
+| `DropUtils.rand(player, dropId)` | `DropOneDB` → `DropTwoDB` 全链路 | 走 `crate::drop::tables()`，只展开一层（`DropOne.id_two[0]` → `DropTwo` 权重），远洋贸易 400 行的 `dropId` 只有 121/122 两个固定组，够用 |
+| `EventLogSendRecord` / `addLongStat` | 日志/统计模块 | 跳过 |
+| `OceanTradeRewardMailId`（`Config = 147`，值 180） | 邮件模块 | 未接（赛季结束补发奖励的邮件） |
+
+### 数据事实
+
+| 表 | 路径 | 行数 | 备注 |
+|---|---|---|---|
+| 关卡 | `template/csv/Y-远洋贸易-OceanTrade.csv` | **400** | id 1..400 连续；`cost` 最大 `4680000000000000000`（贴 `i64` 上限 `9.22e18`）⇒ 用 `BigInt` |
+| 排名奖励 | `template/csv/Y-远洋贸易排名-OceanTradeRank.csv` | 13 | 未接（赛季结算用） |
+| 变量 | `template/csv/B-变量表-Config.csv` | — | `CheckpointCostInterval = 0.2;0.5;0.8;1.2;2`（取 **[0] = 0.2**）、`OceanTradeSeasonTime = 7`、`OceanTradeRankListDisplayQuantity = 500`、`OceanTradeRankListActualNumber = 2000`、`OceanTradeRewardMailId = 180` |
+
+第 1 关 `power=2000000 cost=12250000000 reward=4=5;3=300000 dropId=121`，
+第 400 关 `power=200067000000 cost=4680000000000000000 reward=4=5;3=35340000 dropId=128`。
+
+### 大数语义
+
+原版用 `BigInteger` / `BigDecimal`，这里用 `num-bigint::BigInt`：
+
+- `getRate()` = `npcPower / totalMoney`，**5 位小数、`RoundingMode.DOWN`**，再与 0.2 取较大 → 内部存「放大 `10^5` 的整数」`rate_scaled`。
+- `getDamageForKill()` = `hpLeft × rate`，**`RoundingMode.UP`**（向上取整到 0 位小数）。
+- `calNewCost` 的 `subtractCost` = `preMoney / rate`，**`RoundingMode.DOWN`**。
+- `money` 在 `PlayerBox` 里是十进制 `String`（对齐 `Player.java:146 @Column private String money`），落库 `NUMERIC(40,0)`（迁移 `0007_player_money.sql`）。
+
 ## A1' 新发现：模板默认值与原版偏差（RawTable 接真数据时暴露）
 
 | 项 | 原版（真 CSV 实测） | 当前 Rust 过渡值 | 影响 |

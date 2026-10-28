@@ -1,6 +1,6 @@
 # 移植进度（切换上下文先读这里）
 
-> 最后更新：2026-10-28 18:35
+> 最后更新：2026-10-28 20:20
 > 基准：`../data_d/game_7010544/sources/`（反编译）。规则见 [`../AGENTS.md`](../AGENTS.md)。
 > 逐分支台账见 [`AUDIT.md`](AUDIT.md)；里程碑见 [`PLAN.md`](PLAN.md)。
 
@@ -8,7 +8,7 @@
 
 ## 一、一句话现状
 
-骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 89 条（5.3%）**，
+骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 92 条（5.5%）**，
 其中真正落库的只有 4 条，其余是进程内 `MemWorld`（重启即丢）。
 
 最近两轮补的底座（不增加消息数但解锁后续一大批）：
@@ -20,13 +20,13 @@
 ```
 cargo check  --workspace --all-targets                      0 error / 0 warning
 cargo clippy --workspace --exclude ddj-pb --lib --bins -D warnings   通过
-cargo test   --workspace                                    823 passed / 0 failed
+cargo test   --workspace                                    862 passed / 0 failed
 cargo xt check-arch                                         4 条规则通过
 ```
 
 代码量：27 crate / 约 180 个 `.rs` / 约 25 000 行。
 
-## 二、已接线消息（89 / 1681）
+## 二、已接线消息（92 / 1681）
 
 | 模块 | cmdId | 数据源 | 备注 |
 |---|---|---|---|
@@ -71,6 +71,7 @@ cargo xt check-arch                                         4 条规则通过
 | 游历 | 15002 / 15004 / 15009 | **真实 CSV** + `MemWorld` | 先推 15001 再回包；事件 1/2/4 的实体落地未接 |
 | 升级 | 1003（改造） | **真实 CSV** | 原 `MemLevels` 每级 100 经验 → 改读 `S-身份表-Status.csv` |
 | 猜灯谜 | 37603 / 37604 / 37605 / 37607 | `MemWorld` + 注入题表 | ⚠ 线上 `bf_activity` 无 `typeId=50` → 四条恒回 2（原版 NPE）|
+| 远洋贸易 | 41001 / 41002 / 41003 | **真实 CSV** + `MemWorld` | ⚠ 41002 **不判** `isOpen(19)`；`BigInt` 全链路（末关 cost 4.68e18）|
 
 ### 构建产物（2026-10-28 15:34 实测）
 
