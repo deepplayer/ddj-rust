@@ -1196,7 +1196,147 @@ public boolean isBetweenStartAndEndShowTime() {
 
 ---
 
-## A7 `login.rs` + `loginvar.rs` + `handshake.rs`（待填）
+## A22 `travel.rs` + `install_travel.rs` + `csv_travel.rs`（游历 15002 / 15004 / 15009）
+
+> 基准：`data_d/game_7010544/sources/bf/game/server/message/handler/TravelMessageHandler.java`
+> + `.../module/travel/Travel.java`、`TravelTempResult*.java`、`TypeTravelHelper.java`、
+> `.../utils/TravelEventsDBUtils.java`、`bf/template/db/TravelEventsDB.java`。
+> 纯逻辑 26 测试（`travel.rs`）+ 装配 4 测试 + CSV 5 测试。
+
+### 三条消息的入口链
+
+| cmd | 方法 | 前置（按执行顺序） | 失败出口 |
+|---|---|---|---|
+| 15002 | `travel(Player, MsgTravelReq_15002)` | ① `place != 0 && place != 12` → `1006`<br>② `!isOpen(3)` → `1003`<br>③ `allTimes != 0 && !isOpen(102)` → `1004`<br>④ `place==12 && !isOpen(26)` → `2356`<br>⑤ `place==12 && travelCnt>10 && !isOpen(139)` → `17` | `ErrorResp_1` |
+| 15004 | `travel(Player, MsgTravelTenReq_15004)` | ① `!isOpen(133)` → `1003`<br>② `curNum==0 && item22==0` → `2` | `ErrorResp_1` |
+| 15009 | `travel(Player, PartnerSexReq_15009)` | ① `sex != 0 && sex != 1` → `2`<br>② `getPartnerSex()==sex` → `2`<br>③ `!isOpen(161)` → `1003`<br>④ `!removeResources(PartnerChangeCost)` → `2` | `ErrorResp_1` |
+
+⚠ **15002 的 ④⑤ 在 `randomEvent()` 里**，晚于 ③。即 `place=12` 且 `allTimes!=0`
+时先判 102 再判 26/139。
+
+### `randomEvent()` 的计数规则（最易错处）
+
+```java
+long curNum = CounterRecovery.getNum(playerId, 1);   // 体力计数器
+if (place == 12) {                                   // 桃花岛：走印章 24
+    if (allTimes != 0) {
+      if (travelTimes >= 10 && (travelCnt <= 10 || travelTimes >= Math.min(travelCnt, PartnerInviteTime))) break;
+      if (!checkResources(FixedPointTravel)) { if (travelTimes == 0) break; throw 1005; }
+      ...; travelTimes++;
+      if (allTimes == 0 || travelTimes >= curNum) break;
+    } else {
+      if (travelTimes > 0) break;
+      if (!checkResources(FixedPointTravel)) { if (travelTimes == 0) break; throw 1005; }
+      ...; travelTimes++;
+    }
+} else {                                             // 普通：走体力
+    if (!checkNum(pid, 1, PhysicalStrength * eventDBs.size() + 1)) {
+      if (travelTimes != 0) break; else throw 1001;
+    }
+    ...; travelTimes++;
+}
+```
+
+三条照抄出来的结论：
+
+1. **体力分支上限 = `floor((curNum - 1) / PhysicalStrength) + 1`**
+   —— 判的是 `PhysicalStrength * 已抽数 + 1`，不是 `PhysicalStrength * (已抽数+1)`。
+   实测 `PhysicalStrength = 1` → 上限就是 `curNum`。
+2. **`place == 12 && allTimes == 0` 固定只出 1 个**（第二次进来 `travelTimes > 0` 就 break）。
+3. **`Math.min(travelCnt, PartnerInviteTime)` 在 `n < 10` 时永远走不到**
+   —— 外层 `travelTimes >= 10` 先判。实测 `PartnerInviteTime = 50`，
+   所以 `travelCnt` 只在 `n >= 10` 时才真正生效。这条写进了单测
+   `plan_fixed_travel_cnt_invite`（首版期望 `(5,false)` 实测 `(10,false)`，按原版改回）。
+
+### `travelTenTimes()`
+
+```java
+long curNum = getNum(pid, 1);
+long maxItemNeed = curNum == 0 ? 10 : 9;
+if (maxItemNeed > item22.getNum()) maxItemNeed = item22.getNum();
+if (curNum == 0 && maxItemNeed == 0) throw COMMON_SERVER_BUSY;   // 2
+for (i < curNum)     eventDBs.add(randTravel(player, this, 0));
+for (i < maxItemNeed * vip.getCounterMax(1)) eventDBs.add(randTravel(player, this, 0));
+if (curNum > 0) removeNum(pid, 1, curNum, false);
+removeResources(new ResourcesJson(22, maxItemNeed), ...);
+```
+
+⚠ **全部 `place = 0`（随机地点）**，不是当前 `place`。
+⚠ 末尾的 `15001` 用**旧的** `this.place`（十连不改 `this.place`）—— 与 15002 相反。
+
+### `tryGetSpecialTravelEvent` 的副作用
+
+```java
+if (place != 0) return null;
+long times = getLongStat(NotPlaceTravelTimes);
+if (times >= 100) return null;
+addLongStat(NotPlaceTravelTimes, 1);          // ⚠ 先自增
+times = getLongStat(NotPlaceTravelTimes);     // ⚠ 再读
+for (ResourcesJson c : ConfigDBCache.TravelFirstEventGirl)
+    if (times == c.getId()) return cache.get(c.getNum());
+return null;
+```
+
+即「第 N 次随机游历送第 N 个固定事件」。实测 `TravelFirstEventGirl`
+`= 1=9101;2=12401;3=7301;4=12401;5=2101`，这 5 个 id **都在事件表里**。
+`NotPlaceTravelTimes >= 100` 之后不再送，但**计数也不再涨**（`return null` 在自增前）。
+
+### `filtrateChild()`
+
+```java
+for (MsgTravelEventData e : src)
+  for (MsgResources r : e.getMsgResourcesList())
+    try { new BigInteger(r.getNum()); } catch (Exception ex) { list.add(e); }
+```
+
+把**外层 `e`** 加进结果，每个非法 `num` 加一次（不是内层 `r`）。
+实测所有 `num` 都是数字 → 恒空。已照抄（含「按非法项个数重复添加」这一点）。
+
+### 事件结算四分支（`TypeTravelHelper`）
+
+| type | 名称 | 未满进度 | 已满 / 无进度要求 |
+|---|---|---|---|
+| 1 | 门客 | `addProgressId` + 空列表 | `talent == null && !containNewId` → `addTalentId` + `[(targetId,"1")]`；否则 `addReward(getRewardJson())` |
+| 2 | 珍兽 | 同上 | `pet == null && !containNewId` → `addPetId` + `[(targetId,"1")]`；否则 `addGrowth(intimacyJson.num)` + `[intimacyJson]` |
+| 3 | 奖励 | **无进度判定** | `addRewardJson(id, getRewardJson())` |
+| 4 | 美人 | 同上 | 见下 |
+
+type 4 已满分支：`useMiracle(ID_NPC_INTIMACY)` 非空时 `intimacy = intimacy * param2 / 100`
+且 `multiple = param2`（本模块 **恒 0**，奇遇未接）；再判
+`beforeTimes < TravelFirstEventOffspring && times >= TravelFirstEventOffspring`
+（实测门槛 4）→ `childrenSet.bornByTravel(tid, max(0,intimacy), isFirst)`。
+
+### 事件表实测（`Y-游历事件-TravelEvents.csv`）
+
+84 数据行。`place` 分布 `12×12 / 1,4,5,6,7,10×7 / 2,3,8,9,11×6` —— **没有 `place = 0`**
+→ 走权重抽取时永远抽不到，随机游历只能靠 `TravelFirstEventGirl` 命中。
+`type` 分布 `2×36 / 1×18 / 3×18 / 4×12`；`unlockType` 分布 `1×46 / 2×20 / 0×18`；
+`weightScale` 只用 `1.2 / 0.8 / 1 / 1.3` 四档。
+
+### 本轮明确未接（不是 bug，是依赖未到）
+
+| 未接项 | 原版位置 | 为什么 |
+|---|---|---|
+| 门客实体落地 | `TalentSet.getTalent` / `addTalentByTravel` / `reCalBuildingSpeedByTravel` | 门客模块未移植 |
+| 珍兽实体落地 | `PetSet.getPet` / `addGrowthByTravel` / `refreshCommon` | 只发了 `7001` 推送，不写实体 |
+| 美人 / 子女 | `NpcSpouseModel` / `ChildrenSet.bornByTravel` | 两个实体模块未移植 |
+| 时装加亲密度 | `FashionModel.getFashionSuitPartAddIntimacy()` | 时装模块未移植 |
+| 奇遇加成 | `useMiracle(ID_NPC_INTIMACY)` | 奇遇模块未移植 → `multiple` 恒 0 |
+| 事件日志 | `EventLogSendRecord.tour` / `.mansionSex` | 日志表未接 |
+| 事件模块通知 | `EventModule`（`ACTIVITY_TASK_10_TRAVEL_TIMES` 等） | 活动模块未移植 |
+| 自动游历 | `AutoPlayTravel` | 挂机模块未移植 |
+
+### 已知分叉
+
+| 场景 | 原版 | 本工程 | 影响 |
+|---|---|---|---|
+| `place=12 && allTimes!=0` 但印章不足且 `travelTimes == 0` | `break` → `eventDBs` 为空 → 随后 `eventDBs.get(size-1)` 抛 `ArrayIndexOutOfBoundsException` | 回 `1005` | 客户端拿到明确错误码，不是 500 |
+| `filter()` 结果为空（真实数据下不会，`place != 0` 都有行） | `WeightRandomModelUtils.random()` 抛 `IllegalArgumentException` | 返回 `None` → 该次不产生事件 | 只会少抽，不会多发 |
+| `TravelFirstEventGirl` 里的 id 在事件表缺失 | `cache.get(id)` 返回 `null` → 随后 NPE | 退回权重抽取 | 只会在策划改表出错时出现 |
+| 十连的 `vip.getCounterMax(1)` | 读玩家 VIP 等级 | 恒按 1（VIP 等级未接） | 高 VIP 少抽；接 VIP 后修正 |
+
+---
+
 
 > 现状：登录 4 / 创角 6 / 握手 16-18 已接线，走真实 PG。`login.rs` 630 行。
 > 已复核的分支：区服不符→2、维护→1、未开服→23、版本→99、人数满→4。

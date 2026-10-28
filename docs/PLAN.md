@@ -54,6 +54,43 @@ vue 3.5.44 · vite 8.3.5 · typescript 7.0.2 · vue-router 5.4.0 · pinia 4.1.0
 
 B5 实现顺序按「服务端默认开启」优先：宴席 → 贪吃 → 系统活动 → 限时节日。
 
+---
+
+## B'. 接下来的移植目标（2026-10-28 定，按顺序做）
+
+> 每行 = **一个目标 = 一次 commit**。做完把「进度」打勾，并把 commit 写进 `PROGRESS.md`。
+> 选题原则：① 不依赖跨服 RPC（`CsServer`）；② 依赖的实体模块越少越好；
+> ③ 优先吃完某个 handler，避免到处留半截。
+> 当前 **82 / 1681**（不含进行中的 Travel）。
+
+| # | 目标 | cmdId | 前置依赖 | 风险 | 进度 |
+|---|---|---|---|---|---|
+| T1 | **Travel 游历**（进行中） | 15002 / 15004 / 15009 | `travel.rs` 26 测试 ✅；`install_travel.rs` 已写待编译 | 低 | 🚧 |
+| T2 | **LanternRiddles 灯谜** | 37603-37607 | 无（纯配置驱动） | 低 | ⬜ |
+| T3 | **OceanTrade 海贸** | 41001-41003 | `activity_template` 已就位 | 中（跨天重置） | ⬜ |
+| T4 | **Trade 通商** | 19002-19005 | 无 | 中（要 `TraderSet`） | ⬜ |
+| T5 | **Cornucopia 抽奖落地** | 38301 / 38302 | 38303/38304 已接 | 中（要新表） | ⬜ |
+| T6 | **Blessing 祝福** | 33021 / 33022 | 需 `CsServer` 跨服 | **高 → 推迟** | ⬜ |
+| T7 | **Mission 任务** | 9003/9004/9006/9101 | 需 `TaskDBCache` + `PlayerMission` | 高（两个新实体） | ⬜ |
+| T8 | **Ranking 排行** | 5 条 | `ranking/` 2464 行 / 14 文件，重 `CsServer` 耦合 | **高 → 推迟** | ⬜ |
+| T9 | **MemWorld → PG 迁移** | — | 7 个业务组仍是进程内 | 中（重启丢数据） | ⬜ |
+| T10 | **PetMessageHandler 收尾** | 剩余 | 需 `PetYard` / `PetMissionServerModule` / `PetRentServerModule` / `PetSeniorSet` | 高（4 个新实体） | ⬜ |
+
+> T2-T5 是**同一规模**（3-5 条、配置驱动、不碰跨服），做完约 +18 条 → **100 / 1681**。
+> T6 / T8 要等 `ddj-rpc` 铺开，本批不做。
+> T9 应尽早做：现在 82 条绝大多数挂在 `MemWorld`，重启即丢，越晚迁成本越高。
+
+### 每个目标的固定动作清单
+
+1. 读 `data_d/.../<X>MessageHandler.java` 及其调用的模块，事实先写进 `AUDIT.md`
+2. 纯逻辑 `crates/app/game-handler/src/<x>.rs`（无 IO、带单测、注释标 Java 出处）
+3. 装配 `crates/app/game-handler/src/install_<x>.rs`（解码 → 调纯函数 → 改状态 → 编码）
+4. `crates/data/.../csv_<x>.rs`（需要真实 CSV 时）
+5. `cargo test -p ddj-game-handler` + `cargo run -p xtask -- check-arch`
+6. `git commit` → `git push github main` → 等 GitHub Actions
+7. `gh run download` 取回 `bin/ddj` → 写 `e2e/smoke/<x>_smoke.mjs` → 实跑
+8. 更新 `PROGRESS.md`（消息数 / 测试数 / 构建记录 / 冒烟结果）+ `AUDIT.md`
+
 ### C. GM 后台（Rust API + Vue3）
 
 | 子项 | 内容 |

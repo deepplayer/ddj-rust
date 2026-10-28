@@ -165,11 +165,45 @@ pub struct PlayerBox {
     pub favourable: crate::favourable::FavourableState,
     /// `PrayModel`：焚香祈愿的持久化字段。
     pub pray: crate::pray::PrayState,
+    /// `Travel`：游历进度 `targetId → 进度`（原版 `Travel.progress`）。
+    ///
+    /// 原版还有一列 `progress_bak`（`initDB` 时用来把旧知己 id 迁到新 id），
+    /// 本模块只在 `init_missing` 里做一次同语义的迁移，不留备份列。
+    pub travel_progress: HashMap<i32, i32>,
+    /// `Travel.place`：上次游历地点（`MsgTravelDataResp_15001.place`）。
+    ///
+    /// ⚠ 原版构造时 `this.place = 1`，但 `travel()` 末尾无条件用
+    /// `eventDBs.get(last).getPlace()` 覆盖；`travelTenTimes` **不覆盖**。
+    pub travel_place: i32,
+    /// `PlayerStatServerModule` 的 `NotPlaceTravelTimes`（随机游历次数）。
+    ///
+    /// `tryGetSpecialTravelEvent` **先自增再比对**，所以每次随机游历都在动它。
+    pub travel_not_place_times: i64,
+    /// `StatType.TravelTimes` 累计。
+    pub travel_times: i64,
+    /// `Player.partnerSex`：知己性别（0 女 / 1 男）。
+    ///
+    /// 15009 改它；没有单独的 `sys_activity` 表承载。
+    pub partner_sex: i32,
     /// `CornucopiaActPlayer.records`：聚宝盆自己的抽奖记录（38303 回显）。
     ///
     /// 原版是 `activity_cornucopia_player` 表的一列（`ConcurrentLinkedQueue`），
     /// 过渡期只放内存。真正的写入在 38302（抽奖），届时再决定是否迁 PG。
     pub cornucopia_records: Vec<crate::install_cornucopia::LuckRecord>,
+}
+
+impl PlayerBox {
+    /// 新玩家的 `PlayerBox`。
+    ///
+    /// `Default` 会把 `travel_place` 给成 0，但原版 `Travel(playerId)`
+    /// 构造时就是 `this.place = 1`，所以这里补一下。
+    #[must_use]
+    pub fn new_player() -> Self {
+        Self {
+            travel_place: 1,
+            ..Self::default()
+        }
+    }
 }
 
 impl MemWorld {
@@ -191,12 +225,14 @@ impl MemWorld {
             .players
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
-        f(guard.entry(player.get()).or_insert_with(||
+        f(guard.entry(player.get()).or_insert_with(|| {
             PlayerBox {
                 level: 1,
+                // 原版 `Travel(playerId)` 构造时 `place = 1`
+                travel_place: 1,
                 ..PlayerBox::default()
-            },
-        ))
+            }
+        }))
     }
 
     /// 焚香祈愿的全服公告栏（原版 `PrayModule.noticeList`，进程级）。
@@ -280,29 +316,6 @@ pub fn resources_to_msg(list: &[(i32, i64)]) -> Vec<ddj_pb::gen::common_msg_mess
         .collect()
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn world_is_per_player() {
-        let w = MemWorld::new();
-        let a = PlayerId::new(1);
-        let b = PlayerId::new(2);
-        w.with(a, |p| p.bag.insert(100, 5));
-        assert_eq!(w.peek(a, |p| p.bag.get(&100).copied()), Some(5));
-        assert_eq!(w.peek(b, |p| p.bag.get(&100).copied()), None);
-    }
-
-    #[test]
-    fn resources_num_is_string() {
-        let got = resources_to_msg(&[(1, 50), (22, 1)]);
-        assert_eq!(got[0].id, Some(1));
-        assert_eq!(got[0].num.as_deref(), Some("50"));
-        assert_eq!(got[1].num.as_deref(), Some("1"));
-    }
-}
-
 // ────────────────────────── 异步处理器 ──────────────────────────
 
 /// 需要 `await`（查库、跨服 RPC）的处理器。
@@ -352,3 +365,27 @@ where
         (self.f)(ctx.clone(), body).await
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn world_is_per_player() {
+        let w = MemWorld::new();
+        let a = PlayerId::new(1);
+        let b = PlayerId::new(2);
+        w.with(a, |p| p.bag.insert(100, 5));
+        assert_eq!(w.peek(a, |p| p.bag.get(&100).copied()), Some(5));
+        assert_eq!(w.peek(b, |p| p.bag.get(&100).copied()), None);
+    }
+
+    #[test]
+    fn resources_num_is_string() {
+        let got = resources_to_msg(&[(1, 50), (22, 1)]);
+        assert_eq!(got[0].id, Some(1));
+        assert_eq!(got[0].num.as_deref(), Some("50"));
+        assert_eq!(got[1].num.as_deref(), Some("1"));
+    }
+}
+

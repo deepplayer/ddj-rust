@@ -292,7 +292,23 @@ pub enum RetCode {
     ///
     /// ⚠ 名字是 VIVO 福利的，但 `ShortcutModel.gainShortcutReward` 的
     /// 「已领过」分支用的就是它（原版复制粘贴，照抄）。
+    /// VIVO 特权 - 领取奖励失败（`VIVO_WELFARE_SIGN_ERROR`）。
+    ///
+    /// ⚠ 名字是 VIVO 福利的，但 `ShortcutModel.gainShortcutReward` 的
+    /// 「已领过」分支用的就是它（原版复制粘贴，照抄）。
     VivoWelfareSignError = 4722,
+    /// 游历 - 体力不足（`TRAVEL_ERROR_PHYSICAL_LIMIT`）。
+    TravelErrorPhysicalLimit = 1001,
+    /// 游历 - 系统还未开放（`TRAVEL_ERROR_UNOPEN_SYSTEM`）。
+    TravelErrorUnopenSystem = 1003,
+    /// 游历 - 一键游历功能未开放（`TRAVEL_ERROR_ALL_UNOPEN_SYSTEM`）。
+    TravelErrorAllUnopenSystem = 1004,
+    /// 游历 - 资源不足（`TRAVEL_ERROR_RESOURCES_LIMIT`）。
+    TravelErrorResourcesLimit = 1005,
+    /// 游历 - 该定点不能进行定点游历（`TRAVEL_ERROR_PLACE_LIMIT`）。
+    TravelErrorPlaceLimit = 1006,
+    /// 知己 - 功能未开启（`NPC_NO_OPEN`）。
+    NpcNoOpen = 2356,
 }
 
 impl RetCode {
@@ -416,6 +432,12 @@ impl RetCode {
             4731 => Self::ShortcutCidError,
             4732 => Self::ShortcutNotInstall,
             4722 => Self::VivoWelfareSignError,
+            1001 => Self::TravelErrorPhysicalLimit,
+            1003 => Self::TravelErrorUnopenSystem,
+            1004 => Self::TravelErrorAllUnopenSystem,
+            1005 => Self::TravelErrorResourcesLimit,
+            1006 => Self::TravelErrorPlaceLimit,
+            2356 => Self::NpcNoOpen,
             3901 => Self::PrayErrorUnOpen,
             3902 => Self::PrayErrorCost,
             3941 => Self::FavourableError1,
@@ -541,6 +563,12 @@ impl RetCode {
             Self::ShortcutCidError => "保存桌面-不是指定渠道",
             Self::ShortcutNotInstall => "保存桌面-尚未执行保存桌面",
             Self::VivoWelfareSignError => "VIVO特权-领取奖励失败",
+            Self::TravelErrorPhysicalLimit => "游历-体力不足",
+            Self::TravelErrorUnopenSystem => "游历-系统还未开放",
+            Self::TravelErrorAllUnopenSystem => "游历-一键游历功能未开放",
+            Self::TravelErrorResourcesLimit => "游历-资源不足",
+            Self::TravelErrorPlaceLimit => "游历-该定点不能进行定点游历",
+            Self::NpcNoOpen => "知己-功能未开启",
             Self::PrayErrorUnOpen => "焚香祈愿-未开放",
             Self::PrayErrorCost => "焚香祈愿-资源不足",
             Self::FavourableError1 => "渠道没开放好评系统",
@@ -582,6 +610,7 @@ mod tests {
             906, 907, 908, 909, 911, 912, 913, 910, 946,
             9501, 9502, 9503, 9504, 9505, 6451, 1501,
             4731, 4732, 4722, 3941, 3942, 2754, 2751, 2752, 3901, 3902,
+            1001, 1003, 1004, 1005, 1006, 2356,
         ] {
             let c = RetCode::from_i32(v).unwrap_or_else(|| panic!("缺 {v}"));
             assert_eq!(c.as_i32(), v);
