@@ -1286,6 +1286,94 @@ mod tests {
     }
 
     #[test]
+    fn negotiate_quickly_wins_multiple_checkpoints_when_rich() {
+        let t = tables();
+        let mut st = OceanTradeState {
+            checkpoint_id: 1,
+            ..OceanTradeState::default()
+        };
+        // 关卡 1 的 cost = 2_000_000；给 10 倍钱，一键 3 关全赢。
+        let input = NegotiateInput {
+            season_id: 1,
+            negotiate_type: 1,
+            num: 3,
+            money: BigInt::from(400_000_000_000_i64),
+            total_money: BigInt::from(400_000_000_000_i64),
+            open_19: true,
+            open_112: true,
+            tables: &t,
+            season_invalid: false,
+        };
+        let r = negotiate_verdict(&mut st, &input, &|_| vec![(4, 1)]).expect("应成功");
+        assert_eq!(r.win_num, 3, "三关全赢");
+        // `next_id(3)` 无 ceiling → 原样返回 3，所以打通最后一关后
+        // `checkpoint_id` 仍等于最后一关（见 AUDIT A24 第 1 条）。
+        assert_eq!(st.checkpoint_id, 3, "打通最后一关后停在 last");
+        assert_eq!(r.progress_gain, 3);
+        // `builder_cost_money` 逐关累加 need_money：
+        // 关卡 1 = 12250000000×0.2 = 2_450_000_000
+        // 关卡 2 = 24500000000×0.2 = 4_900_000_000
+        // 关卡 3 = 49000000000×0.2 = 9_800_000_000
+        // 合计 17_150_000_000（原版 `getCurCostMoney().add(...)` 的累加语义）
+        assert_eq!(r.cost_money, BigInt::from(17_150_000_000_i64));
+        // `onWinQuickly` 不逐关扣钱 ⇒ 奖励在循环里攒起来，最后 merge 一次
+        assert_eq!(r.resources, vec![(4, 3)]);
+    }
+
+    #[test]
+    fn negotiate_quickly_stops_at_first_lose_and_keeps_partial_win() {
+        let t = tables();
+        let mut st = OceanTradeState {
+            checkpoint_id: 1,
+            ..OceanTradeState::default()
+        };
+        // 只够第 1 关（2_000_000），第 2 关必输（cost = 12_250_000_000）。
+        let input = NegotiateInput {
+            season_id: 1,
+            negotiate_type: 1,
+            num: 3,
+            // 关卡 1 需要 `12250000000 × 0.2 = 2_450_000_000` 才能打赢；
+            // 给 30 亿：够第 1 关，不够第 2 关（`24500000000 × 0.2 = 4.9e9`）。
+            money: BigInt::from(3_000_000_000_i64),
+            total_money: BigInt::from(3_000_000_000_i64),
+            open_19: true,
+            open_112: true,
+            tables: &t,
+            season_invalid: false,
+        };
+        let r = negotiate_verdict(&mut st, &input, &|_| Vec::new()).expect("部分胜利也算成功");
+        assert_eq!(r.win_num, 1, "第 1 关赢、第 2 关输 ⇒ 停在 1");
+        assert_eq!(st.checkpoint_id, 2, "只前移一关");
+        assert!(r.damage_hp > BigInt::zero(), "第 2 关按剩余银两扣血");
+    }
+
+    #[test]
+    fn negotiate_quickly_breaks_when_season_flips_mid_loop() {
+        let t = tables();
+        let mut st = OceanTradeState {
+            checkpoint_id: 1,
+            ..OceanTradeState::default()
+        };
+        // `season_invalid` 在循环里判：直接置真 → 一次都不打。
+        let input = NegotiateInput {
+            season_id: 1,
+            negotiate_type: 1,
+            num: 5,
+            money: BigInt::from(100_000_000),
+            total_money: BigInt::from(100_000_000),
+            open_19: true,
+            open_112: true,
+            tables: &t,
+            season_invalid: true,
+        };
+        // 前置的 `season_invalid` 检查在 `negotiate_verdict` 里已经拦掉，
+        // 走不到循环；这里确认出口是 `3004`。
+        let r = negotiate_verdict(&mut st, &input, &|_| Vec::new());
+        assert_eq!(r, Err(CODE_SEASON_ID_ILLEGAL));
+        assert_eq!(st.checkpoint_id, 1, "状态未动");
+    }
+
+    #[test]
     fn merge_resources_sums_and_keeps_order() {
         let got = merge_resources(vec![(4, 5), (3, 300_000), (4, 1), (1, 2)]);
         assert_eq!(got, vec![(4, 6), (3, 300_000), (1, 2)]);
