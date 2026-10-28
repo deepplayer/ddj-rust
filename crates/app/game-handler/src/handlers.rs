@@ -209,6 +209,7 @@ pub fn register(
         n += crate::install_pray::install(table, world.clone(), clock.clone());
         n += crate::install_vip::install(table, world.clone(), clock.clone());
         n += crate::install_item::install(table, world.clone(), clock.clone());
+        n += crate::install_lantern_riddles::install(table, world.clone(), clock.clone());
         n += crate::install_log::install(table, world.clone(), clock.clone());
         n += crate::install_misc::install(table, world.clone(), clock.clone());
         n += crate::install_player::install(table, world.clone(), clock.clone());

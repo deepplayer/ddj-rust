@@ -288,6 +288,22 @@ pub enum RetCode {
     PrayErrorUnOpen = 3901,
     /// 焚香祈愿 - 资源不足（`PRAY_ERROR_COST`）。
     PrayErrorCost = 3902,
+    /// 猜灯谜 - 未开放（`LANTERNRIDDLE_IS_NOT_OPEN`）。
+    LanternRiddleNotOpen = 5400,
+    /// 猜灯谜 - 参数（选项 id）错误（`LANTERNRIDDLE_DATE_ERROR`）。
+    LanternRiddleDateError = 5401,
+    /// 猜灯谜 - 题号错误（`LANTERNRIDDLE_IS_RETURN`）。
+    LanternRiddleIsReturn = 5402,
+    /// 猜灯谜 - 排错次数已达上限（`LANTERNRIDDLE_TROUBLESHOOTING_MAX`）。
+    LanternRiddleTroubleshootingMax = 5403,
+    /// 猜灯谜 - 本轮还未结束（`LANTERNRIDDLE_IS_NOT_OVER`）。
+    LanternRiddleIsNotOver = 5404,
+    /// 猜灯谜 - 该题已作答或已排错（`LANTERNRIDDLE_PACK`）。
+    LanternRiddlePack = 5405,
+    /// 猜灯谜 - 排错时题号错误（`LANTERNRIDDLE_EXCLUDE_OPTION_ERROR`）。
+    LanternRiddleExcludeOptionError = 5406,
+    /// 猜灯谜 - 本轮奖励已领取（`LANTERNRIDDLE_RWD_EXPIRE`）。
+    LanternRiddleRwdExpire = 5407,
     /// VIVO 特权 - 领取奖励失败（`VIVO_WELFARE_SIGN_ERROR`）。
     ///
     /// ⚠ 名字是 VIVO 福利的，但 `ShortcutModel.gainShortcutReward` 的
@@ -440,6 +456,14 @@ impl RetCode {
             2356 => Self::NpcNoOpen,
             3901 => Self::PrayErrorUnOpen,
             3902 => Self::PrayErrorCost,
+            5400 => Self::LanternRiddleNotOpen,
+            5401 => Self::LanternRiddleDateError,
+            5402 => Self::LanternRiddleIsReturn,
+            5403 => Self::LanternRiddleTroubleshootingMax,
+            5404 => Self::LanternRiddleIsNotOver,
+            5405 => Self::LanternRiddlePack,
+            5406 => Self::LanternRiddleExcludeOptionError,
+            5407 => Self::LanternRiddleRwdExpire,
             3941 => Self::FavourableError1,
             3942 => Self::FavourableError2,
             2754 => Self::ActivityParamError,
@@ -571,6 +595,14 @@ impl RetCode {
             Self::NpcNoOpen => "知己-功能未开启",
             Self::PrayErrorUnOpen => "焚香祈愿-未开放",
             Self::PrayErrorCost => "焚香祈愿-资源不足",
+            Self::LanternRiddleNotOpen => "猜灯谜-未开放",
+            Self::LanternRiddleDateError => "猜灯谜-参数错误",
+            Self::LanternRiddleIsReturn => "猜灯谜-题号错误",
+            Self::LanternRiddleTroubleshootingMax => "猜灯谜-排错次数上限",
+            Self::LanternRiddleIsNotOver => "猜灯谜-本轮未结束",
+            Self::LanternRiddlePack => "猜灯谜-该题已作答",
+            Self::LanternRiddleExcludeOptionError => "猜灯谜-排错题号错误",
+            Self::LanternRiddleRwdExpire => "猜灯谜-奖励已领取",
             Self::FavourableError1 => "渠道没开放好评系统",
             Self::FavourableError2 => "已经评价过",
             Self::ActivityParamError => "活动进行中-参数错误",
@@ -611,6 +643,7 @@ mod tests {
             9501, 9502, 9503, 9504, 9505, 6451, 1501,
             4731, 4732, 4722, 3941, 3942, 2754, 2751, 2752, 3901, 3902,
             1001, 1003, 1004, 1005, 1006, 2356,
+            5400, 5401, 5402, 5403, 5404, 5405, 5406, 5407,
         ] {
             let c = RetCode::from_i32(v).unwrap_or_else(|| panic!("缺 {v}"));
             assert_eq!(c.as_i32(), v);

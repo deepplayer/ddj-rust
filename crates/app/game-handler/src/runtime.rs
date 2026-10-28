@@ -190,6 +190,11 @@ pub struct PlayerBox {
     /// 原版是 `activity_cornucopia_player` 表的一列（`ConcurrentLinkedQueue`），
     /// 过渡期只放内存。真正的写入在 38302（抽奖），届时再决定是否迁 PG。
     pub cornucopia_records: Vec<crate::install_cornucopia::LuckRecord>,
+    /// `LanternRiddlesActPlayer`：猜灯谜进度，键是 `actId`。
+    ///
+    /// 原版是 `activity_lantern_riddle` 表的一行（`playerId + activityType + activityId`），
+    /// 过渡期只放内存。见 AUDIT A23。
+    pub lantern: HashMap<i32, crate::lantern_riddles::RiddleState>,
 }
 
 impl PlayerBox {

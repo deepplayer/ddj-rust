@@ -1442,6 +1442,104 @@ WARN target=ddj::divergence code=P1 occurrences=1
 - **修法**：把两个接口的返回值改成 `Reply{cmd: Option<i32>, body}`，
   `None` 表示沿用请求 cmdId；`impl From<Bytes> for Reply` 保证现有 21 个 handler 零改动。
 
+## A23 `lantern_riddles.rs` + `install_lantern_riddles.rs`（猜灯谜 37603 / 37604 / 37605 / 37607）
+
+> 基准：`data_d/game_7010544/sources/bf/game/server/message/handler/LanternRiddlesMessageHandler.java`
+> + `.../module/activity/LanternRiddlesActPlayer.java`、`LanternRiddlesDbTemplateCache.java`、
+> `LanternRiddlesActivityCommon.java`、`LanternRiddlesExtendCA.java`。
+> 纯逻辑 41 测试（`lantern_riddles.rs`）+ 装配 5 测试（`install_lantern_riddles.rs`）。
+
+### 四条消息的入口链
+
+四个方法的**第一段完全相同**：
+
+```java
+int actType = TypeActivity.guessLanternRiddles.getType();            // 50
+ActivityDbTemplate dbTemplate =
+    ActivityDbTemplateCache.getInstance().getActivityDbTemplate(actType, actId);
+if (!dbTemplate.isOpen()) throw new HandlerException(LanguageUtils.COMMON_SERVER_BUSY);   // 2
+ActivitySet activitySet = ActivityModule.getInstance().getActivitySet(player.getId(), actType);
+LanternRiddlesActPlayer activity = (LanternRiddlesActPlayer) activitySet.getActivity(actId);
+```
+
+| cmd | 方法 | 后续前置 | 失败出口 |
+|---|---|---|---|
+| 37603 | `lanternRiddlesGetSubject` | 无 | `ErrorResp_1` / `2` |
+| 37604 | `lanternRiddlesChangeSubject` | ① `id ∉ [1,4]` → `5401`<br>② `lv < identityRestriction` → `33`<br>③ `rounds()==0` → `5400`<br>④ `lanternId != 计算值` → `5402`<br>⑤ 该题 `pick` 已为真 → `5405` | `ErrorResp_1` |
+| 37605 | `lanternRiddlesExcludeOption` | ① `lv < identityRestriction` → `33`<br>② `rounds()==0` → `5400`<br>③ `outOfNum >= limit(0)` 或 `oneOutOfNum >= limit(1)` → `5403`<br>④ `lanternId` 不对 → `5406`<br>⑤ 道具 6181 不够 → `6` | `ErrorResp_1` |
+| 37607 | `lanternRiddlesGetRwd` | ① `lv < identityRestriction` → `33`<br>② `rounds() != 0`（本轮还没结束）→ `5404`<br>③ `startDay==0 && rounds2()==0` → `5400`<br>④ 该 lun 已领过 → `5407` | `ErrorResp_1` |
+
+### ⚠ 线上数据真实状态：猜灯谜从未上线
+
+| 事实 | 证据 |
+|---|---|
+| `bf_activity` 里 **没有 `typeId = 50` 的行** | `grep -c` `data/sql/platform.sql` |
+| `bf_operate_lantern_riddle` / `bf_operate_riddle_reward` 都是空表 | 同上 |
+| `bf_config`（79 行）**没有 `LanternRiddleLimitNum`**，也没有 `LanternRiddleLLayTime` | 同上 |
+| `LanternRiddlesExtendCA` 从未构造过 | 上面两条的直接后果 |
+
+⇒ 原版四条消息在 `getActivityDbTemplate(50, actId)` 拿到 **`null`**，
+`dbTemplate.isOpen()` **NPE**，被框架兜底成 `COMMON_SERVER_BUSY(2)`。
+
+移植实现：`crate::install_activity::template(50, act_id)` 返回 `None` 时
+直接回 `ErrorResp_1{msgId=cmd, errorCode=2}` —— **与原版行为一致**，不是移植 bug。
+
+### 照抄的行为（看着像 bug，但原版就是这样）
+
+1. **`rounds()` 取最后一个匹配槽位，没有 `break`**
+   ```java
+   for (i...) { if (openActivityTime.get(i) <= now - zero - start) round = i; }
+   ```
+   → 配置里多个槽位同时满足时取**最后**一个，不是第一个。测试 `rounds_picks_the_last_matching_slot` 固定了这点。
+
+2. **`rounds2()` 判的是 `> 0` 而不是 `>= 0`**
+   `rounds2` 忽略答窗，只看开赛：`openActivityTime.get(i) - (now-zero-start) > 0`。
+
+3. **`value_of` 用 `ceil(毫秒/1000.0)`**
+   59001ms → ceil 60s → 命中 key=60。不是 `floor`，不是四舍五入。
+
+4. **`isTrue(actId, lanternId, num)` 的前置写成无效表达式**
+   ```java
+   if (!options.containsKey(A) || !options.containsKey(B) || !options.contains(num - 1)) { ... }
+   ```
+   实际有效判定只有 `options.get(num-1) == 1`；`num == 1` 时 `contains(0)` 恒假 → 走「题号错误」分支。
+   Rust 侧照抄：`num < 1 || num > 4` → `false`？不 —— 照抄 `num-1` 的下标语义，`num=0` 时 `0-1` 为 `-1` 恒不匹配。
+
+5. **`setRwdInfo(lun)` 写 `1` 而不是 `0`**
+   ```java
+   rwdInfo.put(lun, 1);
+   ```
+   所以「已领取」标记是 `1`。Rust 侧 `RiddleState::rwd_info: HashMap<i32, i32>` 照抄写 1。
+
+6. **`RoundsInfo(long value, boolean pick)` 构造器把 `isTrue` 硬编码为 `true`**
+   这个构造器只在 `excluded()` 路径用（排错排掉的选项），所以排掉的选项 `is_true == true`。
+   `getTrueNum(lun)` 数 `isTrue` → **排错会虚增「答对数」**，这是原版真实行为。
+
+7. **`ValueSort` 是 value 降序 + time 降序**
+   `Long.compare(o2.getValue(), o1.getValue())`，相等时 `Long.compare(o2.getTime(), o1.getTime())`。
+
+8. **`lun_value` 里排掉的选项仍然占位**
+   `lunValue` 每次由 `recompute_lun_value()` 全量重算，不做增量。
+
+### 未接线部分
+
+| 项 | 原因 |
+|---|---|
+| **37606 `GetRankCsRemoteReq`** | 跨服排名 RPC，需要 `CsServer` |
+| `LanternRiddlesDbTemplateCache` 的跨服拉题（`ActivityUtils.sendCross`） | 同上 |
+| `LanternRiddlesActivityCommon`（全服 `state` / `lunPlayerIds` / `playIntrgral`） | 需要跨服活动实例 |
+| `EventLogLanternRiddle.*`（四条事件日志） | 事件日志模块未接 |
+| `sendMails()`（活动结束按排名补发邮件） | 邮件模块未接 |
+| `ActivityLanternRiddlesModule.sendPlayerData()` | 活动模块未接 |
+
+题目表 / 选项表 / 奖励表通过 `install_rows` / `install_rewards` / `install_cfgs` 注入，
+未注入时用 `EmptyRows` / `EmptyRewards`，`one()` 恒 `None` → 37603 回空题、37604 `true_answer=0`。
+
+### 状态位置
+
+`RiddleState` 放在 `PlayerBox.lantern: HashMap<i32, RiddleState>`（按 `actId` 索引），
+不落库 —— 与原版 `LanternRiddlesActPlayer` 一样是活动实例层内存态。
+
 ## A1' 新发现：模板默认值与原版偏差（RawTable 接真数据时暴露）
 
 | 项 | 原版（真 CSV 实测） | 当前 Rust 过渡值 | 影响 |
