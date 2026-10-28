@@ -453,6 +453,14 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
             let num = req.num.unwrap_or(0);
             let now = c.now_millis();
             let (zero, cd) = (today_zero(now), cd_of());
+            // `getTraderSet` 会先 refresh
+            w.with(p, |b| refresh_all(b, now, zero, cd));
+
+            // `TradeMessageHandler.tradeByItem` 第一句：`traderSet.get(id) == null` → 2201
+            // ⚠ 判的是**玩家拥有的商人**，不是模板表里有没有这一行
+            if !w.peek(p, |b| b.traders.contains_key(&id)) {
+                return Ok(Some(reject(19002, CODE_NOT_EXIST_TRADER)));
+            }
             let Some(t) = tables() else {
                 return Ok(Some(reject(19002, CODE_NOT_EXIST_TRADER)));
             };
@@ -460,8 +468,6 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
                 return Ok(Some(reject(19002, CODE_NOT_EXIST_TRADER)));
             };
             let row = row.clone();
-            // `getTraderSet` 会先 refresh
-            w.with(p, |b| refresh_all(b, now, zero, cd));
 
             let use_limit = crate::install_item::item_use_limit(WINE_ITEM_ID);
             let plan = match trade::by_item_verdict(&row, num, use_limit) {
@@ -520,9 +526,13 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
                 }
             }
 
+            // `traderSet.get(req.getId())` → null → 2201（判玩家拥有的商人）
             let Some(t) = tables() else {
                 return Ok(Some(reject(19003, CODE_NOT_EXIST_TRADER)));
             };
+            if !w.peek(p, |b| b.traders.contains_key(&id)) {
+                return Ok(Some(reject(19003, CODE_NOT_EXIST_TRADER)));
+            }
             let Some(row) = t.row(id) else {
                 return Ok(Some(reject(19003, CODE_NOT_EXIST_TRADER)));
             };
