@@ -27,6 +27,7 @@ pub mod csv_drop;
 pub mod csv_travel;
 pub mod csv_names;
 pub mod csv_shortcut;
+pub mod csv_status;
 pub mod csv_sign;
 pub mod csv_system_open;
 pub mod csv_templates;

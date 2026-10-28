@@ -7,8 +7,11 @@
 //!
 //! 这三处都先用「保守默认」顶住，业务判定本身（[`player::rename_verdict`] /
 //! [`player::level_up`]）仍是审计过的那一份，接上数据源后只换入参。
+//!
+//! 1003 的等级表已由 [`install_levels`] 从 `S-身份表-Status.csv` 装进来；
+//! 未装载时退回 [`MemLevels`]（每级 100 经验），保证「升级」这条路径可用。
 
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 
 use ddj_core::Clock;
 use ddj_pb::gen::player_message::UpdateNameReq1002;
@@ -27,6 +30,48 @@ const EXP_PER_LEVEL: i64 = 100;
 
 /// 过渡期等级表：只在 `1..=MAX_LEVEL` 内给出模板。
 struct MemLevels;
+
+/// 真实等级表（`S-身份表-Status.csv` → [`crate::player::LevelTemplate`]）。
+static LEVELS: OnceLock<Vec<LevelTemplate>> = OnceLock::new();
+
+/// 注入真实等级表；装过就不再替换（模板在启动期一次性装载）。
+pub fn install_levels(list: Vec<LevelTemplate>) {
+    if list.is_empty() {
+        return;
+    }
+    let _ = LEVELS.set(list);
+}
+
+/// 取等级表：真实表优先，未装载时退回 [`MemLevels`]。
+fn levels() -> LevelsRef {
+    match LEVELS.get() {
+        Some(v) => LevelsRef::Real(v),
+        None => LevelsRef::Mem(&MemLevels),
+    }
+}
+
+/// [`levels`] 的返回包装：真实表是 `Vec`，兜底是零尺寸的 [`MemLevels`]。
+enum LevelsRef {
+    /// 已装载的真实表。
+    Real(&'static Vec<LevelTemplate>),
+    /// 兜底表。
+    Mem(&'static MemLevels),
+}
+
+impl LevelLookup for LevelsRef {
+    fn template(&self, level: i32) -> Option<LevelTemplate> {
+        match self {
+            Self::Real(v) => v.as_slice().template(level),
+            Self::Mem(m) => m.template(level),
+        }
+    }
+}
+
+impl LevelLookup for [LevelTemplate] {
+    fn template(&self, level: i32) -> Option<LevelTemplate> {
+        self.iter().find(|t| t.id == level).copied()
+    }
+}
 
 impl LevelLookup for MemLevels {
     fn template(&self, level: i32) -> Option<LevelTemplate> {
@@ -94,7 +139,7 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
         table.insert(Box::new(FnHandler::new(1003, move |ctx, _body| {
             let p = ctx.require_player()?;
             let (lv, exp) = w.peek(p, |b| (b.level, b.exp));
-            let out = player::level_up(lv, exp, c.now_millis(), &MemLevels);
+            let out = player::level_up(lv, exp, c.now_millis(), &levels());
             let new_level = match &out {
                 LevelUpOutcome::Accept(plan) => Some(plan.new_level),
                 _ => None,

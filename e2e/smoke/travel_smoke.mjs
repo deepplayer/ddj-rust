@@ -9,8 +9,8 @@
 //
 // 断言（`TravelMessageHandler.java`）：
 //   1. 15002 place=99 → 帧号 1，code=1006（TRAVEL_ERROR_PLACE_LIMIT，最先判）
-//   2. 15002 place=0（体力 0）→ 帧号 1，code=1001（TRAVEL_ERROR_PHYSICAL_LIMIT）
-//   3. 15002 place=12 → 帧号 1，code=2356（NPC_NO_OPEN；26 号开放未满足）
+//   2. 15002 place=0（新号 Lv1）→ 帧号 1，code=1003（open=3 要 Lv2）
+//   3. 15002 place=12 → 帧号 1，code=1003（open=3 在 open=26 之前判）
 //   4. 15004 → 帧号 1，code=1003 或 2（133 未开 → 1003；开了但无体力无道具 → 2）
 //   5. 15009 sex=9 → 帧号 1，code=2（COMMON_SERVER_BUSY，sex 越界先判）
 //   6. 15009 sex=0 → 要么 1003（161 未开）要么 2（扣不起 1×500）
@@ -154,21 +154,52 @@ const main = async () => {
     else ok('15002 place=99 → 1006 TRAVEL_ERROR_PLACE_LIMIT');
   } catch (e) { bad('15002 place=99 ' + e.message); }
 
-  // 2) place=0，新号体力为 0 → 1001
+  // 2) place=0 → 系统开放 3 是 `unlockType=1 value=2`（等级 ≥ 2）。
+  //    新号 Lv=1 → 1003。开放表 `G-功能开启表-SystemOpen.csv` 实测就是这个条件。
   try {
     const g = await c.call(15002, req15002(0));
     if (g.cmd !== 1) bad(`15002 place=0 帧号=${g.cmd}（应为 1）`);
-    else if (g.head[2] !== 1001) bad(`15002 place=0 code=${g.head[2]}（应为 1001，体力不足）`);
-    else ok('15002 place=0 → 1001 TRAVEL_ERROR_PHYSICAL_LIMIT');
+    else if (g.head[2] !== 1003)
+      bad(`15002 place=0 code=${g.head[2]}（应为 1003：open=3 要 Lv2，新号 Lv1）`);
+    else ok('15002 place=0 → 1003 TRAVEL_ERROR_UNOPEN_SYSTEM（playerLv=1 < open=3 的 Lv2）');
   } catch (e) { bad('15002 place=0 ' + e.message); }
 
-  // 3) place=12 → 26 号开放未满足 → 2356
+  // 3) place=12 → open=3 在 open=26 之前，所以同样是 1003，2356 走不到
   try {
     const g = await c.call(15002, req15002(12));
     if (g.cmd !== 1) bad(`15002 place=12 帧号=${g.cmd}（应为 1）`);
-    else if (g.head[2] !== 2356) bad(`15002 place=12 code=${g.head[2]}（应为 2356 NPC_NO_OPEN）`);
-    else ok('15002 place=12 → 2356 NPC_NO_OPEN');
+    else if (g.head[2] !== 1003)
+      bad(`15002 place=12 code=${g.head[2]}（应为 1003；open=3 早于 open=26）`);
+    else ok('15002 place=12 → 1003（open=3 先判，2356 只在 Lv≥2 后才可能）');
   } catch (e) { bad('15002 place=12 ' + e.message); }
+
+  // 3b) 升到 Lv2 后再打 place=12 → 必须越过 open=3，落到 2356（open=26）
+  //     `UpPlayerLvReq_1003` 是空消息；`1003` 升级成功回 `UpPlayerLvResp_1003{ret=0}`。
+  let leveled = false;
+  try {
+    const up = await c.call(1003, Buffer.alloc(0));
+    leveled = up.cmd === 1003 && up.head[1] === 0;
+    console.log('    1003 升级 ret=%s', up.cmd === 1 ? 'ERR ' + up.head[2] : (up.head[1] ?? '?'));
+  } catch (e) { console.log('    1003 升级异常 %s', e.message); }
+  if (leveled) {
+    try {
+      const g = await c.call(15002, req15002(12));
+      if (g.cmd !== 1) bad(`Lv2 后 15002 place=12 帧号=${g.cmd}（应为 1）`);
+      else if (g.head[2] !== 2356)
+        bad(`Lv2 后 15002 place=12 code=${g.head[2]}（应为 2356 NPC_NO_OPEN）`);
+      else ok('Lv2 后 15002 place=12 → 2356 NPC_NO_OPEN（越过 open=3，卡在 open=26）');
+    } catch (e) { bad('Lv2 后 15002 place=12 ' + e.message); }
+    // 顺手验：Lv2 后 place=0 应该越过 open=3，落到体力不足 1001
+    try {
+      const g = await c.call(15002, req15002(0));
+      if (g.cmd !== 1) bad(`Lv2 后 15002 place=0 帧号=${g.cmd}（应为 1）`);
+      else if (g.head[2] !== 1001)
+        bad(`Lv2 后 15002 place=0 code=${g.head[2]}（应为 1001 体力不足）`);
+      else ok('Lv2 后 15002 place=0 → 1001 TRAVEL_ERROR_PHYSICAL_LIMIT（新号体力 0）');
+    } catch (e) { bad('Lv2 后 15002 place=0 ' + e.message); }
+  } else {
+    console.log('  ⏭  升级未成功，跳过 3b 的两条断言');
+  }
 
   // 4) 15004 十连。MsgTravelTenReq_15004 是空消息。
   try {

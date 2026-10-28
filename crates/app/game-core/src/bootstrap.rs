@@ -372,6 +372,7 @@ impl Bootstrap {
             crate::csv_drop::install(std::path::Path::new(&cfg.template.dir));
             crate::csv_drop::install_pray(std::path::Path::new(&cfg.template.dir));
             crate::csv_travel::install(std::path::Path::new(&cfg.template.dir));
+            crate::csv_status::install(std::path::Path::new(&cfg.template.dir));
             crate::csv_system_open::install_dir(std::path::Path::new(&cfg.template.dir));
             tracing::info!(
                 tables = report.tables,
