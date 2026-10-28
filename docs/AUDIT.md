@@ -1636,6 +1636,143 @@ LanternRiddlesActPlayer activity = (LanternRiddlesActPlayer) activitySet.getActi
 - `calNewCost` 的 `subtractCost` = `preMoney / rate`，**`RoundingMode.DOWN`**。
 - `money` 在 `PlayerBox` 里是十进制 `String`（对齐 `Player.java:146 @Column private String money`），落库 `NUMERIC(40,0)`（迁移 `0007_player_money.sql`）。
 
+## A25 `trade.rs` + `install_trade.rs` + `csv_trade.rs`（通商 19002 / 19003 / 19004 / 19005）
+
+> 基准：`data_d/game_7010544/sources/bf/game/server/message/handler/TradeMessageHandler.java`、
+> `.../module/trade/Trader.java`（424 行）、`.../TraderSet.java`（143 行）、
+> `.../TradeServerModule.java`（87 行）、
+> `data_d/game_7010544/sources/bf/game/server/utils/ResourcesConsumeUtils.java`、
+> `.../ResourcesUtils.java`、`.../DropUtils.java`、
+> `data_d/libs/jb3.common.v1/sources/bf/template/db/ForeignTraderDB.java`、
+> `.../cache/ForeignTraderDBCache.java`。
+
+### 四条消息的入口链
+
+| cmd | 方法 | 前置（按执行顺序） | 失败出口 |
+|---|---|---|---|
+| 19004 | `getTraders(player)` | **无** | 无 |
+| 19002 | `tradeByItem(player, req)` | `trader == null` → `2201`；`num <= 0` → `2208`；`num > ItemDB(37).useLimit` → `2`；酒/银两不足 → `2208` | `ErrorResp_1` |
+| 19003 | `trade(player, req)` | `all > 0 && !isOpen(106) && 商人数 < 3` → `2202`（**在取 trader 之前**）；`trader == null` → `2201`；`leftTimes <= 0` → `2205`；`nextTradeTime >= now` → `2206`；银两不足 → `2207` | `ErrorResp_1` |
+| 19005 | `tradeAll(player)` | 遍历 `1201..=maxTraderId` 全部返回 null → `2210` | `ErrorResp_1` |
+
+### 每条消息都先 `refresh()`
+
+```java
+public TraderSet getTraderSet(String playerId) {
+    TraderSet traderSet = getAndLoadPetSet(playerId);
+    traderSet.refresh();      // ⚠ 无条件刷，每条消息进来都刷
+    return traderSet;
+}
+```
+
+`refresh()` 的判据是 `lastRefreshTime < zeroTime`（今天零点），跨天则重置
+`leftTimes` / `money`，并把 `nextTradeTime` 设为**当天零点**（不是 now）。
+
+### 照抄的行为（原版即如此，不是移植缺陷）
+
+1. **两处判 CD 的运算符不一致**
+   - `trade(int all)`（19003）：`nextTradeTime >= now` → `2206`（等于当前时刻也拒）
+   - `trade(boolean checkCnd, ...)`（19005）：`nextTradeTime > nowTime` → 返回 null（`>`）
+2. **`trade(boolean)` 的 `leftTimes--` / `nextTradeTime` 只在 `checkCnd` 真时执行**
+   ```java
+   if (newMoney >= totalCost) {
+       this.money = "0";
+       if (checkCnd) { this.leftTimes--; this.nextTradeTime = nowTime + TraderTime*MAX_INDEX; }
+       fullReward = true;
+   }
+   ```
+   19005 传 `checkCnd = true`，所以正常路径无差异；`autoPlay` 传 `false` 时次数不动。
+3. **`refresh()` 把 `nextTradeTime` 设为今天零点而非 now**
+   ```java
+   this.nextTradeTime = zeroTime;
+   ```
+   ⇒ 跨天后第一次通商的时间点被回拨到零点。
+4. **`mergeResourcesJson(List)` 把银两输出两次**
+   ```java
+   for (Long num : numMap.values()) { ... }        // 先数值版
+   for (String num : strMap.values()) { ... }      // 再字符串版（仅 MONEY）
+   ```
+   ⇒ `19002`/`19003`/`19005` 的 `cost`/`reward` 里 id=2 会出现两条。
+5. **`toMsgTraderData(Integer... fieldType)` 非空时返回空 builder**
+   本项目全传 `new Integer[0]`，永远走填充分支，与线上一致。
+6. **19003 的 `2202` 判定是三重与，且在取 trader 之前**
+   ```java
+   if (req.getAll() > 0 && !SystemOpenUtils.isOpen(playerId, 106)
+           && traderSet.getMsgPetData().size() < 3) throw TRADE_ERROR_TRADE_ALL_LIMIT;
+   ```
+   ⇒ 「一键通商未开放」的报错在「商人不存在」之前。
+7. **`trade(int)` 末尾 `dropReward.add(reward)` 是死代码**
+   该 `List` 之后既不入包也不返回；Rust 侧直接省略。
+8. **19002 回包 `cost` 只放银两**
+   `costList` 里有葡萄美酒 `(37, itemNum)`，但回包只 `addCost((2, needMoney))`。
+9. **`tradeByItem` 的 `needTimes` 用整数除法**
+   `totalCost.divide(everyCost).intValue() * itemNum`，不是 `(totalCost*itemNum)/everyCost`。
+10. **`TraderSet.addTrader` 的入库与推送写在 for 循环体内**
+    ```java
+    for (Integer traderId : traderIds) {
+        ...
+        DBTraderModule.getInstance().add(arrayList);           // ⚠ 循环内
+        if (notify) traderDataUpdateResp(playerId, trader, new Integer[0]); else continue;
+    }
+    ```
+    `addPet` 的同两行在循环外。本项目无 DB 层，「每加一个推一条」由
+    `grant_traders` 返回 `Vec` 逐个推送复刻。
+11. **19005 的 `reward` 分两次追加**
+    ```java
+    builder.addAllReward(toMsgAwardBuilder(mergeResourcesJson(rewards)));
+    builder.addAllReward(toMsgAwardBuilder(mergeResourcesJson(rewardsMultiple)));
+    ```
+    第二次可以是空列表，但仍是一次独立的 `addAllReward`。
+
+### 本轮未接的部分（过渡实现）
+
+| 原版 | 依赖 | 当前处理 |
+|---|---|---|
+| **商人发放**（`ResourcesUtils.addResourcesJsons` 的 `TypeResources.TRADER`(5) 分支） | 通用发奖链路 | **未实现** ⇒ 新号 `traders` 为空，19002/19003 走 `2201`、19005 走 `2210`。与原版「新号 `trader` 表无行」等价。`grant_traders` 已按原版语义写好待接 |
+| `PetSet.useMiracle(ID_TRADE_REWARD)` | 门客奇迹 | 恒 null ⇒ `miracleReward` / `multipleRewardList` 不含奇迹加成 |
+| `PlayerStatServerModule.addLongStat`（`TradeTimes` / `TradeCompleteTimes`） | 统计模块 | 跳过 |
+| `EventModule.notifyEventMonitorAsynchronous` / `EventLogSendRecord.businessman` | 事件/日志 | 跳过 |
+| `trader` 表落库（`DBTraderModule`） | PG 仓储 | 过渡期 `PlayerBox.traders`（内存），T9 迁 PG |
+| `TraderSet.autoPlay` / `Trader.autoPlay`（`IAutoPlay` 离线播放） | 离线播放框架 | 不接 |
+| `Trader.addTimesByItem()`（道具恢复次数） | — | **`data_d` 里零调用点**（只有定义），不接 |
+| `TradeServerModule` 的 `HashCacheLruByTime` 缓存层 | 缓存框架 | 用 `MemWorld` 内存态替代，`refresh()` 在每条消息入口手动调 |
+
+### 数据事实
+
+| 表 | 路径 | 行数 | 备注 |
+|---|---|---|---|
+| 商人 | `template/csv/T-通商-ForeignTrader.csv` | **10**（id `1201..=1210`） | 列 19 个；`dropId` 是 `list;` 型（实测单值 51…60） |
+| 变量 | `template/csv/B-变量表-Config.csv` | — | `TraderTime`（id=111）= **3600** 秒 |
+| 道具 | `template/csv/D-道具表-Item.csv` | 2674 | `37` = 葡萄美酒，`type=2`，`useLimit=100`；`1201..1210` 是 `type=5`(TRADER) |
+
+```
+1201 unlock=6   tradeNum=3 totalCost=25000000      everyCost=500000     everyReward=30000  dropId=51
+1202 unlock=18  tradeNum=3 totalCost=500000000     everyCost=10000000   everyReward=60000  dropId=52
+1203 unlock=35  tradeNum=3 totalCost=2500000000    everyCost=50000000   everyReward=100000 dropId=53
+1204 unlock=55  tradeNum=3 totalCost=7500000000    everyCost=150000000  everyReward=150000 dropId=54
+1205 unlock=75  tradeNum=3 totalCost=25000000000   everyCost=500000000  everyReward=200000 dropId=55
+1206 unlock=100 tradeNum=3 totalCost=100000000000  everyCost=2000000000 everyReward=250000 dropId=56
+1207 unlock=125 tradeNum=3 totalCost=250000000000  everyCost=5000000000 everyReward=300000 dropId=57
+1208 unlock=150 tradeNum=3 totalCost=500000000000  everyCost=10000000000 everyReward=400000 dropId=58
+1209 unlock=175 tradeNum=3 totalCost=1500000000000 everyCost=30000000000 everyReward=500000 dropId=59
+1210 unlock=200 tradeNum=3 totalCost=4000000000000 everyCost=80000000000 everyReward=600000 dropId=60
+```
+
+### 常量
+
+- `Coliseum.MAX_INDEX = 1000`（`Coliseum.java:37`）。
+- 一次通商 CD = `ConfigDBCache.TraderTime * Coliseum.MAX_INDEX = 3600 * 1000 = 3_600_000` ms
+  （`LogicUtils.getNowTime()` 是毫秒，乘完不再 ×1000）。
+- 系统开放 id `106` = 通商-一键通商（`G-功能开启表-SystemOpen.csv`）。
+- 掉落组 51–60 的二级 id：`5101` / `5201;5202` / `5301` / … / `6001;6002`；
+  只有 53 有 `givenDrop=1=5301`。
+
+### 大数语义
+
+`totalCost` 最大 `4000000000000`（4e12），`needMoney = totalCost * itemNum`（itemNum ≤ 100）
+最大 `4e14`，仍在 `i64` 内；但为了与 `TraderRow` 的字符串字段保持一致、避免将来调大数值时溢出，
+`trade.rs` 内部一律用 `num-bigint::BigInt`（`parse_big` / `div_int`）。
+
 ## A1' 新发现：模板默认值与原版偏差（RawTable 接真数据时暴露）
 
 | 项 | 原版（真 CSV 实测） | 当前 Rust 过渡值 | 影响 |

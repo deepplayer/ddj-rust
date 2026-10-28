@@ -323,13 +323,14 @@ fn settle_trade(
     out: &TradeOutcome,
     row: &TraderRow,
 ) -> Vec<(i32, i64)> {
-    let (cost, reward) = (out.cost_money.clone(), out.reward.clone());
-    w.with(p, |b| {
-        take_money(b, &cost);
-        add_rewards(b, &[(EXP_ID, big_to_i64(&reward))]);
-    });
+    // `ResourcesConsumeUtils.removeResources(player, remove, TYPE_TRADE, ...)`
+    let cost = out.cost_money.clone();
+    w.with(p, |b| take_money(b, &cost));
     // `save()` → `MessageUtil.sendToPlayerId(MsgTraderResp_19001{...})`
     push_trader(ctx, w, p, row.id);
+    // `ResourcesUtils.addResourcesJsons(player, [reward], TYPE_TRADE, ...)`
+    let reward = out.reward.clone();
+    w.with(p, |b| add_rewards(b, &[(EXP_ID, big_to_i64(&reward))]));
     if !out.full_reward {
         return Vec::new();
     }
@@ -350,12 +351,14 @@ fn settle_trade_all(
     out: &TradeAllOutcome,
     row: &TraderRow,
 ) -> Vec<(i32, i64)> {
-    let (cost, gain) = (out.cost_money.clone(), out.gain.clone());
-    w.with(p, |b| {
-        take_money(b, &cost);
-        add_rewards(b, &[(EXP_ID, big_to_i64(&gain))]);
-    });
+    // `ResourcesConsumeUtils.removeResources(player, remove, TYPE_TRADE, ...)`
+    let cost = out.cost_money.clone();
+    w.with(p, |b| take_money(b, &cost));
+    // `save()` → `MessageUtil.sendToPlayerId(MsgTraderResp_19001{...})`
     push_trader(ctx, w, p, row.id);
+    // `ResourcesUtils.addResourcesJsons(player, rewardList, TYPE_TRADE, ...)`
+    let gain = out.gain.clone();
+    w.with(p, |b| add_rewards(b, &[(EXP_ID, big_to_i64(&gain))]));
     if !out.full_reward {
         return Vec::new();
     }

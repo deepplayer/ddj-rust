@@ -361,7 +361,7 @@ pub fn trade_verdict(
             if need_times < 1 {
                 return Err(CODE_MONEY_LIMIT);
             }
-            cost_money = cost_money * BigInt::from(need_times);
+            cost_money *= BigInt::from(need_times);
         }
     } else if *cur_money < cost_money {
         return Err(CODE_MONEY_LIMIT);
