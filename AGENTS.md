@@ -140,17 +140,29 @@ cp /tmp/gh-art/ddj-<full-sha>/ddj bin/ddj && chmod +x bin/ddj
 sha256sum bin/ddj && ./bin/ddj --version && ./bin/ddj list
 ```
 
-### 门禁在 Actions 里
+### 门禁在 Actions 里（每个 workflow 只干一件事）
 
-`.github/workflows/ci.yml` 有三个 job：
+本机 **2 核 / 4 G 可用内存 / 剩 3 G 磁盘**，任何全量 cargo 任务都跑不动，
+所以门禁全部拆成单职责 workflow，push 后并行触发：
 
-| job | 内容 | 是否阻塞 |
-|---|---|---|
-| `check` | `cargo xt check-arch` → clippy `--lib --bins -D warnings` → `cargo test --workspace` | **是** |
-| `fmt` | `cargo fmt --all -- --check` | 否（`continue-on-error`，移植期未统一格式化） |
-| `release` | `cargo build --release -p ddj-cli` + 上传 artifact（保留 14 天） | 是（`needs: check`） |
+| workflow | job | 内容 | 触发 | 阻塞 |
+|---|---|---|---|---|
+| `1-gate.yml` | `arch` | `cargo run -p xtask -- check-arch` | push / PR / 手动 | **是** |
+| `1-gate.yml` | `clippy` | `cargo clippy --workspace --exclude ddj-pb --lib --bins -D warnings` | push / PR / 手动 | **是** |
+| `1-gate.yml` | `fmt` | `cargo fmt --all -- --check` | push / PR / 手动 | 否（`continue-on-error`） |
+| `2-build.yml` | `release` | `cargo build --release -p ddj-cli` + 上传 artifact（14 天） | push / 手动 | **是** |
+| `3-test.yml` | `workspace` | `cargo test --workspace` | push / PR / 手动 | **是** |
+| `4-e2e.yml` | `smoke` | 起 PG+Redis + 跑 `e2e/smoke/*.mjs` | **仅手动** | — |
 
-所以 **push 之后看 `check` 与 `release` 两个 job 是否绿**，`fmt` 红是已知状态。
+拆分原则：**一个 workflow 一件事**，不再用 `needs:` 串联，失败时一眼看出是哪道门禁红。
+`2-build.yml` 不再依赖门禁 —— 构建与门禁并行跑，省的时间比「构建白做」更值
+（一个 release 约 2 分钟）。
+
+`4-e2e.yml` 只 checkout `rust/`，没有 `data/` 里的真实 CSV，
+所以断言 CSV 行数的测试会走 `csv_dir() == None` 的早退分支（静默跳过）——
+真数据验证仍在本机 9 个冒烟里做。
+
+push 之后要绿的是 `1-gate`（除 `fmt`）、`2-build`、`3-test`；`fmt` 红是已知状态。
 
 ### 历史教训（web-shell 方案已废弃）
 
@@ -166,10 +178,19 @@ sha256sum bin/ddj && ./bin/ddj --version && ./bin/ddj list
 
 ### 本机允许做的事
 
-- `cargo check --workspace`（省时间，只验语法/类型）
-- `cargo xt check-arch`（纯静态，秒级）
-- `cargo test -p <crate>`（单 crate 纯函数单测，秒级）
-- **不允许** `cargo build --release`（内存不足且没必要）
+本机 **只做两件事：写代码、跑二进制**。cargo 一律上 Actions。
+
+- ✅ 编辑源码 / 文档 / workflow / 冒烟脚本
+- ✅ `./bin/ddj run game`、`node e2e/smoke/*.mjs`（跑现成二进制）
+- ✅ `gh run list` / `gh run watch` / `gh run download`（看 CI、取产物）
+- ✅ `git add/commit/push`
+- ❌ `cargo build` / `cargo build --release`（2 核 4 G，磁盘只剩 3 G）
+- ❌ `cargo test` / `cargo clippy` / `cargo check`（同样吃内存与磁盘）
+- ❌ 任何会让 `target/` 增长的命令
+- ⚠️ 万一必须本地看语法错：`rustc --edition 2021 --emit metadata -o /dev/null <file>`
+  只查语法；类型/借用错误一律靠 `1-gate.yml` 回报。
+
+磁盘紧张时先 `rm -rf target/debug/incremental` 再谈别的。
 
 ## 6. 代码组织
 

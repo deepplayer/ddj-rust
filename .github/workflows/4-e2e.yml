@@ -1,0 +1,95 @@
+name: 4 e2e
+
+# 单一职责：起 PG + Redis + 编译出的二进制，跑 e2e/smoke/*.mjs。
+# 手动触发为主（workflow_dispatch）：冒烟需要真实二进制与数据库，
+# 每次 push 都跑太贵；需要验证某个 commit 时手动开。
+#
+# 本机只负责「拿 CI 产物 + 本地跑冒烟」，这个 workflow 是给
+# 「不想在本机跑」的情况准备的兜底。
+
+on:
+  workflow_dispatch:
+    inputs:
+      smoke:
+        description: "要跑的冒烟脚本（空格分隔，留空=全部）"
+        required: false
+        default: ""
+      node_version:
+        description: "Node 版本"
+        required: false
+        default: "22"
+
+env:
+  CARGO_TERM_COLOR: always
+  DDJ_CSV_DIR: ${{ github.workspace }}/data/apps/game_7010544/resource/template
+
+jobs:
+  smoke:
+    name: 冒烟
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # 冒烟的 CSV 与模板在仓库上一级（data/），这里只 checkout rust/，
+          # 所以 CSV 相关的断言在 CI 里会命中 csv_dir() 的 return 早退（静默跳过），
+          # 这是已知且有意的 —— 真数据验证在本机做。
+          path: rust
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust
+          shared-key: release
+
+      - name: cargo build --release
+        run: cargo build --release -p ddj-cli
+        working-directory: rust
+
+      - name: 启动 PG + Redis
+        run: |
+          set -euo pipefail
+          docker run -d --name pg -p 55432:5432 \
+            -e POSTGRES_USER=game -e POSTGRES_PASSWORD=game \
+            -e POSTGRES_DB=platform postgres:16-alpine
+          docker run -d --name redis -p 6379:6379 redis:7-alpine
+          for i in $(seq 1 30); do
+            docker exec pg pg_isready -U game && break
+            sleep 2
+          done
+
+      - name: 启动 game 服务
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/ddj-run
+          DDJ_RUN_DIR=/tmp/ddj-run ./target/release/ddj run game > /tmp/ddj-run.log 2>&1 &
+          for i in $(seq 1 30); do
+            if grep -q "服务就绪" /tmp/ddj-run.log 2>/dev/null; then break; fi
+            sleep 2
+          done
+          grep -E "服务就绪|handlers=" /tmp/ddj-run.log || { cat /tmp/ddj-run.log; exit 1; }
+        working-directory: rust
+
+      - name: 跑冒烟
+        run: |
+          set -uo pipefail
+          cd rust
+          LIST="${{ inputs.smoke }}"
+          if [ -z "$LIST" ]; then
+            LIST=$(ls e2e/smoke/*_smoke.mjs | xargs -n1 basename | sed 's/_smoke\.mjs//')
+          fi
+          fail=0
+          for f in $LIST; do
+            printf '%-16s ' "$f"
+            if node "e2e/smoke/${f}_smoke.mjs" 2>&1 | tail -1; then :; else fail=1; fi
+          done
+          exit $fail
+
+      - name: 服务日志
+        if: always()
+        run: tail -100 /tmp/ddj-run.log || true

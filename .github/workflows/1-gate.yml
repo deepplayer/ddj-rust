@@ -1,0 +1,69 @@
+name: 1 门禁
+
+# 单一职责：格式 + 分层依赖 + lint。**不跑测试**（测试在 3-test.yml）。
+# 拆开的原因：本机只有 2 核 / 4G 可用内存 / 3G 磁盘，任何 cargo 全量任务都跑不动，
+# 全部搬到 Actions；拆成独立 workflow 后每个 job 只在需要时才跑，
+# 失败时一眼能看出是哪一道门禁红了。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+  # 不写 CARGO_BUILD_JOBS：runner 默认按核数跑。
+
+concurrency:
+  group: gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  arch:
+    name: 分层依赖
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust
+          shared-key: arch
+      - name: cargo xtask check-arch
+        run: cargo run -p xtask -- check-arch
+
+  clippy:
+    name: clippy
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust
+          shared-key: clippy
+      # 不用 --all-targets：crates/app/game-handler/src/runtime.rs 的
+      # #[cfg(test)] mod tests 位于文件中段，--all-targets 会编 lib test target
+      # 并触发 clippy::items_after_test_module 的 deny。
+      - name: cargo clippy
+        run: cargo clippy --workspace --exclude ddj-pb --lib --bins -- -D warnings
+
+  fmt:
+    name: rustfmt（仅报告，不阻塞）
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - name: cargo fmt --check
+        run: cargo fmt --all -- --check

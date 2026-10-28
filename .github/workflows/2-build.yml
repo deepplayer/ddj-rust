@@ -1,0 +1,52 @@
+name: 2 build
+
+# 单一职责：只做 release 构建并上传二进制。不跑任何检查。
+# 本机不编译（2 核 / 4G / 剩 3G 磁盘），二进制一律从这里取：
+#   gh run download <run-id> -D /tmp/gh-art
+#   cp /tmp/gh-art/ddj-<full-sha>/ddj bin/ddj && chmod +x bin/ddj
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release:
+    name: release 构建
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust
+          shared-key: release
+
+      - name: cargo build --release
+        run: cargo build --release -p ddj-cli
+
+      - name: 校验产物
+        run: |
+          set -euo pipefail
+          test -x target/release/ddj
+          ls -lh target/release/ddj
+          sha256sum target/release/ddj
+          target/release/ddj --version || true
+
+      - name: 上传二进制
+        uses: actions/upload-artifact@v4
+        with:
+          name: ddj-${{ github.sha }}
+          path: target/release/ddj
+          if-no-files-found: error
+          retention-days: 14
