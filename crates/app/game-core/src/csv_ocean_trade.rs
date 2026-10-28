@@ -222,7 +222,7 @@ fn load_rank(csv: &Path) -> Vec<(i32, Vec<(i32, i64)>)> {
         let Some(rank_cell) = t.text(row, "rank") else {
             continue;
         };
-        let Some(rank) = list_of(&rank_cell).last().and_then(|v| v.parse().ok()) else {
+        let Some(rank) = list_of(rank_cell).last().and_then(|v| v.parse().ok()) else {
             continue;
         };
         out.push((
