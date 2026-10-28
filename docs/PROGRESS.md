@@ -73,16 +73,24 @@ cargo xt check-arch                                         4 条规则通过
 | 猜灯谜 | 37603 / 37604 / 37605 / 37607 | `MemWorld` + 注入题表 | ⚠ 线上 `bf_activity` 无 `typeId=50` → 四条恒回 2（原版 NPE）|
 | 远洋贸易 | 41001 / 41002 / 41003 | **真实 CSV** + `MemWorld` | ⚠ 41002 **不判** `isOpen(19)`；`BigInt` 全链路（末关 cost 4.68e18）|
 
-### 构建产物（2026-10-28 21:28 实测）
+### 构建产物（2026-10-28 22:59 实测）
 
 ```text
-commit  afbaa5d
-run     40695553673   fmt+clippy+test ✓ / release ✓ / rustfmt 红（已知不阻塞）
-sha256  c36b4be5dfb18929fef028481ec8d5f0eb2c73dcedad969e0233e80c79704408
+commit  2e6a609
+run     40706835559  1 门禁   arch ✓ clippy ✓ rustfmt 红（已知不阻塞）  1m47s
+        40706834936  3 test   867 passed / 0 failed                    2m56s
+        40706834554  2 build  release ✓                                 4m04s
+sha256  b40abbae5f40a944768355b7c098fe625678af4283ffd0862bc593541a063e98
 启动    handlers=92
 e2e     travel ✅  lantern ✅  pray ✅  anticheat ✅  counter ✅
         shortcut ✅  favourable ✅  system_open ✅  ocean_trade ✅
 ```
+
+> **CI 已拆分（commit `2e6a609`）**：原 `ci.yml` 一个 workflow 带 `check`/`fmt`/`release`
+> 三个 job 且用 `needs:` 串联，现在拆成四个单职责 workflow 并行触发：
+> `1-gate.yml`（arch / clippy / fmt）、`2-build.yml`、`3-test.yml`、`4-e2e.yml`（仅手动）。
+> 本机不再跑任何 cargo 任务 —— 只写代码、跑 `bin/ddj`、跑 `e2e/smoke/*.mjs`。
+> 详见 `AGENTS.md` §5。
 
 > ⚠ **装配事故备忘**：`install_travel` 的装配行曾被 `07519e2` 误删，
 > `install_travel.rs` 自身编过、单测全绿，只有 e2e 冒烟报超时才暴露。
