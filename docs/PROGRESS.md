@@ -75,11 +75,12 @@ cargo xt check-arch                                         4 条规则通过
 ### 构建产物（2026-10-28 15:34 实测）
 
 ```text
-commit  b14fc17
-run     40650509911   fmt+clippy+test 1m56s ✓ / release 2m5s ✓ / rustfmt 红（已知不阻塞）
-sha256  b0f3c07576eaeebadb56f91fa7eace0fe1b221b6ca0182fdb90f4e2160a1282d
-启动    系统开放表 rows=100 / 开服时间 open_time=1733356835000 / 活动模板 rows=11 / handlers=82
-e2e     system_open 6/6 ✅  pray 5 ✅  anticheat 8 ✅  counter 7 ✅  shortcut 5 ✅  favourable 4 ✅
+commit  5dac48e
+run     40673188213   fmt+clippy+test 2m54s ✓ / release 1m50s ✓ / rustfmt 红（已知不阻塞）
+sha256  6cb0e2564eb274a990eb840ac18efcbd498d2660a913d6a1009fca02e134102d
+启动    handlers=89
+e2e     lantern 6/6 ✅  travel ✅  pray ✅  anticheat ✅  counter ✅
+        shortcut ✅  favourable ✅  system_open ✅
 ```
 
 ## 三、未接线（占位，`ret=501`）
