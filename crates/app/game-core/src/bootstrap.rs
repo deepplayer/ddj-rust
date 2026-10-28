@@ -371,6 +371,7 @@ impl Bootstrap {
             crate::csv_shortcut::install(std::path::Path::new(&cfg.template.dir));
             crate::csv_drop::install(std::path::Path::new(&cfg.template.dir));
             crate::csv_drop::install_pray(std::path::Path::new(&cfg.template.dir));
+            crate::csv_system_open::install_dir(std::path::Path::new(&cfg.template.dir));
             tracing::info!(
                 tables = report.tables,
                 rows = report.rows,
@@ -382,6 +383,11 @@ impl Bootstrap {
         } else {
             Arc::new(TemplateStore::new())
         };
+
+        // `GsServer.open_time`：`SystemOpenUtils.isOpen` 的 `unlockType=13`
+        // 与 `PrayDBCache.getByServerOpenDay` 都要它。查不到时保持 0
+        // （`open_server_day` 恒为 1 = 开服当天）。
+        crate::csv_system_open::install_server_facts(&db.platform, cfg.service.server_id).await;
 
         let mut table = HandlerTable::empty();
         // 原版 `getPlayerIDRange()` 是运行时常量，创角与看他人共用一个。

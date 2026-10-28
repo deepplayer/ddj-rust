@@ -5,7 +5,7 @@
 //!
 //! - 1009 `GsGiftManager` 查不到任何 key → 走 `PLAYER_ERROR_10(110)`；
 //! - 1010 `getAddressInfo` 视为有地址、两种扣费都视为充足；
-//! - 1015 没有 `SystemOpenDB` 模板 → `ret=2`（原版 NPE 被 catch）；
+//! - 1015 走真实 `SystemOpenDBCache`（见 [`crate::install_system_open`]）；
 //! - 1024 改性别扣费视为成功。
 
 use std::sync::Arc;
@@ -107,8 +107,12 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
             let req = SystemOpenReq1015::decode(body).map_err(decode_err)?;
             ctx.require_player()?;
             let system_id = req.system_id.unwrap_or(0);
-            // 过渡期没有 SystemOpenDB 模板。
-            let out = player_misc::system_open(system_id, None);
+            // 走真实 `SystemOpenDBCache`（`G-功能开启表-SystemOpen.csv`）。
+            // 表缺失 / 该 id 不存在 → `None` → 原版 NPE → `ret=2`。
+            let name = crate::install_system_open::cache()
+                .get(system_id)
+                .map(|t| t.name.as_str());
+            let out = player_misc::system_open(system_id, name);
             let ret = match out {
                 SystemOpenOutcome::Accept { .. } => 0,
                 SystemOpenOutcome::Reject(code) => code.as_i32(),

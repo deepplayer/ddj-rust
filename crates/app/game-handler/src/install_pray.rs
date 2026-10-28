@@ -66,11 +66,13 @@ fn templates() -> &'static [PrayTemplate] {
 
 /// 开服天数（`GameServer.getDay(openTime, now)`）。
 ///
-/// 过渡期：没有 `GsServer.open_time`，固定按「开服已久」处理（返回一个大数），
-/// 这样 `getByServerOpenDay` 总能拿到 `day=1` 那一行。
+/// 走真实的 `bf_server.open_time`（见 [`crate::install_system_open::open_server_day`]）。
+/// 未注入时 `open_time = 0` → 返回 1，`getByServerOpenDay` 拿到 `day=1` 那一行。
 fn open_day(now: i64) -> i32 {
-    // 原版 `getDay` 是「零点对齐后的天数差」。用纪元日序号即可。
-    i32::try_from((now + TZ_MS).div_euclid(86_400_000)).unwrap_or(i32::MAX)
+    crate::install_system_open::open_server_day(
+        crate::install_system_open::server().open_time,
+        now,
+    )
 }
 
 /// `LogicUtils.getTodayZeroTimeStamp()`。
@@ -190,8 +192,11 @@ pub fn install(table: &mut HandlerTable, world: Arc<MemWorld>, clock: Arc<dyn Cl
             let now = c.now_millis();
             let times = PrayTimes::from_times(req.times.unwrap_or(0));
 
-            // 系统开放 / 开服天数选表
-            let _ = SYSTEM_OPEN_PRAY;
+            // 系统开放：`SystemOpenUtils.isOpen(player.getId(), 120)`
+            // 实测 CSV 里 120 = `13 = 2`（开服 2 天）→ 第 2 天起才开放。
+            if !crate::install_system_open::is_open(&w, p, c.as_ref(), crate::install_system_open::server(), SYSTEM_OPEN_PRAY) {
+                return Ok(Some(reject(17071, PRAY_ERROR_UN_OPEN)));
+            }
             let Some(tpl) = pray::by_open_day(templates(), open_day(now)).cloned() else {
                 return Ok(Some(reject(17071, PRAY_ERROR_UN_OPEN)));
             };
