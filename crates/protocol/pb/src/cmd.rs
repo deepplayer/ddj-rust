@@ -288,6 +288,22 @@ pub enum RetCode {
     PrayErrorUnOpen = 3901,
     /// 焚香祈愿 - 资源不足（`PRAY_ERROR_COST`）。
     PrayErrorCost = 3902,
+    /// `LanguageUtils.TRADE_ERROR_NOT_EXIST_TRADER(2201)`：通商 - 商人不存在。
+    TradeNotExistTrader = 2201,
+    /// `LanguageUtils.TRADE_ERROR_TRADE_ALL_LIMIT(2202)`：通商 - 一键通商未开放。
+    TradeAllLimit = 2202,
+    /// `LanguageUtils.TRADE_ERROR_FULL_TRADE_LIMIT(2204)`：通商 - 可使用通商次数已满。
+    TradeFullLimit = 2204,
+    /// `LanguageUtils.TRADE_ERROR_ZERO_TRADE_TIMES(2205)`：通商 - 该商人的通商次数已用完。
+    TradeZeroTimes = 2205,
+    /// `LanguageUtils.TRADE_ERROR_CD(2206)`：通商 - CD。
+    TradeCd = 2206,
+    /// `LanguageUtils.TRADE_ERROR_MONEY_LIMIT(2207)`：通商 - 银两不足。
+    TradeMoneyLimit = 2207,
+    /// `LanguageUtils.TRADE_ERROR_RESOURCES_LIMIT(2208)`：通商 - 资源不足。
+    TradeResourcesLimit = 2208,
+    /// `LanguageUtils.TRADE_ERROR_ALL_LIMIT(2210)`：通商 - 没有商人可以通商。
+    TradeAllNothing = 2210,
     /// `LanguageUtils.OCEAN_TRADE_NOT_OPEN(3001)`：远洋贸易未开启。
     OceanTradeNotOpen = 3001,
     /// `LanguageUtils.OCEAN_TRADE_NUM_ILLEGAL(3002)`：关卡数非法 / 已通关。
@@ -464,6 +480,14 @@ impl RetCode {
             2356 => Self::NpcNoOpen,
             3901 => Self::PrayErrorUnOpen,
             3902 => Self::PrayErrorCost,
+            2201 => Self::TradeNotExistTrader,
+            2202 => Self::TradeAllLimit,
+            2204 => Self::TradeFullLimit,
+            2205 => Self::TradeZeroTimes,
+            2206 => Self::TradeCd,
+            2207 => Self::TradeMoneyLimit,
+            2208 => Self::TradeResourcesLimit,
+            2210 => Self::TradeAllNothing,
             3001 => Self::OceanTradeNotOpen,
             3002 => Self::OceanTradeNumIllegal,
             3003 => Self::OceanTradeQuicklyLocked,
@@ -607,6 +631,14 @@ impl RetCode {
             Self::NpcNoOpen => "知己-功能未开启",
             Self::PrayErrorUnOpen => "焚香祈愿-未开放",
             Self::PrayErrorCost => "焚香祈愿-资源不足",
+            Self::TradeNotExistTrader => "通商-商人不存在",
+            Self::TradeAllLimit => "通商-一键通商未开放",
+            Self::TradeFullLimit => "通商-可使用通商次数已满",
+            Self::TradeZeroTimes => "通商-该商人的通商次数已用完",
+            Self::TradeCd => "通商-CD",
+            Self::TradeMoneyLimit => "通商-银两不足",
+            Self::TradeResourcesLimit => "通商-资源不足",
+            Self::TradeAllNothing => "通商-没有商人可以通商",
             Self::OceanTradeNotOpen => "远洋贸易-未开启",
             Self::OceanTradeNumIllegal => "远洋贸易-关卡数非法",
             Self::OceanTradeQuicklyLocked => "远洋贸易-一键谈判未解锁",
@@ -660,6 +692,7 @@ mod tests {
             4731, 4732, 4722, 3941, 3942, 2754, 2751, 2752, 3901, 3902,
             1001, 1003, 1004, 1005, 1006, 2356,
             5400, 5401, 5402, 5403, 5404, 5405, 5406, 5407,
+            2201, 2202, 2204, 2205, 2206, 2207, 2208, 2210,
             3001, 3002, 3003, 3004,
         ] {
             let c = RetCode::from_i32(v).unwrap_or_else(|| panic!("缺 {v}"));

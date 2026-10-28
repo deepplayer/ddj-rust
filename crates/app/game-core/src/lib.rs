@@ -31,6 +31,7 @@ pub mod csv_shortcut;
 pub mod csv_status;
 pub mod csv_sign;
 pub mod csv_system_open;
+pub mod csv_trade;
 pub mod csv_templates;
 pub mod gm_backend;
 pub mod lifecycle_modules;

@@ -220,6 +220,11 @@ pub struct PlayerBox {
     /// 原版是 `activity_lantern_riddle` 表的一行（`playerId + activityType + activityId`），
     /// 过渡期只放内存。见 AUDIT A23。
     pub lantern: HashMap<i32, crate::lantern_riddles::RiddleState>,
+    /// `trader` 表的一批行：键是 `traderId`（`1201..=1210`）。
+    ///
+    /// 原版 `TraderSet.allTraderMap` 由 `DBTraderModule.getTraders(playerId)` 全量装入，
+    /// 过渡期只放内存。见 AUDIT A25。
+    pub traders: HashMap<i32, crate::trade::TraderState>,
 }
 
 impl PlayerBox {

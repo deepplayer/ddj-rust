@@ -371,6 +371,7 @@ impl Bootstrap {
             crate::csv_shortcut::install(std::path::Path::new(&cfg.template.dir));
             crate::csv_drop::install(std::path::Path::new(&cfg.template.dir));
             crate::csv_drop::install_pray(std::path::Path::new(&cfg.template.dir));
+            crate::csv_trade::install(std::path::Path::new(&cfg.template.dir));
             crate::csv_travel::install(std::path::Path::new(&cfg.template.dir));
             crate::csv_ocean_trade::install(std::path::Path::new(&cfg.template.dir));
             crate::csv_status::install(std::path::Path::new(&cfg.template.dir));

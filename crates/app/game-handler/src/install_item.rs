@@ -63,6 +63,18 @@ fn templates() -> Option<&'static Arc<dyn ItemTemplates>> {
     TEMPLATES.get()
 }
 
+/// `ItemDB.useLimit` 的公开视图（供通商等模块判「一次最多用几个」）。
+///
+/// 模板表未注入时退回 [`ASSUMED_USE_LIMIT`]，与 [`MemLookups::item_template`]
+/// 的处理保持一致。原版 `ItemDBCache.getItemTemplate(id)` 找不到行会返回 null
+/// 并在调用方 NPE，这里不复制那个崩溃。
+#[must_use]
+pub fn item_use_limit(template_id: i32) -> i32 {
+    templates()
+        .and_then(|t| t.use_limit(template_id))
+        .unwrap_or(ASSUMED_USE_LIMIT)
+}
+
 /// 从内存态合成模板与资源判定的查询器。
 struct MemLookups<'a> {
     world: &'a MemWorld,
@@ -89,9 +101,11 @@ impl ItemLookup for MemLookups<'_> {
     fn gift(&self, template_id: i32) -> Result<Option<Gift>> {
         // 原版 `GiftDBCache.getGiftDB(templateId)`：表里没有这一行就返回 null。
         // 真表里 1066 行礼包配置只有 10 行填了 `useCost`。
-        Ok(templates().and_then(|t| t.use_cost(template_id)).map(|(id, num)| Gift {
-            use_cost: Some((id, num)),
-        }))
+        Ok(templates()
+            .and_then(|t| t.use_cost(template_id))
+            .map(|(id, num)| Gift {
+                use_cost: Some((id, num)),
+            }))
     }
 
     fn gift_check_for_using(&self, gift: &Gift) -> Result<Option<ddj_pb::cmd::RetCode>> {

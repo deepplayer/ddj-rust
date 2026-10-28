@@ -224,6 +224,7 @@ pub fn register(
         n += crate::install_shortcut::install(table, world.clone(), clock.clone());
         n += crate::install_sign::install(table, world.clone(), clock.clone());
         n += crate::install_special_msg::install(table, world.clone(), clock.clone());
+        n += crate::install_trade::install(table, world.clone(), clock.clone());
         n += crate::install_travel::install(table, world.clone(), clock.clone());
         n += crate::install_state::install(table, world.clone(), clock.clone());
         if let Some(v) = view.repo {
@@ -335,16 +336,22 @@ impl ErasedHandler for CreatePlayerHandler {
                             attempt,
                             "创角成功"
                         );
-                        return Ok(Some(Bytes::from(
-                            player::build_resp(ddj_pb::cmd::RetCode::Ok).encode_to_vec(),
-                        ).into()));
+                        return Ok(Some(
+                            Bytes::from(
+                                player::build_resp(ddj_pb::cmd::RetCode::Ok).encode_to_vec(),
+                            )
+                            .into(),
+                        ));
                     }
                 }
                 // 两次都撞 → 原版 `createPlayer` 返回 null → PLAYER_ERROR_3(103)
                 tracing::warn!(peer = %ctx.peer_ip, name = %name, "创角落库连续冲突");
-                Ok(Some(Bytes::from(
-                    player::build_resp(ddj_pb::cmd::RetCode::NameDuplicate).encode_to_vec(),
-                ).into()))
+                Ok(Some(
+                    Bytes::from(
+                        player::build_resp(ddj_pb::cmd::RetCode::NameDuplicate).encode_to_vec(),
+                    )
+                    .into(),
+                ))
             }
         }
     }
@@ -644,16 +651,24 @@ mod tests {
             37603, 37604, 37605, 37607, // 猜灯谜
             41001, 41002, 41003, // 远洋贸易
             17151, 17152, 17153, // 防骗手册
-            8001, 8002,   // 计数器恢复
+            8001, 8002, // 计数器恢复
             17071, 17072, // 焚香祈愿
             17101, 17102, 17103, // 渠道好评
             17301, 17302, 17303, // 保存桌面
-            1109,   // 客户端特约
+            19002, 19003, 19004, 19005, // 通商
+            1109,  // 客户端特约
         ];
         for cmd in must {
-            assert!(t.get(cmd).is_some(), "cmd {cmd} 未入表 —— 忘了在 register 里装配");
+            assert!(
+                t.get(cmd).is_some(),
+                "cmd {cmd} 未入表 —— 忘了在 register 里装配"
+            );
         }
-        assert!(n >= must.len(), "register 只接了 {n} 个，不到 {must_len}", must_len = must.len());
+        assert!(
+            n >= must.len(),
+            "register 只接了 {n} 个，不到 {must_len}",
+            must_len = must.len()
+        );
     }
 
     /// 固定时钟，用于装配测试。
