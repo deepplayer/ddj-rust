@@ -224,6 +224,7 @@ pub fn register(
         n += crate::install_shortcut::install(table, world.clone(), clock.clone());
         n += crate::install_sign::install(table, world.clone(), clock.clone());
         n += crate::install_special_msg::install(table, world.clone(), clock.clone());
+        n += crate::install_travel::install(table, world.clone(), clock.clone());
         n += crate::install_state::install(table, world.clone(), clock.clone());
         if let Some(v) = view.repo {
             n += crate::install_view::install(
@@ -609,6 +610,60 @@ mod tests {
         assert_eq!(n, 1);
         assert!(t.get(CMD_LOGIN).is_some(), "登录应已入表");
         assert!(t.get(11002).is_none(), "未移植的链路不应凭空出现");
+    }
+
+    /// 装配点守卫。
+    ///
+    /// 曾经出过一次事故：重构 `handlers.rs` 时把 `install_travel` 那一行整行删掉，
+    /// 而 `install_travel.rs` 本身仍编过、单测仍绿 —— 只有 e2e 冒烟能发现。
+    /// 这里把「每个已接线模块都必须真的被 register 调用」钉成断言，
+    /// 让遗忘装配在 `cargo test` 阶段就红。
+    #[tokio::test]
+    async fn register_wires_every_ported_module() {
+        let mut t = HandlerTable::empty();
+        let world = MemWorld::new();
+        let clock: Arc<dyn Clock> = Arc::new(TestClock(1_700_000_000_000));
+        let n = register(
+            &mut t,
+            ServerState::healthy(1),
+            None,
+            None,
+            None,
+            None,
+            Some((world, clock)),
+            ViewDeps {
+                repo: None,
+                my_server_id: 1,
+                id_range: 1_000_000,
+            },
+        )
+        .expect("注册");
+        // 已移植且必须入表的消息（每接一批就往这里加）。
+        let must = [
+            15002, 15004, 15009, // 游历
+            37603, 37604, 37605, 37607, // 猜灯谜
+            41001, 41002, 41003, // 远洋贸易
+            17151, 17152, 17153, // 防骗手册
+            8001, 8002,   // 计数器恢复
+            17071, 17072, // 焚香祈愿
+            17101, 17102, 17103, // 渠道好评
+            17301, 17302, 17303, // 保存桌面
+            1109,   // 客户端特约
+        ];
+        for cmd in must {
+            assert!(t.get(cmd).is_some(), "cmd {cmd} 未入表 —— 忘了在 register 里装配");
+        }
+        assert!(n >= must.len(), "register 只接了 {n} 个，不到 {must_len}", must_len = must.len());
+    }
+
+    /// 固定时钟，用于装配测试。
+    #[derive(Debug)]
+    struct TestClock(i64);
+
+    impl Clock for TestClock {
+        fn now(&self) -> chrono::DateTime<chrono::Utc> {
+            chrono::DateTime::from_timestamp_millis(self.0).expect("合法毫秒")
+        }
     }
 
     #[tokio::test]

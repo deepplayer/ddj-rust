@@ -348,17 +348,23 @@ mod tests {
     }
 
     #[test]
-    fn real_rank_csv_has_13_rows() {
+    fn real_rank_csv_has_8_rows() {
         let Some(dir) = csv_dir() else {
             return;
         };
         let t = CsvOceanTrade::load(&dir).expect("装载关卡表");
-        assert_eq!(t.rank_rewards().len(), 13, "实测 13 数据行");
-        assert_eq!(t.rank_rewards()[0].0, 1, "按 rank 升序");
-        // `rank` 列是 `list;,` 型（`1;1`、`5;11;20`），取最后一段。
-        // 第 5 行实测 `5,11;20,...` ⇒ rank = 20。
-        assert_eq!(t.rank_rewards()[4].0, 20, "`5;11;20` 取末段 20");
+        // 实测 `Y-远洋贸易排名-OceanTradeRank.csv` 只有 8 个排名区间：
+        // 1 / 2 / 3 / 4-10 / 11-20 / 21-50 / 51-100 / 101-200。
+        assert_eq!(t.rank_rewards().len(), 8, "实测 8 个排名区间");
+        // `rank` 列是 `list;,` 型（`1;1`、`5;11;20`），取**末段**当区间上限。
+        let ranks: Vec<i32> = t.rank_rewards().iter().map(|(r, _)| *r).collect();
+        assert_eq!(ranks, vec![1, 2, 3, 10, 20, 50, 100, 200], "末段升序");
         assert!(!t.rank_rewards()[0].1.is_empty(), "第 1 名奖励非空");
+        // 第 1 行实测 `11=12;221=20;101=36;102=36;103=36`
+        assert_eq!(
+            t.rank_rewards()[0].1,
+            vec![(11, 12), (221, 20), (101, 36), (102, 36), (103, 36)]
+        );
     }
 
     #[test]

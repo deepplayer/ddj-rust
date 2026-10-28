@@ -196,8 +196,18 @@ const main = async () => {
   else if (s(n5d, 8) !== '100000') bad(`41003 damageHp=${s(n5d, 8)}（应为 100000，见 AUDIT A24）`);
   else if (s(n5d, 3) !== '20000') bad(`41003 costMoney=${s(n5d, 3)}（20000 全押）`);
   else ok(`41003 单次 lose winNum=0 pre=${s(n5d, 2)} cost=${s(n5d, 3)} damage=${s(n5d, 8)}`);
-  console.log('    DEBUG 41003 resp:', JSON.stringify(Object.fromEntries(
-    Object.entries(n5d).map(([k, v]) => [k, Buffer.isBuffer(v) ? v.toString('utf8') : v]))));
+
+  // ── 5b. 再打一次：npcHp 应比第 4 步少 damageHp（状态确实写回 PlayerBox）──
+  const n5b = await c.call(41001, Buffer.alloc(0));
+  if (n5b.cmd !== 41001) bad(`41001(二) 帧号=${n5b.cmd}`);
+  else {
+    const n5bd = parse(n5b.body);
+    const n5bdata = n5bd[2] ? parse(n5bd[2]) : {};
+    const hp2 = BigInt(s(n5bdata, 5) || '0');
+    // 12250000000 - 100000 = 12249900000
+    if (hp2 !== 12249900000n) bad(`41001(二) npcHp=${hp2}（应为 12249900000）`);
+    else ok(`41001(二) npcHp=${hp2} 已扣血，状态落库`);
+  }
 
   // ── 6. 41003 一键未解锁 → 3003 ──
   const n6 = await c.call(41003, req41003(1, 99999, 1));
