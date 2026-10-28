@@ -20,7 +20,7 @@
 ```
 cargo check  --workspace --all-targets                      0 error / 0 warning
 cargo clippy --workspace --exclude ddj-pb --lib --bins -D warnings   通过
-cargo test   --workspace                                    862 passed / 0 failed
+cargo test   --workspace                                    904 passed / 0 failed
 cargo xt check-arch                                         4 条规则通过
 ```
 
@@ -74,17 +74,18 @@ cargo xt check-arch                                         4 条规则通过
 | 远洋贸易 | 41001 / 41002 / 41003 | **真实 CSV** + `MemWorld` | ⚠ 41002 **不判** `isOpen(19)`；`BigInt` 全链路（末关 cost 4.68e18）|
 | 通商 | 19002 / 19003 / 19004 / 19005 | **真实 CSV** + `MemWorld` | ⚠ 商人发放链路未接 → 新号恒 `2201`/`2210`（与原版新号一致）|
 
-### 构建产物（2026-10-28 22:59 实测）
+### 构建产物（2026-10-29 04:25 实测）
 
 ```text
-commit  2e6a609
-run     40706835559  1 门禁   arch ✓ clippy ✓ rustfmt 红（已知不阻塞）  1m47s
-        40706834936  3 test   867 passed / 0 failed                    2m56s
-        40706834554  2 build  release ✓                                 4m04s
-sha256  b40abbae5f40a944768355b7c098fe625678af4283ffd0862bc593541a063e98
-启动    handlers=92
+commit  3679f56
+run     40760820422  1 门禁   arch ✓ clippy ✓ rustfmt 红（已知不阻塞）  1m52s
+        40760820545  3 test   904 passed / 0 failed                    3m04s
+        40760820399  2 build  release ✓                                 4m16s
+sha256  d38723fef744f6e3d111509d651b87707febcb29cd05d32be3aa53a1d20204f1
+启动    handlers=96
+        通商表已装载 trader_rows=10 max_trader_id=1210 trader_time=3600
 e2e     travel ✅  lantern ✅  pray ✅  anticheat ✅  counter ✅
-        shortcut ✅  favourable ✅  system_open ✅  ocean_trade ✅
+        shortcut ✅  favourable ✅  system_open ✅  ocean_trade ✅  trade ✅
 ```
 
 > **CI 已拆分（commit `2e6a609`）**：原 `ci.yml` 一个 workflow 带 `check`/`fmt`/`release`
@@ -96,7 +97,7 @@ e2e     travel ✅  lantern ✅  pray ✅  anticheat ✅  counter ✅
 > ⚠ **装配事故备忘**：`install_travel` 的装配行曾被 `07519e2` 误删，
 > `install_travel.rs` 自身编过、单测全绿，只有 e2e 冒烟报超时才暴露。
 > 现已加 `handlers::tests::register_wires_every_ported_module`：
-> 把已接线的 24 个 cmdId 钉成断言，漏装配在 `cargo test` 阶段就红。
+> 把已接线的 28 个 cmdId 钉成断言，漏装配在 `cargo test` 阶段就红。
 
 ## 三、未接线（占位，`ret=501`）
 
