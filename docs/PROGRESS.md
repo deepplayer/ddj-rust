@@ -73,16 +73,21 @@ cargo xt check-arch                                         4 条规则通过
 | 猜灯谜 | 37603 / 37604 / 37605 / 37607 | `MemWorld` + 注入题表 | ⚠ 线上 `bf_activity` 无 `typeId=50` → 四条恒回 2（原版 NPE）|
 | 远洋贸易 | 41001 / 41002 / 41003 | **真实 CSV** + `MemWorld` | ⚠ 41002 **不判** `isOpen(19)`；`BigInt` 全链路（末关 cost 4.68e18）|
 
-### 构建产物（2026-10-28 15:34 实测）
+### 构建产物（2026-10-28 21:28 实测）
 
 ```text
-commit  5dac48e
-run     40673188213   fmt+clippy+test 2m54s ✓ / release 1m50s ✓ / rustfmt 红（已知不阻塞）
-sha256  6cb0e2564eb274a990eb840ac18efcbd498d2660a913d6a1009fca02e134102d
-启动    handlers=89
-e2e     lantern 6/6 ✅  travel ✅  pray ✅  anticheat ✅  counter ✅
-        shortcut ✅  favourable ✅  system_open ✅
+commit  afbaa5d
+run     40695553673   fmt+clippy+test ✓ / release ✓ / rustfmt 红（已知不阻塞）
+sha256  c36b4be5dfb18929fef028481ec8d5f0eb2c73dcedad969e0233e80c79704408
+启动    handlers=92
+e2e     travel ✅  lantern ✅  pray ✅  anticheat ✅  counter ✅
+        shortcut ✅  favourable ✅  system_open ✅  ocean_trade ✅
 ```
+
+> ⚠ **装配事故备忘**：`install_travel` 的装配行曾被 `07519e2` 误删，
+> `install_travel.rs` 自身编过、单测全绿，只有 e2e 冒烟报超时才暴露。
+> 现已加 `handlers::tests::register_wires_every_ported_module`：
+> 把已接线的 24 个 cmdId 钉成断言，漏装配在 `cargo test` 阶段就红。
 
 ## 三、未接线（占位，`ret=501`）
 
