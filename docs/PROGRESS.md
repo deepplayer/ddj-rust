@@ -1,6 +1,6 @@
 # 移植进度（切换上下文先读这里）
 
-> 最后更新：2026-10-28 15:35
+> 最后更新：2026-10-28 17:45
 > 基准：`../data_d/game_7010544/sources/`（反编译）。规则见 [`../AGENTS.md`](../AGENTS.md)。
 > 逐分支台账见 [`AUDIT.md`](AUDIT.md)；里程碑见 [`PLAN.md`](PLAN.md)。
 
@@ -8,23 +8,25 @@
 
 ## 一、一句话现状
 
-骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 82 条（4.9%）**，
+骨架（协议/传输/配置/DB/装配/单二进制）已完成且可跑；**业务层 1681 条消息做了 85 条（5.1%）**，
 其中真正落库的只有 4 条，其余是进程内 `MemWorld`（重启即丢）。
 
-本轮补了**两个跨模块底座**（不增加消息数但解锁后续一大批）：
+最近两轮补的底座（不增加消息数但解锁后续一大批）：
 - `SystemOpenUtils.isOpen` —— `data_d` 里 60 个文件调它
 - `ActivityDbTemplate` 时间判定 —— 50+ 个活动处理器的入口条件
+- `TravelEvents` 权重抽取 + 四类事件结算（15002 / 15004 / 15009）
+- `S-身份表-Status` 真实等级表 —— 1003 升级从此可走通
 
 ```
 cargo check  --workspace --all-targets                      0 error / 0 warning
 cargo clippy --workspace --exclude ddj-pb --lib --bins -D warnings   通过
-cargo test   --workspace                                    740 passed / 0 failed
+cargo test   --workspace                                    777 passed / 0 failed
 cargo xt check-arch                                         4 条规则通过
 ```
 
 代码量：27 crate / 约 180 个 `.rs` / 约 25 000 行。
 
-## 二、已接线消息（82 / 1681）
+## 二、已接线消息（85 / 1681）
 
 | 模块 | cmdId | 数据源 | 备注 |
 |---|---|---|---|
@@ -66,6 +68,8 @@ cargo xt check-arch                                         4 条规则通过
 | 焚香祈愿 | 17071 / 17072 | `MemWorld` + 真实 CSV | ⚠ 单抽首日免费、十连不免费；**先推 17074 再回 17071** |
 | 系统开放 | 1015（改造） | **真实 CSV** + PG | 查不到 `systemId` → `ret=2`（原版 NPE） |
 | 聚宝盆记录 | 38303 / 38304 | `MemWorld` + PG `bf_activity` | ⚠ 两条都**不检查 `isOpen`**；38304 恒空列表 |
+| 游历 | 15002 / 15004 / 15009 | **真实 CSV** + `MemWorld` | 先推 15001 再回包；事件 1/2/4 的实体落地未接 |
+| 升级 | 1003（改造） | **真实 CSV** | 原 `MemLevels` 每级 100 经验 → 改读 `S-身份表-Status.csv` |
 
 ### 构建产物（2026-10-28 15:34 实测）
 
