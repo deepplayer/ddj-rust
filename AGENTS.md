@@ -209,3 +209,28 @@ crates/app/game-handler/src/
 | `docs/PG-MIGRATION.md` | MySQL → PG 对照 | 迁移相关变化时 |
 
 **切换上下文前必须更新 `docs/PROGRESS.md`**，写清「做到哪、下一步是什么、卡在哪」。
+
+---
+
+## §9 本机验证流程（踩过的坑）
+
+```bash
+# 1. 起依赖
+docker start ddj-pg ddj-redis
+
+# 2. 必须在 rust/ 下启动 —— config/ 是相对路径 `config`，
+#    在仓库根跑 ./bin/ddj 会读不到配置，表现为「连接数据库失败:
+#    password authentication failed for user "game"」（其实是连了别的 pg）。
+cd rust && DDJ_RUN_DIR=/tmp/ddj-run ../bin/ddj run game
+
+# 3. 冒烟
+cd rust && node e2e/smoke/travel_smoke.mjs
+```
+
+- 端口：WS `10544`；`ws_listen` 配了就不再开 raw TCP `10545`。
+- PG `127.0.0.1:55432`（容器 `ddj-pg`，db `platform` + `game_7010544`，口令 `game`）；
+  主机 `5432` 被 `oauth2_postgres` 占用，**不要**把配置改到 5432。
+- Redis `127.0.0.1:6379`。
+- 起不来时先看 `/tmp/ddj-run.log` 最后一行；PG/Redis 缺失时进程会静默挂在 PreInit
+  （只有一行「服务启动中」，不退出）。
+- 冒烟脚本建号需要**每次唯一**的 open_id / 名字，否则 `ret=103` 后一切请求都「未认证」。
